@@ -1,30 +1,35 @@
-# Handoff — main after T-003 merge
+# Handoff — T-004 import review fixes
 
-- **Updated:** 2026-09-26 by Claude Code
-- **Branch / worktree:** main @ ~/code/market-sentinel
-- **Status:** main pushed to GitHub; T-004 and T-007 ready
+- **Updated:** 2026-09-26 23:42 SGT by Codex
+- **Branch / worktree:** task/T-004-csv-import @ ~/code/ms-wt/api
+- **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-In parallel: Codex implements T-004 (`docs/tasks/T-004-csv-import.md`) in `~/code/ms-wt/api` on
-`task/T-004-csv-import`; Claude Code implements T-007 (`docs/tasks/T-007-today-page.md`) in
-`~/code/ms-wt/web` on `task/T-007-today`. Each writes its own handoff on its branch.
+Claude Code reviews the four import fixes (`b0be057`, `0826d54`, `1e4f00a`, `8b21178`),
+starting with the parser and API regression tests. Re-run the task validation commands.
 
 ## Done this session
-- Merged T-001 (skeleton), T-002 (contracts v1), T-003 (fixtures). All reviewed cross-agent.
-- Published to https://github.com/anuraagburman/market-sentinel (public; blueprint PDF purged from history, gitignored).
-- Wrote T-004 and T-007 specs.
-- T-003: 19-position synthetic portfolio (20 raw rows, five import cases), ten adversarial packets,
-  deterministic generator, `make test` runs contracts + fixtures suites.
+- Accepted Excel/plain-text/octet-stream MIME labels with case-insensitive .csv filenames;
+  retained full content validation and regenerated OpenAPI.
+- Formula cells now produce only formula_like_value for that field; other fields still validate.
+- Blank CSV records remain visible with one blank_row warning and count toward the row limit.
+- Negative cost basis is an import error (negative_cost_basis), preserved for review;
+  explicit zero remains valid, and missing values remain null.
+- Updated the task spec with the authorized scope additions and MIME/formula behavior.
+- Each fix committed separately with passing targeted tests; ledger remains ready_for_review.
 
 ## Tests run
-- See the T-003 merge commit message for the results on main.
+- Targeted API tests → pass: 34 tests.
+- Targeted parser tests → pass: 39 tests.
+- `make test` → pass: 210 Python tests + 1 Vitest test; existing Starlette deprecation warning.
+- `make lint` → pass: Ruff check/format, ESLint, Next type generation, TypeScript.
+- `make contracts && git diff --exit-code packages/contracts` → pass.
 
 ## Contract changes proposed (not applied)
-- none
+- none; authorized OpenAPI description regeneration is committed.
 
 ## Unresolved / assumptions
-- T-009 should add an injection variant on **usable** data (packet 07 only exercises the unusable gate,
-  so the injected text never reaches a judgment stage).
-- Workflow: parallel branches conflict on CURRENT.md and LEDGER.md. Consider one handoff file per task.
-- Horizon enum `swing | multiweek` still to be confirmed in T-000. JEV access unconfirmed (blocks T-009).
-- Consumers must enable date-time format checking (ADR-001 §3).
+- Blank means a CSV record with no cells; delimited empty cells still receive normal validation.
+- Negative total cost requires review now, before T-006; it is never silently transformed.
+- Existing scope: process-local temporary storage, no auth/confirmation/persistence;
+  1 MiB file limit, 1,000 records, unresolved symbols remain pending for T-005.
