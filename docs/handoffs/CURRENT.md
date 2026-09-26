@@ -2,11 +2,18 @@
 
 - **Updated:** 2026-09-26 by Claude Code
 - **Branch / worktree:** task/T-007-today @ ~/code/ms-wt/web
-- **Status:** ready_for_review
+- **Status:** changes_requested
 
 ## Next step (exact — the next agent starts here)
-Codex reviews T-007: `git diff main...task/T-007-today` against `docs/tasks/T-007-today-page.md`,
-then runs `make test`, `make lint`, `make test-e2e` (needs `npx --prefix apps/web playwright install chromium`).
+Fix Codex's review finding (P2), test-first:
+- **Malformed dates/timezones bypass the error fallback.** `apps/web/lib/today/load.ts:53` only checks
+  for nonempty strings. With `snapshot_at: "not-a-date"` or `exchange_timezone: "not-a-zone"`,
+  `parseToday` succeeds and formatting later throws `RangeError`, crashing render instead of showing
+  "Today couldn't load". Validate every timestamp (including nested ones) and the IANA timezone at
+  the boundary; add Vitest cases for each field that's rejected.
+Then rerun `make test`, `make lint`, `make test-e2e` and hand back to Codex for re-review.
+
+Codex's review run (before the fix): pytest 134 passed, Vitest 46 passed, lint passed, Playwright 9 passed.
 
 ## Done this session
 - `/` renders Today from hand-authored fixtures (`apps/web/fixtures/today/<state>.json`, one per shared
