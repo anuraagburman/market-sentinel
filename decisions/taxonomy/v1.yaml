@@ -1,0 +1,175 @@
+# Market Sentinel decision taxonomy v1
+# Source: docs/evidence-policy.md. Proposed application taxonomy — JEV does not ship financial labels.
+# Every decision carries a design record (blueprint §6). Changing any `outputs` list is a behavior change:
+# bump the version, re-run evals, and update packages/contracts/schemas/decision.schema.json
+# (packages/contracts/tests/test_schemas.py fails if the two drift).
+# Examples marked TODO(label) need practitioner labels before they count as evaluation data.
+
+version: "1.0"
+owner: anuraag
+staging:
+  # Questions in one JEV call are evaluated independently, so dependent questions run in later stages.
+  - stage: 1
+    decisions: [data_usability]
+    note: Deterministic integrity checks run before this. Unusable stops the pipeline.
+  - stage: 2
+    decisions: [event_family, primary_context, novelty, evidence_sufficiency]
+  - stage: 3
+    decisions: [thesis_impact, research_relevance, interpretation_conflict]
+    note: Runs only on validated stage-2 outputs.
+
+decisions:
+  - id: data_usability
+    version: 1
+    owner: anuraag
+    purpose: Decide whether the packet's inputs can support any judgment at all.
+    type: choice
+    outputs: [usable, partial, unusable]
+    horizon: explicit_in_packet
+    required: [freshness_state, feed, session, missing_fields]
+    rules:
+      - A 15-minute delayed feed can never satisfy an intraday freshness gate.
+      - A large move right after a split is a normalization suspect until adjustment is verified.
+      - Partial-session volume is not comparable to full-session averages without normalization.
+      - A high-confidence downstream judgment is suppressed when this input is stale.
+    ambiguity_policy: Prefer partial over usable when any field used downstream is missing.
+    abstain_when: [instrument_identity_unresolved, timestamp_order_invalid]
+    calibration_target: null
+    examples:
+      positive: ["TODO(label): complete EOD packet, all fields present -> usable"]
+      negative: ["TODO(label): price fell 75% on split date with unadjusted history -> unusable"]
+
+  - id: event_family
+    version: 1
+    owner: anuraag
+    purpose: Classify what kind of event the packet describes.
+    type: choice
+    outputs: [earnings, guidance, corporate_action, regulatory, macro, other, unknown]
+    horizon: explicit_in_packet
+    required: [verified_event_metadata]
+    rules:
+      - Classify from verified event metadata, not from headline wording alone.
+    ambiguity_policy: unknown when metadata is missing or conflicting.
+    abstain_when: [critical_source_missing]
+    calibration_target: null
+    examples:
+      positive: ["TODO(label)"]
+      negative: ["TODO(label)"]
+
+  - id: primary_context
+    version: 1
+    owner: anuraag
+    purpose: Attribute the move to company, sector, or market.
+    type: choice
+    outputs: [company, sector, market, mixed, unknown]
+    horizon: explicit_in_packet
+    required: [residual_move, benchmark_moves, evidence]
+    rules:
+      - A price move alone does not establish its cause.
+      - Co-movement is not causation.
+      - mixed requires more than one supported driver; unknown means attribution is unresolved.
+    ambiguity_policy: unknown, never a guessed single driver.
+    abstain_when: [critical_source_missing]
+    calibration_target: null
+    examples:
+      positive: ["TODO(label)"]
+      negative: ["TODO(label): stock and sector both -4%, no company news -> sector or unknown, not company"]
+
+  - id: novelty
+    version: 1
+    owner: anuraag
+    purpose: Is this information new relative to what the system already knew?
+    type: choice
+    outputs: [new, update, repeated, unclear]
+    horizon: explicit_in_packet
+    required: [previous_events, source_lineage]
+    rules:
+      - Repeated or syndicated stories are not new information.
+      - Count independent originators, not URLs.
+    ambiguity_policy: unclear when lineage is incomplete.
+    abstain_when: []
+    calibration_target: null
+    examples:
+      positive: ["TODO(label)"]
+      negative: ["TODO(label): ten syndicated copies of one wire story -> repeated"]
+
+  - id: evidence_sufficiency
+    version: 1
+    owner: anuraag
+    purpose: Judge whether claim-level evidence supports the stated catalyst hypothesis.
+    type: choice
+    outputs: [sufficient, partial, insufficient]
+    horizon: explicit_in_packet
+    required: [timestamped_event, source_linked_claims, counterevidence_search_status]
+    rules:
+      - Repeated stories are not independent corroboration.
+      - Missing evidence is not negative evidence.
+      - Evaluate only information known at the cutoff.
+      - An earnings miss without comparable expectations data is not automatically a negative surprise.
+      - A true catalyst can coexist with an uncertain price response.
+    ambiguity_policy: partial when support exists but counterevidence search is incomplete.
+    abstain_when: [critical_source_missing, timestamp_order_invalid, instrument_identity_unresolved]
+    calibration_target: "Agreement with practitioner rubric label (not trade profit)"
+    examples:
+      positive: ["TODO(label)"]
+      negative: ["TODO(label): 'missed estimates' headline, no consensus figure in packet -> partial or insufficient"]
+
+  - id: thesis_impact
+    version: 1
+    owner: anuraag
+    purpose: How does this event bear on the user's recorded thesis?
+    type: choice
+    outputs: [strengthens, weakens, invalidates, unrelated, unclear]
+    horizon: thesis_horizon
+    required: [original_thesis_claim, thesis_horizon]
+    rules:
+      - Judge against the original recorded claim, not a rewritten one.
+      - A good company can be a poor short-horizon setup; respect the thesis horizon.
+    ambiguity_policy: unclear rather than weakens when evidence is partial.
+    abstain_when: [no_recorded_thesis]
+    calibration_target: null
+    examples:
+      positive: ["TODO(label)"]
+      negative: ["TODO(label)"]
+
+  - id: research_relevance
+    version: 1
+    owner: anuraag
+    purpose: How much does this deserve the user's research attention?
+    type: score
+    outputs: [1, 2, 3, 4, 5]
+    horizon: explicit_in_packet
+    required: [materiality, exposure, horizon]
+    rubric:
+      1: No demonstrated connection to the selected portfolio or research intent.
+      2: TODO(label) worked example needed.
+      3: Plausible connection requiring more evidence.
+      4: TODO(label) worked example needed.
+      5: Verified material event directly affecting a holding or a clearly stated research objective.
+    rules:
+      - An ordinal score is not a probability or an expected return.
+      - Popularity and recent price performance are not relevance.
+    ambiguity_policy: Round down when exposure or materiality is unverified.
+    abstain_when: []
+    calibration_target: null
+    examples:
+      positive: ["TODO(label)"]
+      negative: ["TODO(label)"]
+
+  - id: interpretation_conflict
+    version: 1
+    owner: anuraag
+    purpose: Are there competing explanations that are each supported by evidence?
+    type: choice
+    outputs: ["yes", "no"]
+    horizon: explicit_in_packet
+    required: [competing_supported_explanations]
+    rules:
+      - Do not manufacture a symmetric counterargument; conflict needs supported evidence on both sides.
+      - '"Priced in" is never inferred from a muted reaction alone.'
+    ambiguity_policy: '"no" only when counterevidence search completed.'
+    abstain_when: [counterevidence_search_incomplete]
+    calibration_target: null
+    examples:
+      positive: ["TODO(label)"]
+      negative: ["TODO(label)"]

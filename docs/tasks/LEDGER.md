@@ -7,7 +7,7 @@ Write a full task file only when a task moves to `ready` — specs written too e
 |---|---|---|---|---|---|---|---|
 | T-000 | Phase 0 decisions and access | 0 | Anuraag | Claude Code | main | — | ready |
 | T-001 | Repo skeleton, Makefile, CI | 0 | Codex | Claude Code | task/T-001-skeleton | — | ready |
-| T-002 | Core schemas and decision envelope | 0 | Claude Code | Codex | task/T-002-schemas | — | ready |
+| T-002 | Core schemas and decision envelope | 0 | Claude Code | Codex | task/T-002-schemas | — | review |
 | T-003 | Synthetic fixtures (20-holding portfolio + 10 adversarial packets) | 0 | Codex | Claude Code | — | T-002 | backlog |
 | T-004 | CSV validation and import preview | 1 | Codex | Claude Code | — | T-001, T-002 | backlog |
 | T-005 | Instrument resolution | 1 | Codex | Claude Code | — | T-004 | backlog |

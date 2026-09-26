@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/evidence.schema.json",
+  "title": "Evidence",
+  "description": "A retrieved source. published_at (source clock) and known_at (first known to system) are distinct. Corrections point at the original; the original is never overwritten.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "source_id", "source_type", "url", "published_at", "known_at", "hash", "license_tag"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "source_id": {"type": "string", "minLength": 1},
+    "source_type": {"enum": ["filing", "company_release", "economic_release", "licensed_news", "analyst_opinion", "social", "fixture"]},
+    "originator": {"type": "string", "description": "Independent originator; syndicated copies share one."},
+    "canonical_story_id": {"type": "string"},
+    "url": {"type": "string", "minLength": 1},
+    "published_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "known_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "hash": {"$ref": "common.schema.json#/$defs/sha256"},
+    "license_tag": {"type": "string", "minLength": 1},
+    "excerpt": {"type": "string", "description": "Only where licensed."},
+    "correction_of": {"oneOf": [{"type": "string"}, {"type": "null"}]}
+  }
+}

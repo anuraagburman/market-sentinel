@@ -1,0 +1,35 @@
+[
+  {
+    "why": "confirmed version without confirmed_at",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "tenant_id": "00000000-0000-4000-8000-000000000002",
+      "base_currency": "USD",
+      "imported_at": "2026-09-25T12:00:00Z",
+      "source_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "status": "confirmed",
+      "previous_version_id": null,
+      "cash": {
+        "amount": "1500.00",
+        "currency": "USD"
+      }
+    }
+  },
+  {
+    "why": "lowercase currency",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "tenant_id": "00000000-0000-4000-8000-000000000002",
+      "base_currency": "usd",
+      "imported_at": "2026-09-25T12:00:00Z",
+      "source_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "status": "confirmed",
+      "confirmed_at": "2026-09-25T12:00:00Z",
+      "previous_version_id": null,
+      "cash": {
+        "amount": "1500.00",
+        "currency": "USD"
+      }
+    }
+  }
+]

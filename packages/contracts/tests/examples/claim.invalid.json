@@ -1,0 +1,35 @@
+[
+  {
+    "why": "claim with no evidence",
+    "doc": {
+      "id": "cl-1",
+      "statement": "ExampleCo lowered FY2026 revenue guidance to 4.1B USD.",
+      "evidence_ids": [],
+      "relation": "supports",
+      "entity": "ExampleCo",
+      "metric": "revenue_guidance",
+      "period": "FY2026",
+      "value": "4100000000",
+      "unit": "USD",
+      "kind": "fact",
+      "extraction_version": "1.0"
+    }
+  },
+  {
+    "why": "numeric value without unit",
+    "doc": {
+      "id": "cl-1",
+      "statement": "ExampleCo lowered FY2026 revenue guidance to 4.1B USD.",
+      "evidence_ids": [
+        "ev-1"
+      ],
+      "relation": "supports",
+      "entity": "ExampleCo",
+      "metric": "revenue_guidance",
+      "period": "FY2026",
+      "value": "4100000000",
+      "kind": "fact",
+      "extraction_version": "1.0"
+    }
+  }
+]

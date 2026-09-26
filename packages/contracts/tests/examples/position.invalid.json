@@ -1,0 +1,45 @@
+[
+  {
+    "why": "cost_basis key missing (unknown must be explicit null)",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "display_symbol": "EXCO",
+      "quantity": "40",
+      "currency": "USD"
+    }
+  },
+  {
+    "why": "zero quantity",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "display_symbol": "EXCO",
+      "quantity": "0",
+      "cost_basis": null,
+      "currency": "USD"
+    }
+  },
+  {
+    "why": "short (negative) quantity",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "display_symbol": "EXCO",
+      "quantity": "-40",
+      "cost_basis": null,
+      "currency": "USD"
+    }
+  },
+  {
+    "why": "float quantity instead of decimal string",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "display_symbol": "EXCO",
+      "quantity": 40.0,
+      "cost_basis": null,
+      "currency": "USD"
+    }
+  }
+]

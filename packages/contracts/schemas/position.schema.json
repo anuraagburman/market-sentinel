@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/position.schema.json",
+  "title": "Position",
+  "description": "Long positions only. Shorts and derivatives are flagged at import, not modeled.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["portfolio_version_id", "instrument_id", "quantity", "cost_basis", "currency"],
+  "properties": {
+    "portfolio_version_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "instrument_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "display_symbol": {"type": "string", "description": "Label only; identity is instrument_id."},
+    "account_label": {"type": "string"},
+    "quantity": {"$ref": "common.schema.json#/$defs/positive_decimal_string"},
+    "cost_basis": {
+      "description": "Total cost in `currency`. Key is required; null means unknown, never zero.",
+      "oneOf": [{"$ref": "common.schema.json#/$defs/decimal_string"}, {"type": "null"}]
+    },
+    "currency": {"$ref": "common.schema.json#/$defs/currency"}
+  }
+}

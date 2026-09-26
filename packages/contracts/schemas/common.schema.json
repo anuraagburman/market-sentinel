@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/common.schema.json",
+  "title": "Common definitions",
+  "description": "Shared primitives and enums. Contract v1 (ADR-001).",
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "utc_timestamp": {
+      "description": "ISO-8601 UTC, must end in Z. Offsets are rejected so every stored time is unambiguous.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+    },
+    "decimal_string": {
+      "description": "Exact decimal as a string. Never a float.",
+      "type": "string",
+      "pattern": "^-?\\d+(\\.\\d+)?$"
+    },
+    "positive_decimal_string": {
+      "type": "string",
+      "pattern": "^(0*[1-9]\\d*(\\.\\d+)?|0+\\.\\d*[1-9]\\d*)$"
+    },
+    "currency": {
+      "description": "ISO 4217 code.",
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "surface_status": {
+      "description": "Shared UI state. Empty coverage is not no_material_change.",
+      "enum": ["ready", "running", "partial", "stale", "failed", "no_material_change"]
+    },
+    "research_action": {
+      "description": "Research actions only. Never a trade instruction.",
+      "enum": ["investigate_now", "review_today", "watch_condition", "no_new_material_issue", "insufficient_evidence"]
+    },
+    "horizon": {
+      "description": "Supported horizons. Intraday is excluded until feeds and latency are established.",
+      "enum": ["swing", "multiweek"]
+    },
+    "event_family": {
+      "enum": ["earnings", "guidance", "corporate_action", "regulatory", "macro", "other", "unknown"]
+    },
+    "feed": {
+      "description": "Always explicit; never rely on a subscription-dependent default.",
+      "enum": ["iex", "sip", "delayed_15m", "eod", "fixture"]
+    }
+  }
+}

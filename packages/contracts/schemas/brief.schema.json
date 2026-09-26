@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/brief.schema.json",
+  "title": "Brief",
+  "description": "A published morning brief. Never mutates silently: corrections create a new revision with a reason.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "portfolio_version_id", "cutoff", "published_at", "status", "decision_ids", "coverage", "revision"],
+  "properties": {
+    "id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "portfolio_version_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "cutoff": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "published_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "status": {"$ref": "common.schema.json#/$defs/surface_status"},
+    "decision_ids": {"type": "array", "items": {"$ref": "common.schema.json#/$defs/uuid"}, "uniqueItems": true},
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checked_sources", "failed_sources"],
+      "properties": {
+        "checked_sources": {"type": "array", "items": {"type": "string"}},
+        "failed_sources": {"type": "array", "items": {"type": "string"}},
+        "unpriced_instrument_ids": {"type": "array", "items": {"$ref": "common.schema.json#/$defs/uuid"}}
+      }
+    },
+    "revision": {"type": "integer", "minimum": 1},
+    "supersedes_brief_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "change_reason": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"revision": {"minimum": 2}}},
+      "then": {"required": ["supersedes_brief_id", "change_reason"]}
+    },
+    {
+      "$comment": "A failed source cannot be reported as a clean day.",
+      "if": {"properties": {"coverage": {"properties": {"failed_sources": {"minItems": 1}}}}},
+      "then": {"properties": {"status": {"enum": ["partial", "stale", "failed"]}}}
+    }
+  ]
+}

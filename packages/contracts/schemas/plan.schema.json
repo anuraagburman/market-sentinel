@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/plan.schema.json",
+  "title": "Plan",
+  "description": "A user's conditional research plan (paper only). User edits create a new revision; the original thesis stays immutable.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "instrument_id", "thesis_version", "thesis", "thesis_state", "horizon", "conditions", "invalidation", "revision", "created_at"],
+  "properties": {
+    "id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "instrument_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "thesis_version": {"type": "integer", "minimum": 1},
+    "thesis": {"type": "string", "minLength": 1},
+    "thesis_state": {"enum": ["supported", "under_review", "invalidated", "insufficient_evidence"]},
+    "horizon": {"$ref": "common.schema.json#/$defs/horizon"},
+    "conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "description", "observable_evidence"],
+        "properties": {
+          "kind": {"enum": ["entry", "add", "reduce", "exit", "wait"]},
+          "description": {"type": "string", "minLength": 1},
+          "observable_evidence": {"type": "string", "minLength": 1, "description": "What must be observed for this condition to be met."},
+          "price_reference": {"$ref": "#/$defs/price_reference"}
+        }
+      }
+    },
+    "invalidation": {"type": "string", "minLength": 1},
+    "known_catalysts": {"type": "array", "items": {"type": "string"}},
+    "open_questions": {"type": "array", "items": {"type": "string"}},
+    "paper_size": {"oneOf": [{"$ref": "common.schema.json#/$defs/positive_decimal_string"}, {"type": "null"}]},
+    "revision": {"type": "integer", "minimum": 1},
+    "revision_reason": {"type": "string", "minLength": 1},
+    "created_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"}
+  },
+  "if": {"properties": {"revision": {"minimum": 2}}},
+  "then": {"required": ["revision_reason"]},
+  "$defs": {
+    "price_reference": {
+      "description": "Only the user or a dated deterministic calculation may supply a price level. Model-supplied prices are unrepresentable.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "currency", "source", "as_of"],
+      "properties": {
+        "value": {"$ref": "common.schema.json#/$defs/positive_decimal_string"},
+        "currency": {"$ref": "common.schema.json#/$defs/currency"},
+        "source": {"enum": ["user", "calculation"]},
+        "calculation_id": {"type": "string"},
+        "as_of": {"$ref": "common.schema.json#/$defs/utc_timestamp"}
+      },
+      "if": {"properties": {"source": {"const": "calculation"}}},
+      "then": {"required": ["calculation_id"]}
+    }
+  }
+}

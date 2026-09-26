@@ -1,0 +1,31 @@
+[
+  {
+    "why": "known_at missing",
+    "doc": {
+      "id": "ev-1",
+      "source_id": "exampleco-ir",
+      "source_type": "company_release",
+      "originator": "ExampleCo",
+      "url": "https://example.com/ir/2026-09-24",
+      "published_at": "2026-09-24T21:05:00Z",
+      "hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "license_tag": "synthetic",
+      "correction_of": null
+    }
+  },
+  {
+    "why": "unknown source_type",
+    "doc": {
+      "id": "ev-1",
+      "source_id": "exampleco-ir",
+      "source_type": "rumor",
+      "originator": "ExampleCo",
+      "url": "https://example.com/ir/2026-09-24",
+      "published_at": "2026-09-24T21:05:00Z",
+      "known_at": "2026-09-24T21:06:10Z",
+      "hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "license_tag": "synthetic",
+      "correction_of": null
+    }
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/run.schema.json",
+  "title": "Run",
+  "description": "Durable background work. idempotency_key = stage + event/portfolio identity + cutoff + version, so a retry never duplicates publication.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "stage", "idempotency_key", "attempts", "state", "error_code", "created_at"],
+  "properties": {
+    "id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "stage": {"enum": ["import", "valuation", "ingest", "detect", "research", "classify", "policy", "explain", "verify", "publish", "discovery", "monitor"]},
+    "idempotency_key": {"type": "string", "minLength": 1},
+    "attempts": {"type": "integer", "minimum": 0},
+    "state": {"enum": ["queued", "running", "succeeded", "partial", "failed"]},
+    "error_code": {"oneOf": [{"type": "string", "pattern": "^[a-z][a-z0-9_]*$"}, {"type": "null"}]},
+    "cutoff": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "created_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "finished_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"}
+  },
+  "if": {"properties": {"state": {"const": "failed"}}},
+  "then": {"properties": {"error_code": {"type": "string"}}}
+}

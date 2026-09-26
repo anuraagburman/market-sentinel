@@ -1,0 +1,50 @@
+# Market Sentinel deterministic policy v1 — SKELETON
+# Policy code owns freshness gates and research actions; JEV only supplies judgments.
+# Thresholds live here, separate from the taxonomy, so changing a routing threshold never
+# silently changes a label definition. TODO values are set after baseline measurement (T-010).
+
+version: "1.0"
+taxonomy_version: "1.0"
+
+precedence:
+  - step: integrity
+    description: Deterministic checks (identity, timestamps, freshness, cutoff). data_usability=unusable -> abstain.
+  - step: classify
+    description: Evidence sufficiency and event context. Partial data disables dependent conclusions.
+  - step: relevance_and_impact
+    description: Portfolio relevance and thesis impact on validated stage-2 outputs.
+  - step: rank
+    description: Rank eligible investigations with the priority index.
+
+actions: [investigate_now, review_today, watch_condition, no_new_material_issue, insufficient_evidence]
+
+hard_gates:
+  - when: {data_usability: unusable}
+    action: insufficient_evidence
+    reason: unusable_input
+  - when: {freshness: stale}
+    effect: disable_time_sensitive_readiness
+  - when: {evidence_sufficiency: insufficient}
+    action: insufficient_evidence
+    reason: insufficient_evidence
+  - when: {position_limit_breached: true}
+    effect: flag_constraint_breach   # deterministic; JEV cannot waive it
+
+priority_index:
+  note: >-
+    A priority index, not confidence. Inputs are treated as correlated (shared evidence);
+    never multiply JEV probabilities as if independent.
+  inputs: [exposure_weight, event_materiality, time_sensitivity, research_relevance]
+  weights:
+    exposure_weight: TODO
+    event_materiality: TODO
+    time_sensitivity: TODO
+    research_relevance: TODO
+  thresholds:
+    investigate_now: TODO
+    review_today: TODO
+    watch_condition: TODO
+
+brief:
+  max_issues: 3
+  quiet_day_copy: "No new material changes found within current coverage."

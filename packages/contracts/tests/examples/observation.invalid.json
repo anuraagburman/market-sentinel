@@ -1,0 +1,45 @@
+[
+  {
+    "why": "non-UTC offset timestamp",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000020",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "metric": "close",
+      "value": "101.25",
+      "unit": "USD",
+      "feed": "fixture",
+      "session": "regular",
+      "adjustment": "none",
+      "observed_at": "2026-09-24T16:00:00-04:00",
+      "received_at": "2026-09-24T20:00:03Z"
+    }
+  },
+  {
+    "why": "feed not stated",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000020",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "metric": "close",
+      "value": "101.25",
+      "unit": "USD",
+      "session": "regular",
+      "adjustment": "none",
+      "observed_at": "2026-09-24T20:00:00Z",
+      "received_at": "2026-09-24T20:00:03Z"
+    }
+  },
+  {
+    "why": "received_at missing",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000020",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "metric": "close",
+      "value": "101.25",
+      "unit": "USD",
+      "feed": "fixture",
+      "session": "regular",
+      "adjustment": "none",
+      "observed_at": "2026-09-24T20:00:00Z"
+    }
+  }
+]
