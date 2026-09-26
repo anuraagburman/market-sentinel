@@ -1,35 +1,34 @@
-# Handoff — T-004 import review fixes
+# Handoff — main after T-004 merge
 
-- **Updated:** 2026-09-26 23:42 SGT by Codex
-- **Branch / worktree:** task/T-004-csv-import @ ~/code/ms-wt/api
-- **Status:** ready_for_review
+- **Updated:** 2026-09-26 by Claude Code
+- **Branch / worktree:** main @ ~/code/market-sentinel
+- **Status:** T-004 merged; T-007 awaiting Codex review; T-005 needs a spec
 
 ## Next step (exact — the next agent starts here)
-Claude Code reviews the four import fixes (`b0be057`, `0826d54`, `1e4f00a`, `8b21178`),
-starting with the parser and API regression tests. Re-run the task validation commands.
+In parallel:
+- **Codex** reviews T-007 in `~/code/ms-wt/api`: `git checkout --detach origin/task/T-007-today`
+  (the branch itself is checked out in `~/code/ms-wt/web`), then follow the "Next step" in that
+  branch's `docs/handoffs/CURRENT.md`. Write findings to the user; do not commit to T-007.
+- **Claude Code** writes `docs/tasks/T-005-instrument-resolution.md` on `main` and moves T-005 to
+  `ready` in the ledger. Input: T-004's preview (`resolution: "pending"`, `parsed.symbol`).
 
 ## Done this session
-- Accepted Excel/plain-text/octet-stream MIME labels with case-insensitive .csv filenames;
-  retained full content validation and regenerated OpenAPI.
-- Formula cells now produce only formula_like_value for that field; other fields still validate.
-- Blank CSV records remain visible with one blank_row warning and count toward the row limit.
-- Negative cost basis is an import error (negative_cost_basis), preserved for review;
-  explicit zero remains valid, and missing values remain null.
-- Updated the task spec with the authorized scope additions and MIME/formula behavior.
-- Each fix committed separately with passing targeted tests; ledger remains ready_for_review.
+- Reviewed T-004 twice (44024cb, 4d77997). Codex fixed: browser CSV MIME variants with `.csv`
+  filenames, one issue per formula cell, `blank_row` warning, `negative_cost_basis` error.
+- Merged T-004 to `main` with `--no-ff`; ledger row set to `merged`.
 
 ## Tests run
-- Targeted API tests → pass: 34 tests.
-- Targeted parser tests → pass: 39 tests.
-- `make test` → pass: 210 Python tests + 1 Vitest test; existing Starlette deprecation warning.
-- `make lint` → pass: Ruff check/format, ESLint, Next type generation, TypeScript.
-- `make contracts && git diff --exit-code packages/contracts` → pass.
+- At 4d77997: `make test` → 210 Python + 1 Vitest passed; `make lint` → pass;
+  `make contracts && git diff --exit-code packages/contracts` → pass.
 
 ## Contract changes proposed (not applied)
-- none; authorized OpenAPI description regeneration is committed.
+- T-007 proposes `issue.schema.json` (v1.1 candidate); see its branch handoff.
 
 ## Unresolved / assumptions
-- Blank means a CSV record with no cells; delimited empty cells still receive normal validation.
-- Negative total cost requires review now, before T-006; it is never silently transformed.
-- Existing scope: process-local temporary storage, no auth/confirmation/persistence;
-  1 MiB file limit, 1,000 records, unresolved symbols remain pending for T-005.
+- Upload size is checked after Starlette receives the whole body; a request-size limit is needed at
+  deploy time before the endpoint is exposed.
+- Import previews are process-local until persistence/`confirm` lands.
+- T-007 merge will conflict on `CURRENT.md` and `LEDGER.md` (both edited on branches); resolve by hand.
+  Consider one handoff file per task.
+- Still open from before: horizon enum (T-000), JEV access (blocks T-009), T-009 injection variant on
+  usable data, consumers must enable date-time format checking (ADR-001 §3).

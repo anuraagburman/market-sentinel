@@ -9,7 +9,7 @@ Write a full task file only when a task moves to `ready` — specs written too e
 | T-001 | Repo skeleton, Makefile, CI | 0 | Codex | Claude Code | task/T-001-skeleton | — | merged |
 | T-002 | Core schemas and decision envelope | 0 | Claude Code | Codex | task/T-002-schemas | — | merged |
 | T-003 | Synthetic fixtures (20-holding portfolio + 10 adversarial packets) | 0 | Codex | Claude Code | task/T-003-fixtures | T-001, T-002 | merged |
-| T-004 | CSV validation and import preview | 1 | Codex | Claude Code | task/T-004-csv-import | T-001, T-002, T-003 | ready_for_review |
+| T-004 | CSV validation and import preview | 1 | Codex | Claude Code | task/T-004-csv-import | T-001, T-002, T-003 | merged |
 | T-005 | Instrument resolution | 1 | Codex | Claude Code | — | T-004 | backlog |
 | T-006 | Deterministic portfolio valuation | 1 | Codex | Claude Code | — | T-005 | backlog |
 | T-007 | Today page + evidence states (fixture-driven) | 1 | Claude Code | Codex | task/T-007-today | T-002, T-003 | ready |
@@ -17,6 +17,4 @@ Write a full task file only when a task moves to `ready` — specs written too e
 | T-009 | Staged JEV decisions (adapter + taxonomy v1) | 2 | Claude Code | Codex | — | T-000 (JEV access), T-003 | backlog |
 | T-010 | First evaluation report (rules-only vs persona vs JEV) | 2 | Codex | Anuraag + Claude Code | — | T-009 | backlog |
 
-T-004 review fixes: MIME compatibility, formula issue counts, blank-row warnings, and negative-cost validation pass all checks; ready_for_review.
-
-**Parallel lanes right now:** Codex → T-004 (`~/code/ms-wt/api`), Claude Code → T-007 (`~/code/ms-wt/web`), Anuraag → T-000.
+**Parallel lanes right now:** Codex → review T-007 (detached checkout in `~/code/ms-wt/api`), Claude Code → write T-005 spec (on `main`), Anuraag → T-000.
