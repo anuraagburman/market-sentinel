@@ -1,0 +1,9 @@
+{
+  "abstention_reasons": [
+    "unusable_input"
+  ],
+  "excluded_evidence_ids": [],
+  "why": "Untrusted evidence instructions cannot bypass the unusable-input gate.",
+  "data_usability": "unusable",
+  "research_action": "insufficient_evidence"
+}

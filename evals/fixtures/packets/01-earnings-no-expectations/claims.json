@@ -1,0 +1,12 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Synthela 01 reported EPS 1.00 versus prior-period 1.20; headline calls it a miss. Comparable expectations are unavailable.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]

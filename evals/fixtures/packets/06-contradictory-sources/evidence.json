@@ -1,0 +1,28 @@
+[
+  {
+    "id": "ev-1",
+    "source_id": "synthetic-source-1",
+    "source_type": "company_release",
+    "originator": "synthetic-origin-1",
+    "canonical_story_id": "story-1",
+    "url": "https://example.com/evidence/1",
+    "published_at": "2026-09-25T20:30:00Z",
+    "known_at": "2026-09-25T20:30:00Z",
+    "hash": "sha256:5387fb33b2d14ffdb0888dd09580eb0682b92fe124b3d5a2895b5925dd67d1ad",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 06 company release states the launch remains scheduled for October."
+  },
+  {
+    "id": "ev-2",
+    "source_id": "synthetic-source-2",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-2",
+    "canonical_story_id": "story-2",
+    "url": "https://example.com/evidence/2",
+    "published_at": "2026-09-25T20:45:00Z",
+    "known_at": "2026-09-25T20:46:00Z",
+    "hash": "sha256:20c8f728d14ba0859f0ffa9009da4ff5489035516a22e7511c318caa9ae2411f",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 06 launch moved to December, according to the synthetic supplier notice."
+  }
+]

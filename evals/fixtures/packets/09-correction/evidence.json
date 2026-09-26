@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ev-1",
+    "source_id": "synthetic-source-1",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-1",
+    "canonical_story_id": "story-1",
+    "url": "https://example.com/evidence/1",
+    "published_at": "2026-09-25T20:30:00Z",
+    "known_at": "2026-09-25T20:30:00Z",
+    "hash": "sha256:ef438cf3e166a52d004054f12b9db1eff21d8ec95499e6867144d5a2b4b5161e",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 09 initially reported revenue of 10.00 million USD."
+  },
+  {
+    "id": "ev-2",
+    "source_id": "synthetic-source-2",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-2",
+    "canonical_story_id": "story-2",
+    "url": "https://example.com/evidence/2",
+    "published_at": "2026-09-25T20:45:00Z",
+    "known_at": "2026-09-25T20:46:00Z",
+    "hash": "sha256:e4f1904c5094877dae5798652321ab503b6e3226b9723978ca76fcc4e86a5060",
+    "license_tag": "synthetic",
+    "excerpt": "Correction: Synthela 09 revenue was 12.00 million USD, replacing 10.00.",
+    "correction_of": "ev-1"
+  }
+]

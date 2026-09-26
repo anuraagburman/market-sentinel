@@ -1,0 +1,14 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000301",
+    "instrument_id": "00000000-0000-4000-8000-000000000001",
+    "metric": "close",
+    "value": "12.00",
+    "unit": "USD",
+    "feed": "fixture",
+    "session": "regular",
+    "adjustment": "none",
+    "observed_at": "2026-09-25T20:00:00Z",
+    "received_at": "2026-09-25T20:00:00Z"
+  }
+]

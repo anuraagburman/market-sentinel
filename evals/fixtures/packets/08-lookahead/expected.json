@@ -1,0 +1,7 @@
+{
+  "abstention_reasons": [],
+  "excluded_evidence_ids": [
+    "ev-2"
+  ],
+  "why": "Exclude the evidence first known after cutoff, despite its earlier publication time."
+}

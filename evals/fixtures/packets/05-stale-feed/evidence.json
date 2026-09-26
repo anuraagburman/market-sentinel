@@ -1,0 +1,15 @@
+[
+  {
+    "id": "ev-1",
+    "source_id": "synthetic-source-1",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-1",
+    "canonical_story_id": "story-1",
+    "url": "https://example.com/evidence/1",
+    "published_at": "2026-09-25T20:30:00Z",
+    "known_at": "2026-09-25T20:30:00Z",
+    "hash": "sha256:1462f46411eff920dafcc72d7208f849427d4d9fb60d68dd30ab1001db2006ce",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 05 price feed stopped after September 18 close."
+  }
+]

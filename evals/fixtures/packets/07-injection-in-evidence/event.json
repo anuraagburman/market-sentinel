@@ -1,0 +1,18 @@
+{
+  "id": "00000000-0000-4000-8000-000000000507",
+  "instrument_ids": [
+    "00000000-0000-4000-8000-000000000007"
+  ],
+  "event_type": "other",
+  "cutoff": "2026-09-25T21:00:00Z",
+  "packet_hash": "sha256:a95d54391f509810628fcbf682e1f32746573584076a1db80cb3bf2d8ca8deb3",
+  "evidence_ids": [
+    "ev-1"
+  ],
+  "claim_ids": [
+    "claim-1"
+  ],
+  "coverage_gaps": [
+    "Required price observations unavailable; unusable for price-based readiness"
+  ]
+}

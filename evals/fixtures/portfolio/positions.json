@@ -1,0 +1,154 @@
+[
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000001",
+    "display_symbol": "SYN01",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000002",
+    "display_symbol": "SYN02",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000003",
+    "display_symbol": "SYN03",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000004",
+    "display_symbol": "SYN04",
+    "quantity": "10",
+    "cost_basis": null,
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000005",
+    "display_symbol": "SYN05",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000006",
+    "display_symbol": "SYN06",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000007",
+    "display_symbol": "SYN07",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000008",
+    "display_symbol": "SYN08",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000009",
+    "display_symbol": "SYN09",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000010",
+    "display_symbol": "SYN10",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000011",
+    "display_symbol": "SYN11",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000012",
+    "display_symbol": "SYN12",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000013",
+    "display_symbol": "SYN13",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000014",
+    "display_symbol": "SYN14",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000015",
+    "display_symbol": "SYN15",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000016",
+    "display_symbol": "SYN16",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000017",
+    "display_symbol": "SYN17",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000018",
+    "display_symbol": "SYN18",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  },
+  {
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "instrument_id": "00000000-0000-4000-8000-000000000019",
+    "display_symbol": "SYN19",
+    "quantity": "10",
+    "cost_basis": "100.00",
+    "currency": "USD"
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "ev-1",
+    "source_id": "synthetic-source-1",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-1",
+    "canonical_story_id": "story-1",
+    "url": "https://example.com/evidence/1",
+    "published_at": "2026-09-25T20:30:00Z",
+    "known_at": "2026-09-25T20:30:00Z",
+    "hash": "sha256:dbd5a665b175ade87461f4175e6bd5467254bf5bcca15ccb8413a923eb38eb46",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 10 company feed was checked; a separate news source failed."
+  }
+]

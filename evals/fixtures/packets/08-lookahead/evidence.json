@@ -1,0 +1,28 @@
+[
+  {
+    "id": "ev-1",
+    "source_id": "synthetic-source-1",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-1",
+    "canonical_story_id": "story-1",
+    "url": "https://example.com/evidence/1",
+    "published_at": "2026-09-25T20:30:00Z",
+    "known_at": "2026-09-25T20:30:00Z",
+    "hash": "sha256:942936eaca9be1229e30c24e0e17f43d26e9cb2e4eb2fd542da1b9d0d7326122",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 08 published preliminary revenue of 10.00 million USD."
+  },
+  {
+    "id": "ev-2",
+    "source_id": "synthetic-source-2",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-2",
+    "canonical_story_id": "story-2",
+    "url": "https://example.com/evidence/2",
+    "published_at": "2026-09-25T20:30:00Z",
+    "known_at": "2026-09-25T21:01:00Z",
+    "hash": "sha256:5c011f53c933492c0d0c401d273ab5ce77e3a4d8a03cf6070eb634e809e24447",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 08 final revenue was 11.00 million USD."
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "id": "00000000-0000-4000-8000-000000000100",
+  "tenant_id": "00000000-0000-4000-8000-000000000101",
+  "base_currency": "USD",
+  "imported_at": "2026-09-25T20:30:00Z",
+  "source_hash": "sha256:756405ec7fa17e42a37570eabb91c146288211ff5f4bdd854a54df53084af086",
+  "status": "confirmed",
+  "confirmed_at": "2026-09-25T21:00:00Z"
+}

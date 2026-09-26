@@ -1,0 +1,22 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Synthela 08 published preliminary revenue of 10.00 million USD.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-2",
+    "statement": "Synthela 08 final revenue was 11.00 million USD.",
+    "evidence_ids": [
+      "ev-2"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]

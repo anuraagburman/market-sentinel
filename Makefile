@@ -12,7 +12,7 @@ dev: setup
 	$(UV) run --project apps/api --no-sync python apps/api/dev.py
 
 test:
-	$(UV) run --project apps/api --locked pytest apps/api/tests
+	$(UV) run --project apps/api --locked pytest apps/api/tests packages/contracts/tests evals/tests
 	npm --prefix apps/web test
 
 lint:

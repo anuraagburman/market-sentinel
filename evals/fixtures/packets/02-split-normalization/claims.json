@@ -1,0 +1,12 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Synthela 02 completed a 2-for-1 split before today's close; yesterday's unadjusted close was 100.00.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]

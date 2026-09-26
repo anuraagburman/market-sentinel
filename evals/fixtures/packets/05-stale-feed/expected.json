@@ -1,0 +1,10 @@
+{
+  "abstention_reasons": [],
+  "excluded_evidence_ids": [],
+  "why": "Stale observations disable time-sensitive readiness.",
+  "data_usability": "partial",
+  "freshness": "stale",
+  "disabled_effects": [
+    "disable_time_sensitive_readiness"
+  ]
+}

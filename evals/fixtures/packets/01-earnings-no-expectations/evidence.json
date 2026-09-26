@@ -1,0 +1,15 @@
+[
+  {
+    "id": "ev-1",
+    "source_id": "synthetic-source-1",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-1",
+    "canonical_story_id": "story-1",
+    "url": "https://example.com/evidence/1",
+    "published_at": "2026-09-25T20:30:00Z",
+    "known_at": "2026-09-25T20:30:00Z",
+    "hash": "sha256:0c72a1509c0880473ac6c397753f440fea2501a7859b7376ec1f516ef3544c17",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 01 reported EPS 1.00 versus prior-period 1.20; headline calls it a miss. Comparable expectations are unavailable."
+  }
+]

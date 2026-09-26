@@ -1,0 +1,12 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Required price data is unavailable.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]
