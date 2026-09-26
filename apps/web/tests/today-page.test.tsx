@@ -218,6 +218,39 @@ describe("unreadable fixture", () => {
   test.each([null, {}, { view: { status: "ready" } }, "not json"])("rejects %j at the boundary", (raw) => {
     expect(parseToday(raw).ok).toBe(false);
   });
+
+  // ready's issues and events plus stale's last good snapshot cover every timestamp field.
+  const datedView = () => {
+    const ready = loadToday("ready");
+    const stale = loadToday("stale");
+    if (!ready.ok || !stale.ok) throw new Error("fixtures should load");
+    return structuredClone({ ...ready.view, last_good_snapshot: stale.view.last_good_snapshot });
+  };
+
+  test.each([
+    ["header.snapshot_at", (v: TodayView) => { v.header.snapshot_at = "not-a-date"; }],
+    ["header.snapshot_at without a UTC marker", (v: TodayView) => { v.header.snapshot_at = "2026-09-28T11:30:00"; }],
+    ["header.session.date", (v: TodayView) => { v.header.session.date = "Monday"; }],
+    ["header.session.date out of range", (v: TodayView) => { v.header.session.date = "2026-02-30"; }],
+    ["header.user_timezone", (v: TodayView) => { v.header.user_timezone = "not-a-zone"; }],
+    ["header.exchange_timezone", (v: TodayView) => { v.header.exchange_timezone = "not-a-zone"; }],
+    ["issues[].observation.observed_at", (v: TodayView) => { v.issues[0].observation.observed_at = "yesterday"; }],
+    ["issues[].evidence[].published_at", (v: TodayView) => { v.issues[0].evidence[0].published_at = "not-a-date"; }],
+    ["issues[].evidence[].known_at", (v: TodayView) => { v.issues[0].evidence[0].known_at = "2026-13-01T00:00:00Z"; }],
+    ["upcoming_events[].at", (v: TodayView) => { v.upcoming_events[0].at = "soon"; }],
+    ["last_good_snapshot.snapshot_at", (v: TodayView) => { v.last_good_snapshot!.snapshot_at = "not-a-date"; }],
+    ["last_good_snapshot.issues[].observation.observed_at", (v: TodayView) => {
+      v.last_good_snapshot!.issues[0].observation.observed_at = "not-a-date";
+    }],
+    ["last_good_snapshot.issues[].evidence[].known_at", (v: TodayView) => {
+      v.last_good_snapshot!.issues[0].evidence[0].known_at = "not-a-date";
+    }],
+  ])("rejects a malformed %s", (_, mutate) => {
+    const view = datedView();
+    expect(parseToday({ view }).ok).toBe(true);
+    mutate(view);
+    expect(parseToday({ view }).ok).toBe(false);
+  });
 });
 
 describe("route", () => {
