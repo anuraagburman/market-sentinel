@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { exchangeTime, localTime } from "../../lib/today/format";
 import type { Issue } from "../../lib/today/types";
+import { EvidenceList } from "./EvidenceList";
 import { EvidenceStatusLabel, KindLabel } from "./Labels";
 
 export interface Zones { exchange: string; user: string }
@@ -56,6 +57,8 @@ export function IssueCard({ issue, zones }: { issue: Issue; zones: Zones }) {
           <p>{issue.next_question}</p>
         </div>
       </div>
+
+      <EvidenceList symbol={holding.symbol} items={issue.evidence} zones={zones} />
 
       <p className="mt-4">
         <Link href={`/investigate?issue=${encodeURIComponent(issue.id)}`} className="font-medium text-accent underline underline-offset-2">

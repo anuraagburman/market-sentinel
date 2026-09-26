@@ -58,8 +58,9 @@ describe("ready", () => {
   test("shows the fact's source and time, and the precomputed exposure", () => {
     renderState("ready");
     const syn01 = within(screen.getAllByRole("article")[0]);
-    expect(syn01.getByText(/^Synthela 01 company release ·/)).toBeTruthy();
-    expect(syn01.getByText("Mon, Sep 28, 6:45 AM EDT (Mon, 3:45 AM PDT your time)")).toBeTruthy();
+    expect(syn01.getByText(/^Synthela 01 company release ·/).textContent).toBe(
+      "Synthela 01 company release · Mon, Sep 28, 6:45 AM EDT (Mon, 3:45 AM PDT your time)",
+    );
     expect(syn01.getByText("48.8% of priced portfolio value")).toBeTruthy();
   });
 
@@ -77,6 +78,19 @@ describe("ready", () => {
       const label = within(card).getByText(text).parentElement!;
       expect(label.querySelector("svg[aria-hidden='true']")).toBeTruthy();
     }
+  });
+
+  test("evidence is collapsed by default and shows both clocks and excerpts", () => {
+    renderState("ready");
+    const syn12 = screen.getAllByRole("article")[1];
+    const details = syn12.querySelector("details")!;
+    expect(details.open).toBe(false);
+    expect(within(syn12).getByText("Evidence for SYN12 (2 sources)").tagName).toBe("SUMMARY");
+    const items = within(details).getAllByRole("listitem");
+    expect(within(items[0]).getByText("Published")).toBeTruthy();
+    expect(within(items[0]).getByText("Known to us")).toBeTruthy();
+    expect(within(items[0]).getByText(/extended for two years/)).toBeTruthy();
+    expect(within(items[1]).getByText("Excerpt not licensed for display.")).toBeTruthy();
   });
 
   test("lists upcoming events in exchange and local time", () => {
