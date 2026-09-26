@@ -43,6 +43,7 @@ ignores case. Unknown columns are reported, not rejected.
 Row issue codes (at minimum):
 | Code | Status | Rule |
 |---|---|---|
+| `blank_row` | warning | A blank CSV record (no cells) stays visible with null parsed fields and this single issue; it counts toward the row limit. Delimited empty cells still receive field validation. |
 | `duplicate_row` | warning | Same symbol+quantity+cost_basis+currency as an earlier row; cite that row. Not merged. |
 | `missing_cost_basis` | warning | Empty `cost_basis` → `null`, message says "unavailable", never `0`. |
 | `missing_symbol` | error | Empty symbol. |

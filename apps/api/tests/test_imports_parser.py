@@ -117,8 +117,9 @@ def test_uneven_and_blank_rows_are_retained():
         [],
         ["SYN02", "2"],
     ]
-    assert all("column_count_mismatch" in codes(row) for row in preview["rows"])
-    assert preview["summary"]["by_status"]["error"] == 3
+    assert codes(preview["rows"][1]) == {"blank_row"}
+    assert all("column_count_mismatch" in codes(preview["rows"][i]) for i in (0, 2))
+    assert preview["summary"]["by_status"] == {"ok": 0, "warning": 1, "error": 2}
 
 
 def test_zero_missing_symbol_and_invalid_cost_are_errors():
@@ -159,3 +160,27 @@ def test_formula_does_not_suppress_other_field_errors():
         "missing_cost_basis",
         "invalid_currency",
     }
+
+
+@pytest.mark.parametrize("newline", [b"\n", b"\r\n"])
+def test_trailing_blank_line_is_one_warning(newline):
+    preview = parse_csv(
+        newline.join([b"symbol,quantity,cost_basis,currency", b"SYN01,1,10,USD", b"", b""])
+    )
+    assert len(preview["rows"]) == 2
+    row = preview["rows"][1]
+    assert row["row_number"] == 2
+    assert row["raw"] == []
+    assert all(value is None for value in row["parsed"].values())
+    assert row["resolution"] == "pending"
+    assert len(row["issues"]) == 1
+    assert preview["summary"] == {
+        "by_status": {"ok": 1, "warning": 1, "error": 0},
+        "by_code": {"blank_row": 1},
+    }
+
+
+def test_blank_lines_count_toward_row_limit():
+    with pytest.raises(ImportProblem) as exc:
+        parse_csv(b"symbol,quantity,currency\n" + b"\n" * 1001)
+    assert exc.value.code == "too_many_rows"

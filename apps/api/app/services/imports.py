@@ -71,6 +71,24 @@ def parse_csv(content: bytes) -> dict:
         for number, raw in enumerate(reader, 1):
             if number > MAX_ROWS:
                 raise ImportProblem("too_many_rows", "CSV exceeds the 1,000 data-row limit.")
+            if not raw:
+                rows.append(
+                    {
+                        "row_number": number,
+                        "raw": raw,
+                        "parsed": {field: None for field in FIELDS},
+                        "status": "warning",
+                        "resolution": "pending",
+                        "issues": [
+                            {
+                                "code": "blank_row",
+                                "field": None,
+                                "message": "Blank row retained for review.",
+                            }
+                        ],
+                    }
+                )
+                continue
             issues = []
             has_error = False
 
