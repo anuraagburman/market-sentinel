@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -182,7 +183,9 @@ def test_portfolio_import_cases():
     assert rows[1]["symbol"] == "SYN-AMB" and positions[1]["display_symbol"] == "SYN02"
     assert rows[4]["symbol"] == "SYN-TYPO" and positions[4]["display_symbol"] == "SYN05"
     assert rows[3]["cost_basis"] == "" and positions[3]["cost_basis"] is None
-    assert all(p["quantity"] == "10" for p in positions)
+    for row, position in zip(rows[:19], positions, strict=True):
+        assert position["quantity"] == row["quantity"]
+        assert position["cost_basis"] == (row["cost_basis"] or None)
     assert all(p["portfolio_version_id"] == version["id"] for p in positions)
     assert version["source_hash"] == sha((folder / "holdings.csv").read_bytes())
     assert version["status"] == "confirmed" and "cash" not in version
@@ -203,6 +206,28 @@ def test_portfolio_import_cases():
         "mapping error",
     ):
         assert case in readme
+
+
+def test_portfolio_valuation_diversity():
+    folder = FIXTURES / "portfolio"
+    positions = load(folder / "positions.json")
+    prices = {
+        o["instrument_id"]: Decimal(o["value"])
+        for o in load(folder / "observations.json")
+    }
+    quantities = [Decimal(p["quantity"]) for p in positions]
+    assert len(set(quantities)) == len(positions)
+    assert any(q != q.to_integral_value() for q in quantities)
+    assert min(prices.values()) < Decimal("5")
+    assert max(prices.values()) > Decimal("500")
+    assert len(set(prices.values())) == len(prices)
+    values = [
+        Decimal(p["quantity"]) * prices[p["instrument_id"]]
+        for p in positions
+        if p["instrument_id"] in prices
+    ]
+    assert len(set(values)) == len(values)
+    assert max(values) / sum(values) > Decimal("0.20")
 
 
 def test_adversarial_payloads():

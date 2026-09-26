@@ -18,4 +18,7 @@ restore a count of 20. Row numbers below exclude the header.
 
 Instrument IDs end in their issuer number; labels are not identity. Cash is absent
 (unknown). Prices are regular-session closing observations at the frozen cutoff.
+Quantities, total costs, and prices vary to expose field swaps and row mix-ups.
+SYN02 has a fractional quantity (2.5); SYN01 closes above 500 (625.50) and
+accounts for more than 20% of priced value; SYN05 closes below 5 (3.25).
 No holdings arithmetic or valuation output is supplied.

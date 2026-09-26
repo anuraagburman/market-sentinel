@@ -60,12 +60,38 @@ def evidence(n, text, **extra):
 
 
 def main():
+    # Quantity, total cost basis, and close; each row has distinct valuation inputs.
+    holdings = [
+        ("10", "5800.00", "625.50"),
+        ("2.5", "110.00", "50.00"),
+        ("7", "210.00", None),
+        ("18", None, "12.01"),
+        ("43", "120.00", "3.25"),
+        ("6", "420.00", "81.40"),
+        ("11", "310.00", "32.60"),
+        ("4", "600.00", "175.20"),
+        ("23", "190.00", "9.80"),
+        ("9", "360.00", "44.75"),
+        ("15", "250.00", "21.30"),
+        ("3", "720.00", "260.10"),
+        ("28", "150.00", "6.45"),
+        ("8", "480.00", "68.90"),
+        ("13", "320.00", "27.15"),
+        ("5", "510.00", "112.80"),
+        ("17", "230.00", "16.55"),
+        ("12", "390.00", "38.20"),
+        ("21", "290.00", "19.65"),
+    ]
     rows = [
-        dict(symbol=f"SYN{i:02d}", quantity="10", cost_basis="100.00", currency="USD")
-        for i in range(1, 20)
+        dict(
+            symbol=f"SYN{i:02d}",
+            quantity=quantity,
+            cost_basis=cost_basis if cost_basis is not None else "",
+            currency="USD",
+        )
+        for i, (quantity, cost_basis, _) in enumerate(holdings, 1)
     ]
     rows[1]["symbol"] = "SYN-AMB"
-    rows[3]["cost_basis"] = ""
     rows[4]["symbol"] = "SYN-TYPO"
     rows.append(rows[0].copy())
     portfolio = ROOT / "portfolio"
@@ -92,16 +118,20 @@ def main():
                 portfolio_version_id=uid(100),
                 instrument_id=uid(i),
                 display_symbol=f"SYN{i:02d}",
-                quantity="10",
-                cost_basis=None if i == 4 else "100.00",
+                quantity=quantity,
+                cost_basis=cost_basis,
                 currency="USD",
             )
-            for i in range(1, 20)
+            for i, (quantity, cost_basis, _) in enumerate(holdings, 1)
         ],
     )
     write(
         portfolio / "observations.json",
-        [observation(200 + i, i, "12.00") for i in range(1, 20) if i != 3],
+        [
+            observation(200 + i, i, price)
+            for i, (_, _, price) in enumerate(holdings, 1)
+            if price is not None
+        ],
     )
     cases = [
         (
