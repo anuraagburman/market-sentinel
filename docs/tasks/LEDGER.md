@@ -8,7 +8,7 @@ Write a full task file only when a task moves to `ready` — specs written too e
 | T-000 | Phase 0 decisions and access | 0 | Anuraag | Claude Code | main | — | ready |
 | T-001 | Repo skeleton, Makefile, CI | 0 | Codex | Claude Code | task/T-001-skeleton | — | merged |
 | T-002 | Core schemas and decision envelope | 0 | Claude Code | Codex | task/T-002-schemas | — | merged |
-| T-003 | Synthetic fixtures (20-holding portfolio + 10 adversarial packets) | 0 | Codex | Claude Code | task/T-003-fixtures | T-001, T-002 | ready |
+| T-003 | Synthetic fixtures (20-holding portfolio + 10 adversarial packets) | 0 | Codex | Claude Code | task/T-003-fixtures | T-001, T-002 | merged |
 | T-004 | CSV validation and import preview | 1 | Codex | Claude Code | — | T-001, T-002 | backlog |
 | T-005 | Instrument resolution | 1 | Codex | Claude Code | — | T-004 | backlog |
 | T-006 | Deterministic portfolio valuation | 1 | Codex | Claude Code | — | T-005 | backlog |
@@ -17,4 +17,4 @@ Write a full task file only when a task moves to `ready` — specs written too e
 | T-009 | Staged JEV decisions (adapter + taxonomy v1) | 2 | Claude Code | Codex | — | T-000 (JEV access), T-003 | backlog |
 | T-010 | First evaluation report (rules-only vs persona vs JEV) | 2 | Codex | Anuraag + Claude Code | — | T-009 | backlog |
 
-**Parallel lanes right now:** Codex → T-003, Anuraag → T-000. Claude Code → T-007 once T-003 lands.
+**Parallel lanes right now:** Claude Code → T-007 (needs spec), Codex → T-004 (needs spec), Anuraag → T-000.

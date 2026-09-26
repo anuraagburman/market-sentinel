@@ -1,0 +1,15 @@
+[
+  {
+    "id": "ev-1",
+    "source_id": "synthetic-source-1",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-1",
+    "canonical_story_id": "story-1",
+    "url": "https://example.com/evidence/1",
+    "published_at": "2026-09-25T20:30:00Z",
+    "known_at": "2026-09-25T20:30:00Z",
+    "hash": "sha256:a4d9f6911117f9632a899f53e387e2c44b25ebe048c9d3124a2717af925819b2",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 02 completed a 2-for-1 split before today's close; yesterday's unadjusted close was 100.00."
+  }
+]

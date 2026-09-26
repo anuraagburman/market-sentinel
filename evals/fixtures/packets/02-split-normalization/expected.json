@@ -1,0 +1,9 @@
+{
+  "abstention_reasons": [
+    "unusable_input"
+  ],
+  "excluded_evidence_ids": [],
+  "why": "Unadjusted pre/post split prices cannot establish a price move.",
+  "data_usability": "unusable",
+  "research_action": "insufficient_evidence"
+}

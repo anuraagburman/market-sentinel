@@ -1,0 +1,12 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Synthela 04 received approval for its synthetic test device today.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]

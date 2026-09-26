@@ -1,0 +1,7 @@
+{
+  "abstention_reasons": [],
+  "excluded_evidence_ids": [
+    "ev-1"
+  ],
+  "why": "The correction supersedes the original while preserving its audit record."
+}

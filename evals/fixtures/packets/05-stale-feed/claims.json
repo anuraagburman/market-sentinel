@@ -1,0 +1,12 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Synthela 05 price feed stopped after September 18 close.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]

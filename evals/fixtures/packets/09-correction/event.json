@@ -1,0 +1,18 @@
+{
+  "id": "00000000-0000-4000-8000-000000000509",
+  "instrument_ids": [
+    "00000000-0000-4000-8000-000000000009"
+  ],
+  "event_type": "earnings",
+  "cutoff": "2026-09-25T21:00:00Z",
+  "packet_hash": "sha256:572eda48ff39a958d29b25ab4010ed018e74262ae9a2f01e71cbc09546a69848",
+  "evidence_ids": [
+    "ev-1",
+    "ev-2"
+  ],
+  "claim_ids": [
+    "claim-1",
+    "claim-2"
+  ],
+  "coverage_gaps": []
+}

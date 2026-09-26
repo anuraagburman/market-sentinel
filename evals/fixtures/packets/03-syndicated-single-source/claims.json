@@ -1,0 +1,102 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-2",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-2"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-3",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-3"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-4",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-4"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-5",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-5"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-6",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-6"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-7",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-7"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-8",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-8"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-9",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-9"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-10",
+    "statement": "Synthela 03 announced a new laboratory; this article reproduces the original wire story.",
+    "evidence_ids": [
+      "ev-10"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]

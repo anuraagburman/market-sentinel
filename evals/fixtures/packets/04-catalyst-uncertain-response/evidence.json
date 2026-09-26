@@ -1,0 +1,15 @@
+[
+  {
+    "id": "ev-1",
+    "source_id": "synthetic-source-1",
+    "source_type": "fixture",
+    "originator": "synthetic-origin-1",
+    "canonical_story_id": "story-1",
+    "url": "https://example.com/evidence/1",
+    "published_at": "2026-09-25T20:30:00Z",
+    "known_at": "2026-09-25T20:30:00Z",
+    "hash": "sha256:60299d4c40e23c9f59858d33c5f17dbc27cdd0bf5f2eec2a0bd2f76eb894f3c8",
+    "license_tag": "synthetic",
+    "excerpt": "Synthela 04 received approval for its synthetic test device today."
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Synthela 09 initially reported revenue of 10.00 million USD.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-2",
+    "statement": "Correction: Synthela 09 revenue was 12.00 million USD, replacing 10.00.",
+    "evidence_ids": [
+      "ev-2"
+    ],
+    "relation": "contradicts",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]

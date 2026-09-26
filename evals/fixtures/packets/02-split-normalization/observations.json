@@ -1,0 +1,26 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000302",
+    "instrument_id": "00000000-0000-4000-8000-000000000002",
+    "metric": "close",
+    "value": "100.00",
+    "unit": "USD",
+    "feed": "fixture",
+    "session": "regular",
+    "adjustment": "none",
+    "observed_at": "2026-09-24T20:00:00Z",
+    "received_at": "2026-09-24T20:00:00Z"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000402",
+    "instrument_id": "00000000-0000-4000-8000-000000000002",
+    "metric": "close",
+    "value": "50.00",
+    "unit": "USD",
+    "feed": "fixture",
+    "session": "regular",
+    "adjustment": "none",
+    "observed_at": "2026-09-25T20:00:00Z",
+    "received_at": "2026-09-25T20:00:00Z"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Synthela 06 company release states the launch remains scheduled for October.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  },
+  {
+    "id": "claim-2",
+    "statement": "Synthela 06 launch moved to December, according to the synthetic supplier notice.",
+    "evidence_ids": [
+      "ev-2"
+    ],
+    "relation": "contradicts",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]

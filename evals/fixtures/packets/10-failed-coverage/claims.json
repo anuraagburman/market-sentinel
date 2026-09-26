@@ -1,0 +1,12 @@
+[
+  {
+    "id": "claim-1",
+    "statement": "Synthela 10 company feed was checked; a separate news source failed.",
+    "evidence_ids": [
+      "ev-1"
+    ],
+    "relation": "supports",
+    "extraction_version": "1.0",
+    "kind": "fact"
+  }
+]
