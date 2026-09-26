@@ -5,7 +5,12 @@ import hashlib
 import io
 import re
 from collections import Counter
+from datetime import UTC, datetime
 from decimal import Decimal
+from typing import Protocol
+from uuid import UUID, uuid4
+
+from app.models.imports import ImportPreview
 
 MAX_BYTES = 1024 * 1024
 MAX_ROWS = 1000
@@ -160,3 +165,37 @@ def parse_csv(content: bytes) -> dict:
             "by_code": dict(Counter(i["code"] for row in rows for i in row["issues"])),
         },
     }
+
+
+class PreviewRepository(Protocol):
+    """Storage boundary for future persistence; confirmation is outside this task."""
+
+    def save(self, preview: ImportPreview) -> None: ...
+
+    def get(self, preview_id: UUID) -> ImportPreview | None: ...
+
+
+class InMemoryPreviewRepository:
+    """Temporary process-local storage: lost on restart, not shared across workers.
+
+    Copies isolate stored previews from mutations by callers. No auth/tenant or
+    persistence semantics are implied; this repository is for the preview MVP.
+    """
+
+    def __init__(self):
+        self._previews: dict[UUID, ImportPreview] = {}
+
+    def save(self, preview: ImportPreview) -> None:
+        self._previews[preview.id] = preview.model_copy(deep=True)
+
+    def get(self, preview_id: UUID) -> ImportPreview | None:
+        preview = self._previews.get(preview_id)
+        return preview.model_copy(deep=True) if preview is not None else None
+
+
+def create_preview(content: bytes, repository: PreviewRepository) -> ImportPreview:
+    received_at = datetime.now(UTC)
+    data = parse_csv(content)
+    preview = ImportPreview(id=uuid4(), received_at=received_at, **data)
+    repository.save(preview)
+    return preview
