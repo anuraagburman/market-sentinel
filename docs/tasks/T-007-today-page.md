@@ -88,6 +88,6 @@ labeled placeholder) · Portfolio, Discover, and Plans pages · auth · real dat
 (proposed in the handoff, not added to `packages/contracts`).
 
 ## Handoff checklist
-- [ ] Validation commands pass
-- [ ] `Issue` view-model contract proposal written in the handoff
-- [ ] Branch pushed; `docs/handoffs/CURRENT.md` and the LEDGER row updated
+- [x] Validation commands pass
+- [x] `Issue` view-model contract proposal written in the handoff
+- [x] Branch pushed; `docs/handoffs/CURRENT.md` and the LEDGER row updated
