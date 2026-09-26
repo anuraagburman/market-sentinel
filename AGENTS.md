@@ -37,6 +37,14 @@ Blueprint source: `docs/source/Market Sentinel Blueprint.pdf` (don't read it; us
 - No credentials, real holdings, or licensed raw text in Git.
 - Report: behavior changed, tests run (with result), unresolved assumptions. "Done" means tests pass.
 
+## Commits and GitHub
+- Commit each logical step on its own, each passing its targeted tests: failing test → implementation →
+  refactor → docs/handoff. A task normally lands as several commits, not one.
+- Conventional prefixes: `feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`; `wip:` only at session end.
+- Merge to `main` with `--no-ff`; never squash, so task history stays visible.
+- Push the task branch at every session end and `main` after every merge.
+- Never make empty, cosmetic-only, or artificially split commits.
+
 ## Commands
 - `make setup`: install locked dependencies.
 - `make dev`: start services, API, and web.
