@@ -1,0 +1,110 @@
+"""Deterministic parser acceptance cases; no external services."""
+
+from pathlib import Path
+
+import pytest
+
+from app.services.imports import ImportProblem, parse_csv
+
+FIXTURES = Path(__file__).parent / "fixtures/imports"
+PORTFOLIO = Path(__file__).resolve().parents[3] / "evals/fixtures/portfolio/holdings.csv"
+
+
+def codes(row):
+    return {issue["code"] for issue in row["issues"]}
+
+
+def test_synthetic_portfolio():
+    preview = parse_csv(PORTFOLIO.read_bytes())
+    rows = preview["rows"]
+    assert len(rows) == 20
+    assert codes(rows[19]) == {"duplicate_row"}
+    assert "row 1" in rows[19]["issues"][0]["message"]
+    assert codes(rows[3]) == {"missing_cost_basis"}
+    assert rows[3]["parsed"]["cost_basis"] is None
+    assert "unavailable" in rows[3]["issues"][0]["message"]
+    assert rows[1]["parsed"]["quantity"] == "2.5"
+    for index in (1, 2, 4):
+        assert rows[index]["status"] == "ok"
+        assert rows[index]["resolution"] == "pending"
+    assert preview["summary"] == {
+        "by_status": {"ok": 18, "warning": 2, "error": 0},
+        "by_code": {"missing_cost_basis": 1, "duplicate_row": 1},
+    }
+    assert [r["row_number"] for r in rows] == list(range(1, 21))
+    assert parse_csv(PORTFOLIO.read_bytes()) == preview
+
+
+@pytest.mark.parametrize(
+    ("name", "code"),
+    [
+        ("formula.csv", "formula_like_value"),
+        ("decimal-comma.csv", "invalid_decimal"),
+        ("negative.csv", "non_positive_quantity"),
+        ("lowercase-currency.csv", "invalid_currency"),
+    ],
+)
+def test_problem_fixtures(name, code):
+    row = parse_csv((FIXTURES / name).read_bytes())["rows"][0]
+    assert row["status"] == "error"
+    assert code in codes(row)
+
+
+@pytest.mark.parametrize("value", ["1e3", "NaN", "Infinity", "$10", "", "1_000"])
+def test_invalid_decimals(value):
+    row = parse_csv(f"symbol,quantity,currency\nSYN01,{value},USD\n".encode())["rows"][0]
+    assert "invalid_decimal" in codes(row)
+    assert row["parsed"]["quantity"] is None
+
+
+@pytest.mark.parametrize("value", ["=1+1", "+2", "@SUM(A1)", "\t12", "\r12", "-cmd", " =1"])
+def test_formula_cells_including_unknown_columns(value):
+    import csv
+    import io
+
+    stream = io.StringIO(newline="")
+    writer = csv.writer(stream)
+    writer.writerow(["symbol", "quantity", "currency", "notes"])
+    writer.writerow(["SYN01", "1", "USD", value])
+    row = parse_csv(stream.getvalue().encode())["rows"][0]
+    assert "formula_like_value" in codes(row)
+    assert row["raw"][-1] == value
+
+
+def test_negative_is_not_a_formula():
+    row = parse_csv((FIXTURES / "negative.csv").read_bytes())["rows"][0]
+    assert "formula_like_value" not in codes(row)
+    assert row["parsed"]["quantity"] == "-2.5"
+
+
+def test_headers_bom_unknown_and_optional_cost():
+    preview = parse_csv((FIXTURES / "bom.csv").read_bytes())
+    assert preview["columns"][0] == {"detected": " Symbol ", "mapped": "symbol", "unknown": False}
+    assert preview["rows"][0]["parsed"]["cost_basis"] is None
+    extra = parse_csv((FIXTURES / "unknown-column.csv").read_bytes())
+    assert extra["columns"][-1] == {"detected": "notes", "mapped": None, "unknown": True}
+    assert extra["rows"][0]["raw"][-1] == "keep this"
+
+
+@pytest.mark.parametrize(
+    ("name", "code"),
+    [("latin1.csv", "invalid_encoding"), ("missing-quantity.csv", "missing_column")],
+)
+def test_rejected_fixtures(name, code):
+    with pytest.raises(ImportProblem) as exc:
+        parse_csv((FIXTURES / name).read_bytes())
+    assert exc.value.code == code
+    assert exc.value.status_code == 422
+    if code == "missing_column":
+        assert "quantity" in exc.value.message
+
+
+def test_exact_decimal_and_equivalent_duplicate():
+    rows = parse_csv(
+        b"symbol,quantity,cost_basis,currency\n"
+        b"SYN01,1.00000000000000000000001,10.00,USD\n"
+        b"SYN01,1.000000000000000000000010,10,USD\n"
+    )["rows"]
+    assert rows[0]["parsed"]["quantity"] == "1.00000000000000000000001"
+    assert "duplicate_row" in codes(rows[1])
+    assert rows[1]["raw"][1] == "1.000000000000000000000010"
