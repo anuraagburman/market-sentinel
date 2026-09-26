@@ -1,12 +1,12 @@
 # Task ledger
 
-Status: `backlog` (no spec yet) → `ready` (spec written) → `in_progress` → `review` → `merged` | `blocked`.
+Status: `backlog` (no spec yet) → `ready` (spec written) → `in_progress` → `review` → `ready_to_merge` → `merged` | `blocked`.
 Write a full task file only when a task moves to `ready` — specs written too early go stale.
 
 | ID | Task | Phase | Owner | Reviewer | Branch | Depends | Status |
 |---|---|---|---|---|---|---|---|
 | T-000 | Phase 0 decisions and access | 0 | Anuraag | Claude Code | main | — | ready |
-| T-001 | Repo skeleton, Makefile, CI | 0 | Codex | Claude Code | task/T-001-skeleton | — | review |
+| T-001 | Repo skeleton, Makefile, CI | 0 | Codex | Claude Code | task/T-001-skeleton | — | ready_to_merge |
 | T-002 | Core schemas and decision envelope | 0 | Claude Code | Codex | task/T-002-schemas | — | ready |
 | T-003 | Synthetic fixtures (20-holding portfolio + 10 adversarial packets) | 0 | Codex | Claude Code | — | T-002 | backlog |
 | T-004 | CSV validation and import preview | 1 | Codex | Claude Code | — | T-001, T-002 | backlog |
