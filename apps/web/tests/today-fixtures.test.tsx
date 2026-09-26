@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020";
 import addFormats from "ajv-formats";
 import { describe, expect, test } from "vitest";
-import { type TodayFixture, type TodayView } from "../lib/today/types";
+import { SURFACE_STATUSES, type TodayFixture, type TodayView } from "../lib/today/types";
 
 const repo = fileURLToPath(new URL("../../../", import.meta.url));
 const schemaDir = join(repo, "packages/contracts/schemas");
@@ -31,6 +31,10 @@ const symbolById = new Map(positions.map((p) => [p.instrument_id, p.display_symb
 const fixtures = readdirSync(fixtureDir)
   .filter((f) => f.endsWith(".json") && f !== "unreadable.json")
   .map((f) => ({ state: f.replace(/\.json$/, ""), fixture: readJson(join(fixtureDir, f)) as TodayFixture }));
+
+test("a fixture exists for every shared state", () => {
+  expect(fixtures.map((f) => f.state).sort()).toEqual([...SURFACE_STATUSES].sort());
+});
 
 function holdingsIn(view: TodayView) {
   const issues = [...view.issues, ...(view.last_good_snapshot?.issues ?? [])];

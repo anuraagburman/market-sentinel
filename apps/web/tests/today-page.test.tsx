@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test } from "vitest";
 import Home from "../app/page";
 import { TodayPage } from "../components/today/TodayPage";
 import { loadToday, parseToday } from "../lib/today/load";
+import type { TodayView } from "../lib/today/types";
 
 afterEach(cleanup);
 
@@ -167,6 +168,42 @@ describe("running", () => {
     expect(screen.queryByText(/No new material changes/)).toBeNull();
     expect(screen.queryByRole("heading", { name: /Last complete brief/ })).toBeNull();
     expectNoForbiddenContent(container);
+  });
+});
+
+describe("no_material_change", () => {
+  test("stays quiet and offers monitored coverage", () => {
+    const { container } = renderState("no_material_change");
+    const notice = screen.getByRole("status");
+    expect(within(notice).getByText("No new material changes found within current coverage.")).toBeTruthy();
+    const summary = within(notice).getByText("View monitored coverage");
+    expect(summary.tagName).toBe("SUMMARY");
+    expect((summary.parentElement as HTMLDetailsElement).open).toBe(false);
+    expect(notice.textContent).toContain("News: checked");
+    expect(notice.textContent).toContain("SYN03 (Synthela 03): price unavailable");
+    expect(notice.querySelector("svg")).toBeNull();
+    expect(screen.queryAllByRole("article")).toHaveLength(0);
+    expectNoForbiddenContent(container);
+  });
+
+  const quietView = () => {
+    const result = loadToday("no_material_change");
+    if (!result.ok) throw new Error("fixture should load");
+    return structuredClone(result.view);
+  };
+
+  test.each([
+    ["a source failed", (v: TodayView) => { v.header.coverage.failed = [v.header.coverage.checked.pop()!]; }, "News couldn't be checked"],
+    ["coverage is empty", (v: TodayView) => { v.header.coverage.checked = []; }, "No sources were checked"],
+  ])("is never shown when %s", (_, mutate, reason) => {
+    const view = quietView();
+    mutate(view);
+    render(<TodayPage result={{ ok: true, view }} />);
+    expect(screen.queryByText(/No new material changes/)).toBeNull();
+    expect(screen.queryByText("View monitored coverage")).toBeNull();
+    const notice = screen.getByRole("status");
+    expect(notice.textContent).toContain("Coverage incomplete");
+    expect(notice.textContent).toContain(reason);
   });
 });
 

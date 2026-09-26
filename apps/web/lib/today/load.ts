@@ -1,4 +1,5 @@
 import failed from "../../fixtures/today/failed.json";
+import noMaterialChange from "../../fixtures/today/no_material_change.json";
 import partial from "../../fixtures/today/partial.json";
 import ready from "../../fixtures/today/ready.json";
 import running from "../../fixtures/today/running.json";
@@ -9,7 +10,9 @@ import { SURFACE_STATUSES, type SurfaceStatus, type TodayView } from "./types";
 export type TodayResult = { ok: true; view: TodayView } | { ok: false };
 
 // Fixture source until the /briefs API exists. Keys are what the dev switcher can request.
-const FIXTURES: Record<string, unknown> = { ready, running, partial, stale, failed, unreadable };
+const FIXTURES: Record<string, unknown> = {
+  ready, running, partial, stale, failed, no_material_change: noMaterialChange, unreadable,
+};
 
 export const FIXTURE_STATES = Object.keys(FIXTURES);
 

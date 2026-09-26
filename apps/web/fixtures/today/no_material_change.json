@@ -1,0 +1,81 @@
+{
+  "brief": {
+    "id": "00000000-0000-4000-8000-000000000760",
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "cutoff": "2026-09-28T11:30:00Z",
+    "published_at": "2026-09-28T11:35:00Z",
+    "status": "no_material_change",
+    "decision_ids": [],
+    "coverage": {
+      "checked_sources": [
+        "synthetic-company",
+        "synthetic-filings",
+        "synthetic-news"
+      ],
+      "failed_sources": [],
+      "unpriced_instrument_ids": [
+        "00000000-0000-4000-8000-000000000003"
+      ]
+    },
+    "revision": 1
+  },
+  "view": {
+    "header": {
+      "session": {
+        "name": "pre_market",
+        "date": "2026-09-28"
+      },
+      "user_timezone": "America/Los_Angeles",
+      "exchange_timezone": "America/New_York",
+      "snapshot_at": "2026-09-28T11:30:00Z",
+      "coverage": {
+        "checked": [
+          {
+            "id": "synthetic-company",
+            "label": "Company releases"
+          },
+          {
+            "id": "synthetic-filings",
+            "label": "SEC filings"
+          },
+          {
+            "id": "synthetic-news",
+            "label": "News"
+          }
+        ],
+        "failed": [],
+        "unpriced": [
+          {
+            "instrument_id": "00000000-0000-4000-8000-000000000003",
+            "symbol": "SYN03",
+            "name": "Synthela 03"
+          }
+        ]
+      }
+    },
+    "status": "no_material_change",
+    "issues": [],
+    "upcoming_events": [
+      {
+        "id": "event-syn08-earnings",
+        "holding": {
+          "instrument_id": "00000000-0000-4000-8000-000000000008",
+          "symbol": "SYN08",
+          "name": "Synthela 08"
+        },
+        "title": "Quarterly earnings call",
+        "at": "2026-09-29T20:30:00Z"
+      },
+      {
+        "id": "event-syn16-meeting",
+        "holding": {
+          "instrument_id": "00000000-0000-4000-8000-000000000016",
+          "symbol": "SYN16",
+          "name": "Synthela 16"
+        },
+        "title": "Annual shareholder meeting",
+        "at": "2026-10-01T14:00:00Z"
+      }
+    ]
+  }
+}

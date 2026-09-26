@@ -61,6 +61,32 @@ export function StatusNotice({ view, retryHref }: { view: TodayView; retryHref: 
           <RetryLink href={retryHref} />
         </Notice>
       );
+    case "no_material_change":
+      // Empty coverage or a failed source is never a clean day, whatever the status says.
+      if (checked.length === 0 || failed.length > 0) {
+        return (
+          <Notice title="Coverage incomplete" warn>
+            <p>
+              {checked.length === 0 ? "No sources were checked" : `${labels(failed)} couldn't be checked`}, so Today
+              can&apos;t say whether anything changed.
+            </p>
+            <RetryLink href={retryHref} />
+          </Notice>
+        );
+      }
+      return (
+        <Notice title="No new material changes found within current coverage.">
+          <details>
+            <summary className="font-medium text-accent">View monitored coverage</summary>
+            <ul className="mt-2 list-disc pl-5">
+              {checked.map((s) => <li key={s.id}>{s.label}: checked</li>)}
+              {view.header.coverage.unpriced.map((h) => (
+                <li key={h.instrument_id}>{h.symbol} ({h.name}): price unavailable</li>
+              ))}
+            </ul>
+          </details>
+        </Notice>
+      );
     default:
       return null;
   }
