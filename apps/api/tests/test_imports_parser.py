@@ -108,3 +108,31 @@ def test_exact_decimal_and_equivalent_duplicate():
     assert rows[0]["parsed"]["quantity"] == "1.00000000000000000000001"
     assert "duplicate_row" in codes(rows[1])
     assert rows[1]["raw"][1] == "1.000000000000000000000010"
+
+
+def test_uneven_and_blank_rows_are_retained():
+    preview = parse_csv(b"symbol,quantity,cost_basis,currency\nSYN01,1,10,USD,extra\n\nSYN02,2\n")
+    assert [r["raw"] for r in preview["rows"]] == [
+        ["SYN01", "1", "10", "USD", "extra"],
+        [],
+        ["SYN02", "2"],
+    ]
+    assert all("column_count_mismatch" in codes(row) for row in preview["rows"])
+    assert preview["summary"]["by_status"]["error"] == 3
+
+
+def test_zero_missing_symbol_and_invalid_cost_are_errors():
+    row = parse_csv(b"symbol,quantity,cost_basis,currency\n,0,NaN,US\n")["rows"][0]
+    assert codes(row) == {
+        "missing_symbol",
+        "non_positive_quantity",
+        "invalid_decimal",
+        "invalid_currency",
+    }
+    assert row["parsed"] == {"symbol": None, "quantity": "0", "cost_basis": None, "currency": None}
+
+
+def test_duplicate_with_missing_cost_keeps_both_warnings():
+    rows = parse_csv(b"symbol,quantity,currency\nSYN01,1,USD\nSYN01,1.0,USD\n")["rows"]
+    assert codes(rows[1]) == {"missing_cost_basis", "duplicate_row"}
+    assert rows[1]["status"] == "warning"
