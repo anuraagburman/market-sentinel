@@ -1,46 +1,69 @@
-# Handoff — main after T-007 merge
+# Handoff — T-005 Instrument resolution
 
-- **Updated:** 2026-09-27 by Claude Code
-- **Branch / worktree:** main (merge built in ~/code/ms-wt/web, pushed to origin/main; `~/code/market-sentinel` still needs `git pull --ff-only`)
-- **Status:** T-007 `merged`; T-005 `ready`
+- **Updated:** 2026-09-27 by Codex
+- **Branch / worktree:** task/T-005-instrument-resolution @ ~/code/ms-wt/api
+- **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-- **Codex**, in a fresh session: in `~/code/ms-wt/api`, `git checkout -b task/T-005-instrument-resolution origin/main`
-  and implement `docs/tasks/T-005-instrument-resolution.md`, starting with planned commit 1
-  (synthetic instrument master in `evals/fixtures/generate.py`).
-- Whoever next opens `~/code/market-sentinel`: `git pull --ff-only` first. The local `main` there is behind origin.
+Claude Code reviews `git diff origin/main...task/T-005-instrument-resolution` against
+`docs/tasks/T-005-instrument-resolution.md`, applying the user-approved alias rule below,
+then runs `make test`, `make lint`, and the fixture/contract regeneration checks.
 
 ## Done this session
-- Merged `task/T-007-today` into `main` with `--no-ff`, after Codex's clean re-review of `5a7cdda..task/T-007-today`.
-  `/` now renders the Today page from fixtures (`apps/web/fixtures/today/`), with every shared state plus
-  "Today couldn't load".
-- Before merging, the review fixes were: validate timestamps, session date, and IANA timezones at the
-  boundary; validate `session.name` against the enum, including prototype keys.
-- The only merge conflict was this file. It now merges both handoffs.
+- Created the requested task branch from `origin/main`. Implemented planned commits 1–6 separately,
+  including a failing resolver-test commit followed by the passing implementation.
+- Added deterministic synthetic instruments and effective-dated mappings. Existing portfolio and
+  packet files regenerate byte-identically. Fixture checks cover shapes, entity UUID uniqueness,
+  foreign keys, dates, share classes, ticker changes, reuse, and ambiguity.
+- Added a pure resolver and an injectable `InstrumentRepository` protocol with a validated,
+  file-backed synthetic default. Invalid master data fails startup before requests are served.
+- Preview rows now expose resolved / ambiguous / unresolved / not_attempted objects. Receipt time
+  comes from an injectable clock, is normalized to UTC, and determines the resolution date.
+  Validation status stays separate; summaries include `by_resolution`.
+- Added exact `GET /instruments` lookup and select/clear row-resolution endpoints. Selections keep
+  automatic candidates and non-currency issues, recompute currency warnings, preserve raw/parsed
+  data, and update counts. Clearing restores automatic resolution on the original preview date.
+- Regenerated OpenAPI without changing shared JSON schemas. The internal CSV parser still emits
+  its pending placeholder; the service replaces it before creating the public preview model.
+- Updated the obsolete pending-resolution assertion in `test_imports_api.py` with explicit user
+  authorization to edit that otherwise unowned file.
 
 ## Tests run
-- On the merge result: `make test` → pytest 210 passed, Vitest 64 passed; `make lint` passed;
-  `make test-e2e` → 9 passed (Chromium).
+- `uv run --project apps/api --locked pytest evals/tests/test_fixtures.py` → 71 passed.
+- Resolver specification before implementation → expected missing-module collection failure.
+- Resolver + loader targeted checks → 12 passed; import integration → 79 passed;
+  lookup/startup checks → 4 passed; select/clear checks → 11 passed.
+- `make test` → 243 Python tests and 64 Vitest tests passed.
+- `make lint` → Ruff check/format, ESLint, Next typegen, and TypeScript passed.
+- `python3 evals/fixtures/generate.py && git diff --exit-code evals/fixtures` → passed.
+- `make contracts && git diff --exit-code packages/contracts` → passed.
+- `git diff --check origin/main...HEAD` → passed.
+- One upstream Starlette/AnyIO deprecation warning; no test failures.
 
 ## Contract changes proposed (not applied)
-- **`issue.schema.json` (v1.1 candidate)**, from T-007 and mirroring `Issue` in `apps/web/lib/today/types.ts`:
-  `id`, `decision_id` (uuid), `holding {instrument_id, symbol, name}`, `observation {text, source, observed_at}`,
-  `interpretation`, `evidence_status` (`supported | partial | contested | insufficient`),
-  `exposure` = `{kind: "calculation", value, basis}` | `{kind: "unavailable", reason}` (value from T-006
-  valuation, never a model), `next_question`, `evidence_ids` (the API resolves them to items with `source`,
-  `published_at`, `known_at`, `excerpt | null`). A brief would carry `issues` (max 3) alongside `decision_ids`.
-- Add `pending_sources` to `brief.coverage` for `running` (the view has it, the contract doesn't).
-- T-005 will propose `instrument` and `symbol_mapping` schemas; bundle all of these into one v1.1 bump.
+For the next shared schema version bump alongside the earlier T-007 Issue proposal:
+- `instrument.schema.json`: object, no extra properties; required `id` (UUID string), `name`
+  (nonempty string), `asset_type` (`common_stock | preferred_stock`), `currency` (three uppercase
+  ASCII letters). Identity is the UUID, never the symbol.
+- `symbol_mapping.schema.json`: object, no extra properties; required `symbol` (nonempty,
+  trimmed, ASCII-uppercased string), `instrument_id` (UUID), `valid_from` (date, inclusive),
+  `valid_to` (date or null, exclusive/open). Repository validation enforces foreign keys,
+  `valid_to > valid_from`, and no interval overlap for the same instrument AND symbol.
+  Different symbols may alias one instrument; one symbol may overlap across instruments.
+- Cross-record referential and interval validation remains application-level. No shared JSON
+  schema edits were made by this task; API shapes are in generated OpenAPI.
 
 ## Unresolved / assumptions
-- T-007: the Today page parses only UTC `Z` timestamps. Relax this if the /briefs API emits offsets.
-- T-007 stale fixture: `cutoff` = Friday (newest complete data), `published_at` = Monday. Confirm this
-  meaning of stale. `last_good_snapshot` appears only on stale and failed; running shows no prior results.
-- T-007: Ajv runs with `strictTypes`/`strictRequired` off for the contract's if/then subschemas.
-- T-005 changes the `resolution` field shape in the import preview API (string → object). Nothing
-  consumes it yet. `as_of` = UTC date of `received_at`; whether confirm re-resolves is open.
-- The default instrument repository reads `evals/fixtures/instruments/` until T-008.
-- Carried over: an upload request-size limit is needed before exposing `/imports`; previews are process-local;
-  consider one handoff file per task (T-007 conflicted on this file as predicted); horizon enum (T-000);
-  JEV access (blocks T-009); T-009 injection variant on usable data; consumers must enable date-time
-  format checking (ADR-001 §3).
+- User explicitly resolved the task contradiction: **allow simultaneous aliases; reject overlaps
+  for the same instrument and symbol**. This permits SYN02/SYN02P alongside SYN-AMB. The task file's
+  stronger one-symbol-per-instrument wording was left unchanged because it is outside owned paths.
+- With multiple active aliases, display prefers the alias shared by the fewest active instruments,
+  then lexical order. This gives SYN02 and SYN02P for ambiguous candidates. This ordering affects
+  labels only and never selects an identity. Future provider data should define primary symbols.
+- A symbol with only future mappings returns `symbol_not_found` with a date-specific message;
+  there is no task-defined separate future-listing code.
+- Master data is an immutable process-lifetime snapshot. Clear/reselect recomputes automatic
+  results from that same snapshot. Durable master versioning and preview persistence remain future work.
+- Small CSV boundary/error inputs are inline test bytes, avoiding edits to the existing fixture
+  directory outside the owned-path list. All tests remain offline and deterministic.
+- Scope remains research/import previews only: no confirmation, valuation, provider calls, or orders.
