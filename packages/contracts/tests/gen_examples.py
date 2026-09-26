@@ -133,6 +133,8 @@ INVALID = {
         case("observation", "non-UTC offset timestamp", setk(["observed_at"], "2026-09-24T16:00:00-04:00")),
         case("observation", "feed not stated", delk(["feed"])),
         case("observation", "received_at missing", delk(["received_at"])),
+        case("observation", "impossible calendar timestamp", setk(["observed_at"], "2026-99-99T29:99:99Z")),
+        case("observation", "February 30", setk(["observed_at"], "2026-02-30T12:00:00Z")),
     ],
     "evidence": [
         case("evidence", "known_at missing", delk(["known_at"])),
@@ -156,6 +158,9 @@ INVALID = {
         case("decision", "judgment label not in taxonomy", setk(["judgments", "primary_context"], "technical")),
         case("decision", "trade action instead of research action", setk(["research_action"], "sell")),
         case("decision", "data_usability stage missing", delk(["judgments", "data_usability"])),
+        case("decision", "insufficient evidence promoted to investigate_now",
+             both(setk(["judgments", "evidence_sufficiency"], "insufficient"),
+                  setk(["research_action"], "investigate_now"))),
     ],
     "brief": [
         case("brief", "revision 2 without supersedes/change_reason", setk(["revision"], 2)),
@@ -164,6 +169,9 @@ INVALID = {
         case("brief", "failed source reported as no_material_change",
              both(setk(["status"], "no_material_change"),
                   setk(["coverage"], {"checked_sources": [], "failed_sources": ["news_vendor"]}))),
+        case("brief", "no_material_change with empty coverage",
+             both(setk(["status"], "no_material_change"),
+                  setk(["coverage"], {"checked_sources": [], "failed_sources": []}))),
     ],
     "plan": [
         case("plan", "model-supplied price level", setk(["conditions", 1, "price_reference", "source"], "model")),
@@ -179,12 +187,28 @@ INVALID = {
 }
 
 
+# Valid variants that sit next to a rule, so the rule is shown not to over-reject.
+EXTRA_VALID = {
+    "decision": [
+        case("decision", "insufficient evidence abstains",
+             both(setk(["judgments", "evidence_sufficiency"], "insufficient"),
+                  setk(["research_action"], "insufficient_evidence"))),
+        case("decision", "evidence_sufficiency absent does not trigger the gate",
+             both(delk(["judgments", "evidence_sufficiency"]), setk(["research_action"], "investigate_now"))),
+    ],
+    "brief": [
+        case("brief", "clean day with checked coverage", setk(["status"], "no_material_change")),
+    ],
+}
+
+
 def main():
     OUT.mkdir(exist_ok=True)
     for name, doc in VALID.items():
-        (OUT / f"{name}.valid.json").write_text(json.dumps([doc], indent=2) + "\n")
+        extra = [c["doc"] for c in EXTRA_VALID.get(name, [])]
+        (OUT / f"{name}.valid.json").write_text(json.dumps([doc, *extra], indent=2) + "\n")
         (OUT / f"{name}.invalid.json").write_text(json.dumps(INVALID[name], indent=2) + "\n")
-    print(f"{len(VALID)} valid, {sum(map(len, INVALID.values()))} invalid cases")
+    print(f"{len(VALID) + sum(map(len, EXTRA_VALID.values()))} valid, {sum(map(len, INVALID.values()))} invalid cases")
 
 
 if __name__ == "__main__":

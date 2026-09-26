@@ -61,5 +61,23 @@
       },
       "revision": 1
     }
+  },
+  {
+    "why": "no_material_change with empty coverage",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000050",
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "published_at": "2026-09-25T12:04:00Z",
+      "status": "no_material_change",
+      "decision_ids": [
+        "00000000-0000-4000-8000-000000000040"
+      ],
+      "coverage": {
+        "checked_sources": [],
+        "failed_sources": []
+      },
+      "revision": 1
+    }
   }
 ]

@@ -13,14 +13,16 @@ Blueprint §14 lists the entities and invariants; §7 the taxonomy.
    TypeScript types are *generated from or tested against* it (follow-up after T-001), never hand-forked.
 2. **Money and quantities are decimal strings** (`"101.25"`), never JSON numbers, so no float rounding
    crosses a boundary.
-3. **Timestamps must be UTC with a trailing `Z`.** Offsets are rejected by pattern (format assertion is
-   off by default in validators, so a pattern is the reliable check).
+3. **Timestamps must be UTC with a trailing `Z`, and a real date and time.** The pattern enforces shape and
+   rejects offsets; `format: date-time` rejects impossible values such as `2026-02-30`. Format assertion is
+   off by default in validators, so **every consumer must enable format checking** (Python `jsonschema`
+   also needs `rfc3339-validator`; a test fails if it's missing).
 4. **Unknown is explicit.** `Position.cost_basis` is a required key whose value may be `null`.
    Cash absent on a PortfolioVersion means unknown, not zero.
 5. **Invariants live in the schema where expressible** (`if/then`), so fixtures fail loudly:
-   unusable data ⇒ `insufficient_evidence`; abstention ⇒ ≥1 reason; revision > 1 ⇒ reason and
-   predecessor; failed source ⇒ brief can't be `ready`/`no_material_change`; plan prices come only from
-   `user` or `calculation`.
+   unusable data or insufficient evidence ⇒ `insufficient_evidence`; abstention ⇒ ≥1 reason;
+   revision > 1 ⇒ reason and predecessor; failed source ⇒ brief can't be `ready`/`no_material_change`;
+   `no_material_change` ⇒ ≥1 checked source; plan prices come only from `user` or `calculation`.
 6. **No confidence/probability field in v1.** Evidence *states* only. A calibrated value is added later by
    ADR, with its target and validation sample. A test bans the words from all schemas.
 7. **Taxonomy ↔ envelope lock.** `decisions/taxonomy/v1.yaml` outputs must equal the envelope's judgment

@@ -36,6 +36,11 @@
       "$comment": "A failed source cannot be reported as a clean day.",
       "if": {"properties": {"coverage": {"properties": {"failed_sources": {"minItems": 1}}}}},
       "then": {"properties": {"status": {"enum": ["partial", "stale", "failed"]}}}
+    },
+    {
+      "$comment": "Empty coverage is not a clean day: no_material_change needs at least one checked source.",
+      "if": {"properties": {"status": {"const": "no_material_change"}}},
+      "then": {"properties": {"coverage": {"properties": {"checked_sources": {"minItems": 1}}}}}
     }
   ]
 }

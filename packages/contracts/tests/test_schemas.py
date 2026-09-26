@@ -29,7 +29,16 @@ _registry = Registry().with_resources(
 
 
 def validator(entity):
-    return Draft202012Validator(_schemas[f"{entity}.schema.json"], registry=_registry)
+    return Draft202012Validator(
+        _schemas[f"{entity}.schema.json"],
+        registry=_registry,
+        format_checker=Draft202012Validator.FORMAT_CHECKER,
+    )
+
+
+def test_date_time_format_is_enforced():
+    """jsonschema silently skips date-time unless rfc3339-validator is installed."""
+    assert "date-time" in Draft202012Validator.FORMAT_CHECKER.checkers
 
 
 @pytest.mark.parametrize("name", sorted(_schemas))

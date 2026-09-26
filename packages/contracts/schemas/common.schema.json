@@ -9,8 +9,9 @@
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
     },
     "utc_timestamp": {
-      "description": "ISO-8601 UTC, must end in Z. Offsets are rejected so every stored time is unambiguous.",
+      "description": "ISO-8601 UTC, must end in Z. Offsets are rejected so every stored time is unambiguous. The pattern enforces shape; format enforces a real calendar date and time, so validators must enable format checking.",
       "type": "string",
+      "format": "date-time",
       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
     },
     "decimal_string": {

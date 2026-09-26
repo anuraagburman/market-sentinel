@@ -54,6 +54,11 @@
       "then": {"properties": {"research_action": {"const": "insufficient_evidence"}}}
     },
     {
+      "$comment": "Hard gate: insufficient evidence always abstains (policy v1). required keeps the rule from firing when the judgment is absent.",
+      "if": {"properties": {"judgments": {"required": ["evidence_sufficiency"], "properties": {"evidence_sufficiency": {"const": "insufficient"}}}}},
+      "then": {"properties": {"research_action": {"const": "insufficient_evidence"}}}
+    },
+    {
       "$comment": "Abstention must say why.",
       "if": {"properties": {"research_action": {"const": "insufficient_evidence"}}},
       "then": {"properties": {"abstention_reasons": {"minItems": 1}}}

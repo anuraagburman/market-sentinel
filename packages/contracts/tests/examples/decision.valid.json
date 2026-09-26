@@ -26,5 +26,60 @@
       "missing_expectations_data"
     ],
     "status": "published"
+  },
+  {
+    "schema_version": "1.0",
+    "decision_id": "00000000-0000-4000-8000-000000000040",
+    "event_id": "00000000-0000-4000-8000-000000000030",
+    "as_of": "2026-09-25T12:00:00Z",
+    "horizon": "swing",
+    "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evidence_ids": [
+      "ev-1",
+      "ev-2"
+    ],
+    "versions": {
+      "taxonomy": "1.0",
+      "policy": "1.0",
+      "model": "record-provider-model-id",
+      "calibration": null
+    },
+    "judgments": {
+      "data_usability": "usable",
+      "evidence_sufficiency": "insufficient"
+    },
+    "raw_provider_output_ref": "private-object-reference",
+    "research_action": "insufficient_evidence",
+    "abstention_reasons": [
+      "missing_expectations_data"
+    ],
+    "status": "published"
+  },
+  {
+    "schema_version": "1.0",
+    "decision_id": "00000000-0000-4000-8000-000000000040",
+    "event_id": "00000000-0000-4000-8000-000000000030",
+    "as_of": "2026-09-25T12:00:00Z",
+    "horizon": "swing",
+    "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evidence_ids": [
+      "ev-1",
+      "ev-2"
+    ],
+    "versions": {
+      "taxonomy": "1.0",
+      "policy": "1.0",
+      "model": "record-provider-model-id",
+      "calibration": null
+    },
+    "judgments": {
+      "data_usability": "usable"
+    },
+    "raw_provider_output_ref": "private-object-reference",
+    "research_action": "investigate_now",
+    "abstention_reasons": [
+      "missing_expectations_data"
+    ],
+    "status": "published"
   }
 ]
