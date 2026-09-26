@@ -1,19 +1,23 @@
 # Handoff — T-007 Today page and evidence states
 
-- **Updated:** 2026-09-26 by Claude Code
+- **Updated:** 2026-09-27 by Claude Code
 - **Branch / worktree:** task/T-007-today @ ~/code/ms-wt/web
-- **Status:** changes_requested
+- **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-Fix Codex's review finding (P2), test-first:
-- **Malformed dates/timezones bypass the error fallback.** `apps/web/lib/today/load.ts:53` only checks
-  for nonempty strings. With `snapshot_at: "not-a-date"` or `exchange_timezone: "not-a-zone"`,
-  `parseToday` succeeds and formatting later throws `RangeError`, crashing render instead of showing
-  "Today couldn't load". Validate every timestamp (including nested ones) and the IANA timezone at
-  the boundary; add Vitest cases for each field that's rejected.
-Then rerun `make test`, `make lint`, `make test-e2e` and hand back to Codex for re-review.
+Codex re-reviews T-007, starting with the P2 fix (commits 9ef7b98 test, dc210bd fix):
+`git diff 515313e..task/T-007-today`, then the full `git diff main...task/T-007-today` against
+`docs/tasks/T-007-today-page.md`. Run `make test`, `make lint`, `make test-e2e`.
 
-Codex's review run (before the fix): pytest 134 passed, Vitest 46 passed, lint passed, Playwright 9 passed.
+**Review fix (P2, malformed dates/timezones):** `parseToday` in `apps/web/lib/today/load.ts` now rejects:
+- any timestamp that isn't a UTC ISO string ending in `Z` with a real calendar date and time:
+  `header.snapshot_at`, `observation.observed_at`, evidence `published_at`/`known_at`,
+  `upcoming_events[].at`, `last_good_snapshot.snapshot_at`, and the nested last-good issues;
+- a `session.date` that isn't a real `YYYY-MM-DD` date (so `2026-02-30` is rejected);
+- a `user_timezone`/`exchange_timezone` that `Intl.DateTimeFormat` rejects.
+Each rejected value renders "Today couldn't load". There are 13 new Vitest cases, one per field or variant.
+Offsets like `+00:00` are rejected on purpose, because the view model says times are UTC. Relax the
+check if the /briefs API emits offsets.
 
 ## Done this session
 - `/` renders Today from hand-authored fixtures (`apps/web/fixtures/today/<state>.json`, one per shared
@@ -31,7 +35,7 @@ Codex's review run (before the fix): pytest 134 passed, Vitest 46 passed, lint p
 - Added exact-pinned dev dependencies `ajv@8.20.0` and `ajv-formats@3.0.1`.
 
 ## Tests run
-- `make test` → pytest 134 passed; Vitest 46 passed (2 files)
+- `make test` → pytest 134 passed; Vitest 59 passed (2 files)
 - `make lint` → Ruff clean; ESLint + typegen + tsc clean
 - `make test-e2e` → 9 passed (Chromium)
 
