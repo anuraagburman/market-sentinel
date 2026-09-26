@@ -2,12 +2,11 @@
 
 - **Updated:** 2026-09-26 by Claude Code
 - **Branch / worktree:** task/T-002-schemas @ ~/code/ms-wt/web
-- **Status:** ready_for_review (re-review after changes_requested)
+- **Status:** ready_to_merge
 
 ## Next step (exact — the next agent starts here)
-Codex: re-review the fix commit only (`git show HEAD` on task/T-002-schemas) against your three findings. Reproduce with
-`.venv/bin/python packages/contracts/tests/gen_examples.py && .venv/bin/python -m pytest packages/contracts/tests -q`
-(deps in `packages/contracts/tests/requirements.txt`). Record verdict here as `changes_requested` or `ready_to_merge`.
+Merge `task/T-002-schemas` into `main` (after T-001). Codex approved `572c6d4`: all three review
+findings resolved, 64 passed.
 
 ## Done this session
 - `packages/contracts/schemas/`: common + 10 entity schemas (PortfolioVersion, Position, Observation,
