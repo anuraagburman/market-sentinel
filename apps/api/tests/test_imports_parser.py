@@ -136,3 +136,26 @@ def test_duplicate_with_missing_cost_keeps_both_warnings():
     rows = parse_csv(b"symbol,quantity,currency\nSYN01,1,USD\nSYN01,1.0,USD\n")["rows"]
     assert codes(rows[1]) == {"missing_cost_basis", "duplicate_row"}
     assert rows[1]["status"] == "warning"
+
+
+@pytest.mark.parametrize("field", ["symbol", "quantity", "cost_basis", "currency"])
+def test_formula_field_has_only_its_formula_issue(field):
+    cells = {"symbol": "SYN01", "quantity": "1", "cost_basis": "10", "currency": "USD"}
+    cells[field] = "=1+1"
+    preview = parse_csv((",".join(cells) + "\n" + ",".join(cells.values()) + "\n").encode())
+    row = preview["rows"][0]
+    assert row["status"] == "error"
+    assert row["parsed"][field] is None
+    assert len(row["issues"]) == 1
+    assert row["issues"][0]["field"] == field
+    assert preview["summary"]["by_code"] == {"formula_like_value": 1}
+
+
+def test_formula_does_not_suppress_other_field_errors():
+    preview = parse_csv(b"symbol,quantity,cost_basis,currency\n=1,0,,usd\n")
+    assert codes(preview["rows"][0]) == {
+        "formula_like_value",
+        "non_positive_quantity",
+        "missing_cost_basis",
+        "invalid_currency",
+    }

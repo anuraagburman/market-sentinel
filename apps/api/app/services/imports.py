@@ -95,15 +95,18 @@ def parse_csv(content: bytes) -> dict:
                         field,
                         "Formula-like cell is not accepted; supply a literal value.",
                     )
+            unsafe_fields = {mapped[index] for index in unsafe if index < len(mapped)}
             cells = {
                 field: raw[index].strip() if index < len(raw) and index not in unsafe else None
                 for index, field in enumerate(mapped)
                 if field is not None
             }
             parsed = {field: cells.get(field) or None for field in FIELDS}
-            if not parsed["symbol"]:
+            if "symbol" not in unsafe_fields and not parsed["symbol"]:
                 issue("missing_symbol", "symbol", "Symbol is required.")
             for field in ("quantity", "cost_basis"):
+                if field in unsafe_fields:
+                    continue
                 value = cells.get(field)
                 if field == "cost_basis" and not value:
                     parsed[field] = None
@@ -124,7 +127,9 @@ def parse_csv(content: bytes) -> dict:
                             field,
                             "Quantity must be positive; shorts require review.",
                         )
-            if not re.fullmatch(r"[A-Z]{3}", parsed["currency"] or ""):
+            if "currency" not in unsafe_fields and not re.fullmatch(
+                r"[A-Z]{3}", parsed["currency"] or ""
+            ):
                 parsed["currency"] = None
                 issue("invalid_currency", "currency", "Currency must be three uppercase letters.")
             if not has_error:
