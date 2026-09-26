@@ -1,6 +1,9 @@
 """Synchronous CSV preview endpoints; no confirmation or persistent storage yet."""
 
 from typing import Annotated
+from collections.abc import Callable
+from contextlib import asynccontextmanager
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Request, UploadFile
@@ -16,7 +19,9 @@ from app.services.imports import (
     InMemoryPreviewRepository,
     PreviewRepository,
     create_preview,
+    utc_now,
 )
+from app.services.instruments import InstrumentRepository, get_instrument_repository
 
 
 class ImportRoute(APIRoute):
@@ -63,7 +68,14 @@ class ImportRoute(APIRoute):
         return handle
 
 
-router = APIRouter(prefix="/imports", tags=["imports"], route_class=ImportRoute)
+@asynccontextmanager
+async def lifespan(app):
+    loader = app.dependency_overrides.get(get_instrument_repository, get_instrument_repository)
+    loader()  # Fail startup before serving requests if the full master is invalid.
+    yield
+
+
+router = APIRouter(prefix="/imports", tags=["imports"], route_class=ImportRoute, lifespan=lifespan)
 _repository = InMemoryPreviewRepository()
 
 
@@ -72,6 +84,14 @@ def get_repository() -> PreviewRepository:
 
 
 Repository = Annotated[PreviewRepository, Depends(get_repository)]
+Instruments = Annotated[InstrumentRepository, Depends(get_instrument_repository)]
+
+
+def get_clock() -> Callable[[], datetime]:
+    return utc_now
+
+
+Clock = Annotated[Callable[[], datetime], Depends(get_clock)]
 
 
 @router.post(
@@ -81,14 +101,18 @@ Repository = Annotated[PreviewRepository, Depends(get_repository)]
     responses={code: {"model": Problem} for code in (400, 413, 415, 422)},
 )
 async def upload_import(
-    repository: Repository, file: Annotated[UploadFile, File()]
+    repository: Repository,
+    instruments: Instruments,
+    clock: Clock,
+    file: Annotated[UploadFile, File()],
 ) -> ImportPreview:
     """Preview a UTF-8 CSV, up to 1 MiB and 1,000 rows.
 
     Accept text/csv or application/csv; also accept application/vnd.ms-excel,
     text/plain, and application/octet-stream when the filename ends in .csv.
 
-    All rows stay pending. Previews are process-local and disappear on restart.
+    Symbols resolve against synthetic reference data as of the upload's UTC date.
+    Previews are process-local and disappear on restart.
     """
     content_type = (file.content_type or "").split(";", 1)[0].strip().lower()
     csv_filename = (file.filename or "").lower().endswith(".csv")
@@ -104,7 +128,7 @@ async def upload_import(
             415,
         )
     content = await file.read(MAX_BYTES + 1)
-    return create_preview(content, repository)
+    return create_preview(content, repository, instruments, clock)
 
 
 @router.get("/{id}", response_model=ImportPreview, responses={404: {"model": Problem}})

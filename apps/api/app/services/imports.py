@@ -1,16 +1,19 @@
-"""CSV import validation. Cells are data only; no symbol resolution or valuation."""
+"""CSV validation and instrument resolution; cells are data only, never formulas."""
 
 import csv
 import hashlib
 import io
 import re
 from collections import Counter
+from collections.abc import Callable
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Protocol
 from uuid import UUID, uuid4
 
 from app.models.imports import ImportPreview
+from app.domain.instruments import resolve
+from app.services.instruments import InstrumentRepository, get_instrument_repository
 
 MAX_BYTES = 1024 * 1024
 MAX_ROWS = 1000
@@ -222,9 +225,30 @@ class InMemoryPreviewRepository:
         return preview.model_copy(deep=True) if preview is not None else None
 
 
-def create_preview(content: bytes, repository: PreviewRepository) -> ImportPreview:
-    received_at = datetime.now(UTC)
+def utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
+def create_preview(
+    content: bytes,
+    repository: PreviewRepository,
+    instruments: InstrumentRepository | None = None,
+    clock: Callable[[], datetime] = utc_now,
+) -> ImportPreview:
+    received_at = clock()
+    if received_at.tzinfo is None or received_at.utcoffset() is None:
+        raise ValueError("Preview clock must return a timezone-aware datetime")
+    received_at = received_at.astimezone(UTC)
     data = parse_csv(content)
+    instruments = instruments if instruments is not None else get_instrument_repository()
+    for row in data["rows"]:
+        symbol = row["parsed"]["symbol"]
+        if any(i["code"] == "formula_like_value" and i["field"] == "symbol" for i in row["issues"]):
+            symbol = None
+        row["resolution"] = resolve(
+            symbol, row["parsed"]["currency"], received_at.date(), instruments
+        )
+    data["summary"]["by_resolution"] = dict(Counter(r["resolution"].status for r in data["rows"]))
     preview = ImportPreview(id=uuid4(), received_at=received_at, **data)
     repository.save(preview)
     return preview

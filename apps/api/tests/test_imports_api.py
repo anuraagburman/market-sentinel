@@ -121,7 +121,7 @@ def test_row_errors_are_previews_not_file_rejections(client):
     assert row["raw"][0] == "=SUM(A1)"
     assert row["parsed"]["symbol"] is None
     assert row["status"] == "error"
-    assert row["resolution"] == "pending"
+    assert row["resolution"]["status"] == "not_attempted"
     assert any(i["code"] == "formula_like_value" for i in row["issues"])
 
 
