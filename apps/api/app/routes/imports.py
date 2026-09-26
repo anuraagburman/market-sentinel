@@ -50,8 +50,12 @@ class ImportRoute(APIRoute):
                 return JSONResponse(
                     status_code=422,
                     content={
-                        "code": "invalid_upload",
-                        "message": "A file upload named 'file' is required.",
+                        "code": "invalid_upload" if request.method == "POST" else "invalid_request",
+                        "message": (
+                            "A file upload named 'file' is required."
+                            if request.method == "POST"
+                            else "Request parameters or body are invalid."
+                        ),
                     },
                 )
             except HTTPException as exc:

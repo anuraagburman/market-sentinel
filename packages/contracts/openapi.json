@@ -293,6 +293,59 @@
         "title": "ImportSummary",
         "type": "object"
       },
+      "Instrument": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_type": {
+            "enum": [
+              "common_stock",
+              "preferred_stock"
+            ],
+            "title": "Asset Type",
+            "type": "string"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "asset_type",
+          "currency"
+        ],
+        "title": "Instrument",
+        "type": "object"
+      },
+      "InstrumentMatch": {
+        "additionalProperties": false,
+        "properties": {
+          "instrument": {
+            "$ref": "#/components/schemas/Instrument"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/SymbolMapping"
+          }
+        },
+        "required": [
+          "instrument",
+          "mapping"
+        ],
+        "title": "InstrumentMatch",
+        "type": "object"
+      },
       "ParsedHolding": {
         "additionalProperties": false,
         "properties": {
@@ -490,6 +543,46 @@
         "title": "ResolutionIssue",
         "type": "object"
       },
+      "SymbolMapping": {
+        "additionalProperties": false,
+        "properties": {
+          "instrument_id": {
+            "format": "uuid",
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "symbol": {
+            "minLength": 1,
+            "title": "Symbol",
+            "type": "string"
+          },
+          "valid_from": {
+            "format": "date",
+            "title": "Valid From",
+            "type": "string"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "symbol",
+          "instrument_id",
+          "valid_from",
+          "valid_to"
+        ],
+        "title": "SymbolMapping",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -675,6 +768,71 @@
         "summary": "Get Import",
         "tags": [
           "imports"
+        ]
+      }
+    },
+    "/instruments": {
+      "get": {
+        "description": "Return all exact active matches, never pick one of several candidates.",
+        "operationId": "lookup_instruments_instruments_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Symbol",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "as_of",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InstrumentMatch"
+                  },
+                  "title": "Response Lookup Instruments Instruments Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Lookup Instruments",
+        "tags": [
+          "instruments"
         ]
       }
     }
