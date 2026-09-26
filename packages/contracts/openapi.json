@@ -1,6 +1,33 @@
 {
   "components": {
     "schemas": {
+      "Body_upload_import_imports_post": {
+        "properties": {
+          "file": {
+            "format": "binary",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_import_imports_post",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
@@ -13,6 +40,311 @@
           "status"
         ],
         "title": "HealthResponse",
+        "type": "object"
+      },
+      "ImportColumn": {
+        "additionalProperties": false,
+        "properties": {
+          "detected": {
+            "title": "Detected",
+            "type": "string"
+          },
+          "mapped": {
+            "anyOf": [
+              {
+                "enum": [
+                  "symbol",
+                  "quantity",
+                  "cost_basis",
+                  "currency"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mapped"
+          },
+          "unknown": {
+            "title": "Unknown",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "detected",
+          "mapped",
+          "unknown"
+        ],
+        "title": "ImportColumn",
+        "type": "object"
+      },
+      "ImportIssue": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "field",
+          "message"
+        ],
+        "title": "ImportIssue",
+        "type": "object"
+      },
+      "ImportPreview": {
+        "additionalProperties": false,
+        "properties": {
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/ImportColumn"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "file_sha256": {
+            "title": "File Sha256",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ImportRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ImportSummary"
+          }
+        },
+        "required": [
+          "id",
+          "file_sha256",
+          "received_at",
+          "columns",
+          "rows",
+          "summary"
+        ],
+        "title": "ImportPreview",
+        "type": "object"
+      },
+      "ImportRow": {
+        "additionalProperties": false,
+        "properties": {
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ImportIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "parsed": {
+            "$ref": "#/components/schemas/ParsedHolding"
+          },
+          "raw": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Raw",
+            "type": "array"
+          },
+          "resolution": {
+            "const": "pending",
+            "default": "pending",
+            "title": "Resolution",
+            "type": "string"
+          },
+          "row_number": {
+            "title": "Row Number",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "warning",
+              "error"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "row_number",
+          "raw",
+          "parsed",
+          "status",
+          "issues"
+        ],
+        "title": "ImportRow",
+        "type": "object"
+      },
+      "ImportSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "by_code": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "By Code",
+            "type": "object"
+          },
+          "by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "ok",
+                "warning",
+                "error"
+              ]
+            },
+            "title": "By Status",
+            "type": "object"
+          }
+        },
+        "required": [
+          "by_status",
+          "by_code"
+        ],
+        "title": "ImportSummary",
+        "type": "object"
+      },
+      "ParsedHolding": {
+        "additionalProperties": false,
+        "properties": {
+          "cost_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Basis"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          }
+        },
+        "required": [
+          "symbol",
+          "quantity",
+          "cost_basis",
+          "currency"
+        ],
+        "title": "ParsedHolding",
+        "type": "object"
+      },
+      "Problem": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "Problem",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
         "type": "object"
       }
     }
@@ -42,6 +374,131 @@
         "summary": "Health",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/imports": {
+      "post": {
+        "description": "Preview a UTF-8 CSV (text/csv or application/csv), up to 1 MiB and 1,000 rows.\n\nAll rows stay pending. Previews are process-local and disappear on restart.",
+        "operationId": "upload_import_imports_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_import_imports_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportPreview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Upload Import",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/imports/{id}": {
+      "get": {
+        "description": "Retrieve a preview from this process; unknown identifiers return 404.",
+        "operationId": "get_import_imports__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportPreview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Import",
+        "tags": [
+          "imports"
         ]
       }
     }
