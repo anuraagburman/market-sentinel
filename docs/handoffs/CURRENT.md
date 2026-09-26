@@ -1,37 +1,46 @@
-# Handoff — main after T-005 spec
+# Handoff — main after T-007 merge
 
-- **Updated:** 2026-09-26 by Claude Code
-- **Branch / worktree:** main @ ~/code/market-sentinel
-- **Status:** T-005 `ready`; T-007 awaiting Codex review
+- **Updated:** 2026-09-27 by Claude Code
+- **Branch / worktree:** main (merge built in ~/code/ms-wt/web, pushed to origin/main; `~/code/market-sentinel` still needs `git pull --ff-only`)
+- **Status:** T-007 `merged`; T-005 `ready`
 
 ## Next step (exact — the next agent starts here)
-- **Codex**, first: review T-007 in `~/code/ms-wt/api` (`git checkout --detach origin/task/T-007-today`),
-  following the "Next step" in that branch's `docs/handoffs/CURRENT.md`. Report findings to the
-  user; do not commit to T-007.
-- **Codex**, then in a fresh session: in `~/code/ms-wt/api`, `git checkout -b task/T-005-instrument-resolution origin/main`
+- **Codex**, in a fresh session: in `~/code/ms-wt/api`, `git checkout -b task/T-005-instrument-resolution origin/main`
   and implement `docs/tasks/T-005-instrument-resolution.md`, starting with planned commit 1
   (synthetic instrument master in `evals/fixtures/generate.py`).
+- Whoever next opens `~/code/market-sentinel`: `git pull --ff-only` first. The local `main` there is behind origin.
 
 ## Done this session
-- Wrote `docs/tasks/T-005-instrument-resolution.md`: exact, date-effective symbol lookup against a
-  generated synthetic instrument master; per-row `resolution` object replaces `"pending"`;
-  `GET /instruments?symbol=` lookup; select/clear endpoints for ambiguous and typo rows.
-- Ledger: T-005 → `ready`.
+- Merged `task/T-007-today` into `main` with `--no-ff`, after Codex's clean re-review of `5a7cdda..task/T-007-today`.
+  `/` now renders the Today page from fixtures (`apps/web/fixtures/today/`), with every shared state plus
+  "Today couldn't load".
+- Before merging, the review fixes were: validate timestamps, session date, and IANA timezones at the
+  boundary; validate `session.name` against the enum, including prototype keys.
+- The only merge conflict was this file. It now merges both handoffs.
 
 ## Tests run
-- None (docs only).
+- On the merge result: `make test` → pytest 210 passed, Vitest 64 passed; `make lint` passed;
+  `make test-e2e` → 9 passed (Chromium).
 
 ## Contract changes proposed (not applied)
-- T-007 proposes `issue.schema.json` (v1.1 candidate); see its branch handoff.
-- T-005 will propose `instrument` and `symbol_mapping` schemas; bundle both into one v1.1 bump.
+- **`issue.schema.json` (v1.1 candidate)**, from T-007 and mirroring `Issue` in `apps/web/lib/today/types.ts`:
+  `id`, `decision_id` (uuid), `holding {instrument_id, symbol, name}`, `observation {text, source, observed_at}`,
+  `interpretation`, `evidence_status` (`supported | partial | contested | insufficient`),
+  `exposure` = `{kind: "calculation", value, basis}` | `{kind: "unavailable", reason}` (value from T-006
+  valuation, never a model), `next_question`, `evidence_ids` (the API resolves them to items with `source`,
+  `published_at`, `known_at`, `excerpt | null`). A brief would carry `issues` (max 3) alongside `decision_ids`.
+- Add `pending_sources` to `brief.coverage` for `running` (the view has it, the contract doesn't).
+- T-005 will propose `instrument` and `symbol_mapping` schemas; bundle all of these into one v1.1 bump.
 
 ## Unresolved / assumptions
+- T-007: the Today page parses only UTC `Z` timestamps. Relax this if the /briefs API emits offsets.
+- T-007 stale fixture: `cutoff` = Friday (newest complete data), `published_at` = Monday. Confirm this
+  meaning of stale. `last_good_snapshot` appears only on stale and failed; running shows no prior results.
+- T-007: Ajv runs with `strictTypes`/`strictRequired` off for the contract's if/then subschemas.
 - T-005 changes the `resolution` field shape in the import preview API (string → object). Nothing
-  consumes it yet; T-007 is fixture-driven.
-- `as_of` = UTC date of `received_at`. Whether confirm (later) re-resolves at confirm time is open.
-- The app's default instrument repository reads `evals/fixtures/instruments/` until T-008 brings
-  provider reference data.
-- Carried over: upload request-size limit needed before exposing `/imports`; previews are
-  process-local; T-007 merge will conflict on `CURRENT.md`/`LEDGER.md` (consider one handoff file
-  per task); horizon enum (T-000); JEV access (blocks T-009); T-009 injection variant on usable
-  data; consumers must enable date-time format checking (ADR-001 §3).
+  consumes it yet. `as_of` = UTC date of `received_at`; whether confirm re-resolves is open.
+- The default instrument repository reads `evals/fixtures/instruments/` until T-008.
+- Carried over: an upload request-size limit is needed before exposing `/imports`; previews are process-local;
+  consider one handoff file per task (T-007 conflicted on this file as predicted); horizon enum (T-000);
+  JEV access (blocks T-009); T-009 injection variant on usable data; consumers must enable date-time
+  format checking (ADR-001 §3).

@@ -1,0 +1,154 @@
+{
+  "brief": {
+    "id": "00000000-0000-4000-8000-000000000720",
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "cutoff": "2026-09-28T11:30:00Z",
+    "published_at": "2026-09-28T11:35:00Z",
+    "status": "partial",
+    "decision_ids": [
+      "00000000-0000-4000-8000-000000000721",
+      "00000000-0000-4000-8000-000000000722"
+    ],
+    "coverage": {
+      "checked_sources": [
+        "synthetic-company",
+        "synthetic-filings"
+      ],
+      "failed_sources": [
+        "synthetic-news"
+      ],
+      "unpriced_instrument_ids": [
+        "00000000-0000-4000-8000-000000000003"
+      ]
+    },
+    "revision": 1
+  },
+  "view": {
+    "header": {
+      "session": {
+        "name": "pre_market",
+        "date": "2026-09-28"
+      },
+      "user_timezone": "America/Los_Angeles",
+      "exchange_timezone": "America/New_York",
+      "snapshot_at": "2026-09-28T11:30:00Z",
+      "coverage": {
+        "checked": [
+          {
+            "id": "synthetic-company",
+            "label": "Company releases"
+          },
+          {
+            "id": "synthetic-filings",
+            "label": "SEC filings"
+          }
+        ],
+        "failed": [
+          {
+            "id": "synthetic-news",
+            "label": "News"
+          }
+        ],
+        "unpriced": [
+          {
+            "instrument_id": "00000000-0000-4000-8000-000000000003",
+            "symbol": "SYN03",
+            "name": "Synthela 03"
+          }
+        ]
+      }
+    },
+    "status": "partial",
+    "issues": [
+      {
+        "id": "issue-syn01-outlook",
+        "holding": {
+          "instrument_id": "00000000-0000-4000-8000-000000000001",
+          "symbol": "SYN01",
+          "name": "Synthela 01"
+        },
+        "observation": {
+          "text": "Synthela 01 lowered its full-year revenue outlook.",
+          "source": "Synthela 01 company release",
+          "observed_at": "2026-09-28T10:45:00Z"
+        },
+        "interpretation": "The release supports the guidance change; the effect on next year's margins is unresolved.",
+        "evidence_status": "supported",
+        "exposure": {
+          "kind": "calculation",
+          "value": "48.8% of priced portfolio value",
+          "basis": "18 of 19 holdings priced at the Sep 25 regular-session close; SYN03 has no price."
+        },
+        "next_question": "Does the lower revenue outlook change the margin assumption in your thesis?",
+        "evidence": [
+          {
+            "id": "ev-syn01-release",
+            "source": "Synthela 01 company release",
+            "published_at": "2026-09-28T10:45:00Z",
+            "known_at": "2026-09-28T10:46:00Z",
+            "excerpt": "Synthela 01 now expects full-year revenue at the low end of its prior range, citing slower orders in its fictional industrial segment."
+          },
+          {
+            "id": "ev-syn01-8k",
+            "source": "SEC filing (8-K)",
+            "published_at": "2026-09-28T10:50:00Z",
+            "known_at": "2026-09-28T10:58:00Z",
+            "excerpt": "The registrant furnished the press release as Exhibit 99.1. No change to margin guidance was stated."
+          }
+        ]
+      },
+      {
+        "id": "issue-syn10-cfo",
+        "holding": {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "symbol": "SYN10",
+          "name": "Synthela 10"
+        },
+        "observation": {
+          "text": "Synthela 10 announced that its chief financial officer will step down at year end.",
+          "source": "Synthela 10 company release",
+          "observed_at": "2026-09-28T10:05:00Z"
+        },
+        "interpretation": "The release gives no reason for the departure; news coverage that might explain it wasn't checked.",
+        "evidence_status": "partial",
+        "exposure": {
+          "kind": "calculation",
+          "value": "3.1% of priced portfolio value",
+          "basis": "18 of 19 holdings priced at the Sep 25 regular-session close; SYN03 has no price."
+        },
+        "next_question": "Does the company's next filing name a successor or a reason for the change?",
+        "evidence": [
+          {
+            "id": "ev-syn10-release",
+            "source": "Synthela 10 company release",
+            "published_at": "2026-09-28T10:05:00Z",
+            "known_at": "2026-09-28T10:07:00Z",
+            "excerpt": "The chief financial officer will remain in the role through December 31 to support the transition."
+          }
+        ]
+      }
+    ],
+    "upcoming_events": [
+      {
+        "id": "event-syn08-earnings",
+        "holding": {
+          "instrument_id": "00000000-0000-4000-8000-000000000008",
+          "symbol": "SYN08",
+          "name": "Synthela 08"
+        },
+        "title": "Quarterly earnings call",
+        "at": "2026-09-29T20:30:00Z"
+      },
+      {
+        "id": "event-syn16-meeting",
+        "holding": {
+          "instrument_id": "00000000-0000-4000-8000-000000000016",
+          "symbol": "SYN16",
+          "name": "Synthela 16"
+        },
+        "title": "Annual shareholder meeting",
+        "at": "2026-10-01T14:00:00Z"
+      }
+    ]
+  }
+}

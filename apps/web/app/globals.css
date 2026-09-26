@@ -1,3 +1,36 @@
 @import "tailwindcss";
 
-body { background: #f8fafc; color: #0f172a; font-family: Arial, sans-serif; }
+/* One muted accent, warning only alongside text and an icon (docs/product.md, UX principles). */
+@theme {
+  --color-canvas: #f7f6f2;
+  --color-surface: #ffffff;
+  --color-ink: #1d2126;
+  --color-muted: #535a62;
+  --color-rule: #d9d8d2;
+  --color-accent: #2f5b70;
+  --color-accent-soft: #e7eef1;
+  --color-warn: #6f4500;
+  --color-warn-soft: #fbf1dc;
+  --color-warn-rule: #d6b066;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+summary { cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
