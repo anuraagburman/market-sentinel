@@ -251,6 +251,23 @@ describe("unreadable fixture", () => {
     mutate(view);
     expect(parseToday({ view }).ok).toBe(false);
   });
+
+  // Prototype keys like "__proto__" would otherwise resolve to an inherited value in SESSION_LABELS.
+  test.each([
+    ["missing", undefined],
+    ["unknown", "overnight"],
+    ["wrong-type", 1],
+    ["prototype-key __proto__", "__proto__"],
+    ["prototype-key constructor", "constructor"],
+  ])("rejects a session name that is %s, showing only couldn't load", (_, name) => {
+    const view = datedView() as unknown as { header: { session: Record<string, unknown> } };
+    view.header.session.name = name;
+    const result = parseToday({ view });
+    expect(result.ok).toBe(false);
+    const { container } = render(<TodayPage result={result} />);
+    expect(screen.getByRole("heading", { level: 1, name: "Today couldn't load" })).toBeTruthy();
+    expect(container.textContent).not.toMatch(/SYN\d|%|\$|Evidence|Fact/);
+  });
 });
 
 describe("route", () => {
