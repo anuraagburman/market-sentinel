@@ -31,3 +31,6 @@ test-results/
 
 # Next.js regenerates this with build/dev-specific type paths
 apps/web/next-env.d.ts
+
+# Blueprint source stays local (not published)
+docs/source/*.pdf
