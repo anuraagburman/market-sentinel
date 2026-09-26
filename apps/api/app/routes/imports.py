@@ -12,7 +12,8 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from starlette.exceptions import HTTPException
 
-from app.models.imports import ImportPreview, Problem
+from app.models.imports import ImportPreview, ImportRow, Problem
+from app.models.instruments import InstrumentSelection
 from app.services.imports import (
     MAX_BYTES,
     ImportProblem,
@@ -20,6 +21,7 @@ from app.services.imports import (
     PreviewRepository,
     create_preview,
     utc_now,
+    set_resolution,
 )
 from app.services.instruments import InstrumentRepository, get_instrument_repository
 
@@ -146,3 +148,42 @@ def get_import(id: str, repository: Repository) -> ImportPreview:
     if preview is None:
         raise ImportProblem("import_not_found", "Import preview was not found.", 404)
     return preview
+
+
+@router.put(
+    "/{id}/rows/{row_number}/resolution",
+    response_model=ImportRow,
+    responses={code: {"model": Problem} for code in (404, 409, 422)},
+)
+def select_resolution(
+    id: str,
+    row_number: int,
+    selection: InstrumentSelection,
+    repository: Repository,
+    instruments: Instruments,
+    clock: Clock,
+) -> ImportRow:
+    """Select a listed instrument explicitly, retaining automatic issues and candidates."""
+    return set_resolution(
+        get_import(id, repository),
+        row_number,
+        selection.instrument_id,
+        repository,
+        instruments,
+        clock,
+    )
+
+
+@router.delete(
+    "/{id}/rows/{row_number}/resolution",
+    response_model=ImportRow,
+    responses={code: {"model": Problem} for code in (404, 409, 422)},
+)
+def clear_resolution(
+    id: str,
+    row_number: int,
+    repository: Repository,
+    instruments: Instruments,
+) -> ImportRow:
+    """Restore automatic resolution on the preview's original date."""
+    return set_resolution(get_import(id, repository), row_number, None, repository, instruments)
