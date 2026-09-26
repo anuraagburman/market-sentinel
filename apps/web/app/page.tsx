@@ -10,6 +10,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   return (
     <TodayPage
       result={loadToday(state)}
+      retryHref={showSwitcher ? `/?state=${state}` : "/"}
       switcher={showSwitcher ? <FixtureSwitcher states={FIXTURE_STATES} current={state} /> : undefined}
     />
   );

@@ -1,0 +1,96 @@
+{
+  "brief": {
+    "id": "00000000-0000-4000-8000-000000000730",
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "cutoff": "2026-09-28T11:30:00Z",
+    "published_at": "2026-09-28T11:35:00Z",
+    "status": "failed",
+    "decision_ids": [],
+    "coverage": {
+      "checked_sources": [],
+      "failed_sources": [
+        "synthetic-company",
+        "synthetic-filings",
+        "synthetic-news"
+      ],
+      "unpriced_instrument_ids": [
+        "00000000-0000-4000-8000-000000000003"
+      ]
+    },
+    "revision": 1
+  },
+  "view": {
+    "header": {
+      "session": {
+        "name": "pre_market",
+        "date": "2026-09-28"
+      },
+      "user_timezone": "America/Los_Angeles",
+      "exchange_timezone": "America/New_York",
+      "snapshot_at": "2026-09-28T11:30:00Z",
+      "coverage": {
+        "checked": [],
+        "failed": [
+          {
+            "id": "synthetic-company",
+            "label": "Company releases"
+          },
+          {
+            "id": "synthetic-filings",
+            "label": "SEC filings"
+          },
+          {
+            "id": "synthetic-news",
+            "label": "News"
+          }
+        ],
+        "unpriced": [
+          {
+            "instrument_id": "00000000-0000-4000-8000-000000000003",
+            "symbol": "SYN03",
+            "name": "Synthela 03"
+          }
+        ]
+      }
+    },
+    "status": "failed",
+    "issues": [],
+    "upcoming_events": [],
+    "last_good_snapshot": {
+      "brief_id": "00000000-0000-4000-8000-000000000710",
+      "snapshot_at": "2026-09-25T21:00:00Z",
+      "issues": [
+        {
+          "id": "issue-syn01-orders-last",
+          "holding": {
+            "instrument_id": "00000000-0000-4000-8000-000000000001",
+            "symbol": "SYN01",
+            "name": "Synthela 01"
+          },
+          "observation": {
+            "text": "Synthela 01 reported that quarterly orders fell from the prior quarter.",
+            "source": "Synthela 01 company release",
+            "observed_at": "2026-09-25T12:30:00Z"
+          },
+          "interpretation": "Lower orders could precede a revenue revision; the company gave no outlook change at the time.",
+          "evidence_status": "supported",
+          "exposure": {
+            "kind": "calculation",
+            "value": "48.8% of priced portfolio value",
+            "basis": "18 of 19 holdings priced at the Sep 25 regular-session close; SYN03 has no price."
+          },
+          "next_question": "Do the order figures change the revenue assumption in your thesis?",
+          "evidence": [
+            {
+              "id": "ev-syn01-orders",
+              "source": "Synthela 01 company release",
+              "published_at": "2026-09-25T12:30:00Z",
+              "known_at": "2026-09-25T12:31:00Z",
+              "excerpt": "Quarterly orders declined from the prior quarter in the fictional industrial segment."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -2,11 +2,21 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, test } from "vitest";
 import Home from "../app/page";
 import { TodayPage } from "../components/today/TodayPage";
-import { loadToday } from "../lib/today/load";
+import { loadToday, parseToday } from "../lib/today/load";
 
 afterEach(cleanup);
 
 const renderState = (state: string) => render(<TodayPage result={loadToday(state)} />);
+
+/** The last good brief sits in its own labeled section, never among current issues. */
+function expectLastGoodSnapshotApart(root: HTMLElement, time: string) {
+  const section = screen.getByRole("heading", { level: 2, name: "Last complete brief (not current)" }).closest("section")!;
+  expect(section.getAttribute("data-snapshot")).toBe("previous");
+  expect(section.textContent).toContain(`Data as of ${time}`);
+  expect(within(section).queryAllByRole("article")).toHaveLength(0);
+  const current = root.querySelector("section[aria-labelledby='changes-heading']");
+  if (current) expect(current.contains(section)).toBe(false);
+}
 
 /** Confidence percentages, trade calls to action, and urgency never appear on Today. */
 function expectNoForbiddenContent(root: HTMLElement) {
@@ -97,6 +107,49 @@ describe("ready", () => {
     renderState("ready");
     const events = screen.getByRole("heading", { level: 2, name: "Upcoming events" }).parentElement!;
     expect(within(events).getByText("Tue, Sep 29, 4:30 PM EDT (Tue, 1:30 PM PDT your time)")).toBeTruthy();
+  });
+});
+
+describe("partial", () => {
+  test("names the failed source and what the issues are based on", () => {
+    const { container } = renderState("partial");
+    const notice = screen.getByRole("status");
+    expect(notice.textContent).toContain("Partial brief");
+    expect(notice.textContent).toContain("News couldn't be checked. The issues below come from Company releases, SEC filings only");
+    expect(notice.querySelector("svg[aria-hidden='true']")).toBeTruthy();
+    expect(screen.getByTestId("coverage-line").textContent).toContain("1 source failed: News.");
+    expect(screen.getAllByRole("article")).toHaveLength(2);
+    expect(screen.queryByText(/No new material changes/)).toBeNull();
+    expectNoForbiddenContent(container);
+  });
+});
+
+describe("failed", () => {
+  test("shows no current results, an explicit retry, and the last good brief apart", () => {
+    const { container } = renderState("failed");
+    expect(screen.getByText("Attempted cutoff")).toBeTruthy();
+    expect(screen.queryByText("Data as of")).toBeNull();
+    const notice = screen.getByRole("status");
+    expect(notice.textContent).toContain("This morning's brief didn't complete");
+    expect(notice.textContent).toContain("No sources could be checked.");
+    expect(within(notice).getByRole("link", { name: "Retry" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Material changes" })).toBeNull();
+    expect(screen.queryAllByRole("article")).toHaveLength(0);
+    expectLastGoodSnapshotApart(container, "Fri, Sep 25, 5:00 PM EDT (Fri, 2:00 PM PDT your time)");
+    expectNoForbiddenContent(container);
+  });
+});
+
+describe("unreadable fixture", () => {
+  test("says Today couldn't load and shows no financial content", () => {
+    const { container } = renderState("unreadable");
+    expect(screen.getByRole("heading", { level: 1, name: "Today couldn't load" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Retry" })).toBeTruthy();
+    expect(container.textContent).not.toMatch(/SYN\d|%|\$|Evidence|Fact/);
+  });
+
+  test.each([null, {}, { view: { status: "ready" } }, "not json"])("rejects %j at the boundary", (raw) => {
+    expect(parseToday(raw).ok).toBe(false);
   });
 });
 

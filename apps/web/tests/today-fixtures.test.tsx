@@ -27,7 +27,7 @@ const positions: { portfolio_version_id: string; instrument_id: string; display_
 );
 const symbolById = new Map(positions.map((p) => [p.instrument_id, p.display_symbol]));
 
-// unreadable.json is deliberately malformed; it backs the "couldn't load" state.
+// unreadable.json deliberately fails the view shape check; it backs the "couldn't load" state.
 const fixtures = readdirSync(fixtureDir)
   .filter((f) => f.endsWith(".json") && f !== "unreadable.json")
   .map((f) => ({ state: f.replace(/\.json$/, ""), fixture: readJson(join(fixtureDir, f)) as TodayFixture }));

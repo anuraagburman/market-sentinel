@@ -1,10 +1,17 @@
 import { exchangeTime, localTime, SESSION_LABELS, sessionDate } from "../../lib/today/format";
-import type { TodayHeader as Header } from "../../lib/today/types";
+import type { SurfaceStatus, TodayHeader as Header } from "../../lib/today/types";
+import { WarningIcon } from "./Labels";
 
 const list = (items: { label: string }[]) => items.map((s) => s.label).join(", ");
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-export function TodayHeader({ header }: { header: Header }) {
+// A run that hasn't finished, or failed, has a cutoff but no data "as of" it.
+const SNAPSHOT_LABEL: Partial<Record<SurfaceStatus, string>> = {
+  running: "Checking data up to",
+  failed: "Attempted cutoff",
+};
+
+export function TodayHeader({ header, status }: { header: Header; status: SurfaceStatus }) {
   const { coverage } = header;
   return (
     <header className="border-b border-rule pb-5">
@@ -13,7 +20,7 @@ export function TodayHeader({ header }: { header: Header }) {
         {SESSION_LABELS[header.session.name]} · {sessionDate(header.session.date)}
       </p>
       <dl className="mt-4 grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[max-content_1fr]">
-        <dt className="font-medium">Data as of</dt>
+        <dt className="font-medium">{SNAPSHOT_LABEL[status] ?? "Data as of"}</dt>
         <dd>
           <time dateTime={header.snapshot_at}>{exchangeTime(header.snapshot_at, header.exchange_timezone)}</time>
           <span className="text-muted"> · {localTime(header.snapshot_at, header.user_timezone)} your time</span>
@@ -23,6 +30,11 @@ export function TodayHeader({ header }: { header: Header }) {
           {coverage.checked.length > 0
             ? `${plural(coverage.checked.length, "source", "sources")} checked: ${list(coverage.checked)}.`
             : "No sources checked."}
+          {coverage.failed.length > 0 && (
+            <span className="text-warn">
+              {" "}<WarningIcon /> {plural(coverage.failed.length, "source", "sources")} failed: {list(coverage.failed)}.
+            </span>
+          )}
           {coverage.unpriced.length > 0 && (
             <span>
               {" "}Price unavailable for {coverage.unpriced.map((h) => h.symbol).join(", ")}.
