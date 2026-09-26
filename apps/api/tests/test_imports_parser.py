@@ -184,3 +184,18 @@ def test_blank_lines_count_toward_row_limit():
     with pytest.raises(ImportProblem) as exc:
         parse_csv(b"symbol,quantity,currency\n" + b"\n" * 1001)
     assert exc.value.code == "too_many_rows"
+
+
+@pytest.mark.parametrize("value", ["-10", "-0.01", "0", "0.00", "10"])
+def test_cost_basis_must_be_non_negative(value):
+    preview = parse_csv(f"symbol,quantity,cost_basis,currency\nSYN01,1,{value},USD\n".encode())
+    row = preview["rows"][0]
+    assert row["parsed"]["cost_basis"] == value
+    assert row["raw"][2] == value
+    if value.startswith("-"):
+        assert row["status"] == "error"
+        assert len(row["issues"]) == 1
+        assert preview["summary"]["by_code"] == {"negative_cost_basis": 1}
+    else:
+        assert row["status"] == "ok"
+        assert row["issues"] == []

@@ -48,12 +48,19 @@ Row issue codes (at minimum):
 | `missing_cost_basis` | warning | Empty `cost_basis` → `null`, message says "unavailable", never `0`. |
 | `missing_symbol` | error | Empty symbol. |
 | `invalid_decimal` | error | Not a plain decimal. `1,000`, `1e3`, `NaN`, and currency symbols are rejected, not guessed. |
+| `negative_cost_basis` | error | Negative total cost basis requires review at import, before valuation. Preserve the submitted decimal; explicit zero is allowed and missing stays null. |
 | `non_positive_quantity` | error | Zero or negative. Shorts are flagged, not transformed. |
 | `invalid_currency` | error | Not three uppercase letters. |
 | `formula_like_value` | error | A cell starting with `=`, `+`, `@`, a tab, or CR, or with `-` that isn't a valid negative number. |
 
 File-level rejections (no preview): > 1 MB → `413`; not UTF-8 (a BOM is allowed) → `422`; > 1,000 data
 rows → `422`; wrong content type → `415`; missing required column → `422` naming it.
+
+MIME policy: accept `text/csv` and `application/csv`; also accept
+`application/vnd.ms-excel`, `text/plain`, and `application/octet-stream` when the filename
+ends in `.csv` (case-insensitive). Content validation still applies to every upload.
+Cells flagged as formulas skip further validation for that field, so each contributes only
+`formula_like_value`; other fields are still checked.
 
 ## Invariants
 - Parse as data only: `csv` module, all cells as strings, `Decimal` for numbers, never `float`.

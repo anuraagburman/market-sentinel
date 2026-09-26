@@ -139,6 +139,12 @@ def parse_csv(content: bytes) -> dict:
                 else:
                     decimal = Decimal(value)
                     parsed[field] = format(decimal, "f")
+                    if field == "cost_basis" and decimal < 0:
+                        issue(
+                            "negative_cost_basis",
+                            field,
+                            "Cost basis must be non-negative; review this value.",
+                        )
                     if field == "quantity" and decimal <= 0:
                         issue(
                             "non_positive_quantity",
