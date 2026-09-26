@@ -1,0 +1,21 @@
+# Task ledger
+
+Status: `backlog` (no spec yet) → `ready` (spec written) → `in_progress` → `review` → `merged` | `blocked`.
+Write a full task file only when a task moves to `ready` — specs written too early go stale.
+
+| ID | Task | Phase | Owner | Reviewer | Branch | Depends | Status |
+|---|---|---|---|---|---|---|---|
+| T-000 | Phase 0 decisions and access | 0 | Anuraag | Claude Code | main | — | ready |
+| T-001 | Repo skeleton, Makefile, CI | 0 | Codex | Claude Code | task/T-001-skeleton | — | ready |
+| T-002 | Core schemas and decision envelope | 0 | Claude Code | Codex | task/T-002-schemas | — | ready |
+| T-003 | Synthetic fixtures (20-holding portfolio + 10 adversarial packets) | 0 | Codex | Claude Code | — | T-002 | backlog |
+| T-004 | CSV validation and import preview | 1 | Codex | Claude Code | — | T-001, T-002 | backlog |
+| T-005 | Instrument resolution | 1 | Codex | Claude Code | — | T-004 | backlog |
+| T-006 | Deterministic portfolio valuation | 1 | Codex | Claude Code | — | T-005 | backlog |
+| T-007 | Today page + evidence states (fixture-driven) | 1 | Claude Code | Codex | — | T-002, T-003 | backlog |
+| T-008 | Provider adapters (Alpaca, SEC EDGAR) | 1 | Codex | Claude Code | — | T-000, T-002 | backlog |
+| T-009 | Staged JEV decisions (adapter + taxonomy v1) | 2 | Claude Code | Codex | — | T-000 (JEV access), T-003 | backlog |
+| T-010 | First evaluation report (rules-only vs persona vs JEV) | 2 | Codex | Anuraag + Claude Code | — | T-009 | backlog |
+
+**Parallel lanes right now:** Codex → T-001, Claude Code → T-002, Anuraag → T-000.
+Once T-002 merges: Codex → T-003/T-004, Claude Code → T-007 (against fixtures).

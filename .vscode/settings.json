@@ -1,0 +1,4 @@
+{
+  "files.exclude": { "**/node_modules": true, "**/.next": true, "**/__pycache__": true },
+  "search.exclude": { "**/node_modules": true, "**/*.lock": true, "**/package-lock.json": true, "docs/source/**": true }
+}
