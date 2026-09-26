@@ -38,5 +38,10 @@ Blueprint source: `docs/source/Market Sentinel Blueprint.pdf` (don't read it; us
 - Report: behavior changed, tests run (with result), unresolved assumptions. "Done" means tests pass.
 
 ## Commands
-Not defined yet — `T-001` creates them. Planned: `make dev`, `make test`, `make contracts`,
-`make eval-smoke`, `make eval-heldout`, `make replay`.
+- `make setup`: install locked dependencies.
+- `make dev`: start services, API, and web.
+- `make test`: pytest + Vitest.
+- `make lint`: Ruff, ESLint, and TypeScript.
+- `make contracts`: export OpenAPI; commit generated changes.
+- `make eval-smoke`: placeholder until suites exist.
+- `make test-e2e`: Playwright Chromium smoke (install browser first).

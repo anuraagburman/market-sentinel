@@ -43,6 +43,6 @@ make contracts && git diff --exit-code packages/contracts
 Auth, domain models, any provider code, any UI beyond a placeholder page.
 
 ## Handoff checklist
-- [ ] Commands above pass locally
-- [ ] Update `AGENTS.md` "Commands" section with real commands
-- [ ] `docs/handoffs/CURRENT.md` + LEDGER updated
+- [x] Commands above pass locally
+- [x] Update `AGENTS.md` "Commands" section with real commands
+- [x] `docs/handoffs/CURRENT.md` + LEDGER updated
