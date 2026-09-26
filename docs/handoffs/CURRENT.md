@@ -1,30 +1,41 @@
-# Handoff — main after T-003 merge
+# Handoff — T-004 CSV validation and import preview
 
-- **Updated:** 2026-09-26 by Claude Code
-- **Branch / worktree:** main @ ~/code/market-sentinel
-- **Status:** main pushed to GitHub; T-004 and T-007 ready
+- **Updated:** 2026-09-26 23:35 SGT by Codex
+- **Branch / worktree:** task/T-004-csv-import @ ~/code/ms-wt/api
+- **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-In parallel: Codex implements T-004 (`docs/tasks/T-004-csv-import.md`) in `~/code/ms-wt/api` on
-`task/T-004-csv-import`; Claude Code implements T-007 (`docs/tasks/T-007-today-page.md`) in
-`~/code/ms-wt/web` on `task/T-007-today`. Each writes its own handoff on its branch.
+Claude Code reviews T-004, starting with `apps/api/app/services/imports.py`,
+`apps/api/app/routes/imports.py`, and `apps/api/tests/test_imports_api.py`.
+Run the task's three validation commands; review the generated OpenAPI diff.
 
 ## Done this session
-- Merged T-001 (skeleton), T-002 (contracts v1), T-003 (fixtures). All reviewed cross-agent.
-- Published to https://github.com/anuraagburman/market-sentinel (public; blueprint PDF purged from history, gitignored).
-- Wrote T-004 and T-007 specs.
-- T-003: 19-position synthetic portfolio (20 raw rows, five import cases), ten adversarial packets,
-  deterministic generator, `make test` runs contracts + fixtures suites.
+- Implemented deterministic CSV parsing with preserved raw cells, Decimal validation,
+  duplicate warnings, missing-cost nulls, formula detection, and explicit row issues.
+- Added typed preview models and a replaceable in-memory repository with copy isolation.
+- Added synchronous multipart `POST /imports` (201) and `GET /imports/{id}` (404 if absent).
+- Enforced UTF-8/BOM, size, row-count, content-type, and required-header checks;
+  rejected files never reach storage. Added uniform problem bodies for upload errors.
+- Pinned python-multipart 0.0.20 and regenerated OpenAPI.
+- Followed all six planned commits: parser tests (`60bc8ce`), parser (`a87408d`),
+  models/repository (`0f169a9`), routes/OpenAPI (`549a410`), API tests (`aa8f304`),
+  and this documentation commit. Branch is being pushed for review at session end.
 
 ## Tests run
-- See the T-003 merge commit message for the results on main.
+- Initial parser tests failed as intended before implementation (missing service).
+- Targeted API suite → pass: 50 tests, including 48 new import tests.
+- `make test` → pass: 182 Python tests + 1 Vitest test; existing Starlette deprecation warning.
+- `make lint` → pass: Ruff check/format, ESLint, Next type generation, TypeScript.
+- `make contracts && git diff --exit-code packages/contracts` → pass; generated contract is current.
 
 ## Contract changes proposed (not applied)
-- none
+- none; authorized OpenAPI regeneration is committed.
 
 ## Unresolved / assumptions
-- T-009 should add an injection variant on **usable** data (packet 07 only exercises the unusable gate,
-  so the injected text never reaches a judgment stage).
-- Workflow: parallel branches conflict on CURRENT.md and LEDGER.md. Consider one handoff file per task.
-- Horizon enum `swing | multiweek` still to be confirmed in T-000. JEV access unconfirmed (blocks T-009).
-- Consumers must enable date-time format checking (ADR-001 §3).
+- Size limit interprets 1 MB as 1 MiB (1,048,576 bytes), documented in the endpoint.
+- Accepted file MIME types: text/csv and application/csv; outer request must be multipart/form-data.
+- Raw cells are ordered arrays aligned with detected columns, preserving extra cells and unknown columns.
+  Uneven/blank rows remain visible with column_count_mismatch; duplicate recognized headers reject the file.
+- Duplicate comparisons use parsed Decimal equality for valid holdings; no merge or symbol resolution.
+- Preview storage is temporary and process-local (lost on restart, not shared across workers).
+  No auth, tenant field, confirmation, or persistence was added, per scope.
