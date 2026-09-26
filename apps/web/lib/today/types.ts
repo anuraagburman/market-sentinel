@@ -6,7 +6,8 @@ export type SurfaceStatus = (typeof SURFACE_STATUSES)[number];
 
 export type EvidenceStatus = "supported" | "partial" | "contested" | "insufficient";
 
-export type SessionName = "pre_market" | "regular" | "after_hours" | "closed";
+export const SESSION_NAMES = ["pre_market", "regular", "after_hours", "closed"] as const;
+export type SessionName = (typeof SESSION_NAMES)[number];
 
 export interface SourceRef {
   id: string;

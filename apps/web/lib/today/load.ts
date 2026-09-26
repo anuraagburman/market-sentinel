@@ -5,7 +5,7 @@ import ready from "../../fixtures/today/ready.json";
 import running from "../../fixtures/today/running.json";
 import stale from "../../fixtures/today/stale.json";
 import unreadable from "../../fixtures/today/unreadable.json";
-import { SURFACE_STATUSES, type SurfaceStatus, type TodayView } from "./types";
+import { SESSION_NAMES, SURFACE_STATUSES, type SessionName, type SurfaceStatus, type TodayView } from "./types";
 
 export type TodayResult = { ok: true; view: TodayView } | { ok: false };
 
@@ -68,7 +68,8 @@ export function parseToday(raw: unknown): TodayResult {
   if (!isObject(raw) || !isObject(raw.view)) return { ok: false };
   const v = raw.view;
   const h = v.header;
-  if (!isObject(h) || !isObject(h.session) || !isCalendarDate(h.session.date) || !isUtcTimestamp(h.snapshot_at)) return { ok: false };
+  if (!isObject(h) || !isObject(h.session) || !SESSION_NAMES.includes(h.session.name as SessionName)) return { ok: false };
+  if (!isCalendarDate(h.session.date) || !isUtcTimestamp(h.snapshot_at)) return { ok: false };
   if (!isTimeZone(h.user_timezone) || !isTimeZone(h.exchange_timezone)) return { ok: false };
   const c = h.coverage;
   if (!isObject(c) || !isArrayOf(c.checked, isSource) || !isArrayOf(c.failed, isSource)) return { ok: false };
