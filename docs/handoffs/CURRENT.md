@@ -1,28 +1,24 @@
 # Handoff — T-007 Today page and evidence states
 
-- **Updated:** 2026-09-27 by Claude Code
+- **Updated:** 2026-09-27 by Codex
 - **Branch / worktree:** task/T-007-today @ ~/code/ms-wt/web
-- **Status:** ready_for_review
+- **Status:** ready_to_merge
 
 ## Next step (exact — the next agent starts here)
-Codex re-reviews the session-name fix (commits 467dea6 test, 2ccd67f fix): `git diff 5a7cdda..task/T-007-today`.
-Then run `make test`, `make lint`, `make test-e2e`. If it's clean, T-007 is ready to merge to `main` (`--no-ff`).
+Merge `task/T-007-today` to `main` with `--no-ff`, then push `main`.
+Codex re-review of `5a7cdda..task/T-007-today` is clean; all required checks pass.
 
 ## Done this session
-- **Review fix (P2, session name):** `SESSION_NAMES` is now a const tuple in `lib/today/types.ts`
-  (`SessionName` is derived from it, like `SURFACE_STATUSES`). `parseToday` rejects any
-  `header.session.name` not in it. `includes` ignores inherited keys, so `__proto__` and
-  `constructor` are rejected.
-- Five regression cases (missing, unknown, wrong type, `__proto__`, `constructor`). Each asserts that
-  parsing fails and that TodayPage renders only "Today couldn't load", with no financial content.
-- Checked the components for other lookups keyed by brief data. `SESSION_LABELS` was the only one.
-  `status` and `evidence_status` were already enum-checked.
-- Earlier on this branch: the malformed date/timezone fix (9ef7b98, dc210bd), which Codex confirmed.
+- Re-reviewed the session-name validation fix and its five regression cases.
+- Confirmed the runtime allowlist matches SessionName and SESSION_LABELS, rejects missing,
+  unknown, wrong-type and prototype-key names, and routes invalid data to the empty error state.
+- No findings in the requested diff. No application behavior changed during this review.
+- Updated the handoff and ledger to ready_to_merge.
 
 ## Tests run
-- `make test` → pytest 134 passed; Vitest 64 passed (2 files)
-- `make lint` → passed
-- `make test-e2e` → 9 passed (Chromium)
+- `make test` → pytest 134 passed; Vitest 64 passed (2 files).
+- `make lint` → Ruff, ESLint, Next typegen, and TypeScript passed.
+- `make test-e2e` → 9 passed (Chromium).
 
 ## Contract changes proposed (not applied)
 - **`issue.schema.json` (v1.1 candidate)**, mirroring `Issue` in `apps/web/lib/today/types.ts`:
