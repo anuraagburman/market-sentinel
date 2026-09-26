@@ -1,0 +1,147 @@
+{
+  "brief": {
+    "id": "00000000-0000-4000-8000-000000000700",
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000100",
+    "cutoff": "2026-09-28T11:30:00Z",
+    "published_at": "2026-09-28T11:35:00Z",
+    "status": "ready",
+    "decision_ids": [
+      "00000000-0000-4000-8000-000000000701",
+      "00000000-0000-4000-8000-000000000702",
+      "00000000-0000-4000-8000-000000000703"
+    ],
+    "coverage": {
+      "checked_sources": ["synthetic-company", "synthetic-filings", "synthetic-news"],
+      "failed_sources": [],
+      "unpriced_instrument_ids": ["00000000-0000-4000-8000-000000000003"]
+    },
+    "revision": 1
+  },
+  "view": {
+    "header": {
+      "session": { "name": "pre_market", "date": "2026-09-28" },
+      "user_timezone": "America/Los_Angeles",
+      "exchange_timezone": "America/New_York",
+      "snapshot_at": "2026-09-28T11:30:00Z",
+      "coverage": {
+        "checked": [
+          { "id": "synthetic-company", "label": "Company releases" },
+          { "id": "synthetic-filings", "label": "SEC filings" },
+          { "id": "synthetic-news", "label": "News" }
+        ],
+        "failed": [],
+        "unpriced": [
+          { "instrument_id": "00000000-0000-4000-8000-000000000003", "symbol": "SYN03", "name": "Synthela 03" }
+        ]
+      }
+    },
+    "status": "ready",
+    "issues": [
+      {
+        "id": "issue-syn01-outlook",
+        "holding": { "instrument_id": "00000000-0000-4000-8000-000000000001", "symbol": "SYN01", "name": "Synthela 01" },
+        "observation": {
+          "text": "Synthela 01 lowered its full-year revenue outlook.",
+          "source": "Synthela 01 company release",
+          "observed_at": "2026-09-28T10:45:00Z"
+        },
+        "interpretation": "The release supports the guidance change; the effect on next year's margins is unresolved.",
+        "evidence_status": "supported",
+        "exposure": {
+          "kind": "calculation",
+          "value": "48.8% of priced portfolio value",
+          "basis": "18 of 19 holdings priced at the Sep 25 regular-session close; SYN03 has no price."
+        },
+        "next_question": "Does the lower revenue outlook change the margin assumption in your thesis?",
+        "evidence": [
+          {
+            "id": "ev-syn01-release",
+            "source": "Synthela 01 company release",
+            "published_at": "2026-09-28T10:45:00Z",
+            "known_at": "2026-09-28T10:46:00Z",
+            "excerpt": "Synthela 01 now expects full-year revenue at the low end of its prior range, citing slower orders in its fictional industrial segment."
+          },
+          {
+            "id": "ev-syn01-8k",
+            "source": "SEC filing (8-K)",
+            "published_at": "2026-09-28T10:50:00Z",
+            "known_at": "2026-09-28T10:58:00Z",
+            "excerpt": "The registrant furnished the press release as Exhibit 99.1. No change to margin guidance was stated."
+          }
+        ]
+      },
+      {
+        "id": "issue-syn12-supply",
+        "holding": { "instrument_id": "00000000-0000-4000-8000-000000000012", "symbol": "SYN12", "name": "Synthela 12" },
+        "observation": {
+          "text": "Two reports disagree on whether Synthela 12's main supply agreement was extended.",
+          "source": "News",
+          "observed_at": "2026-09-28T09:10:00Z"
+        },
+        "interpretation": "If the agreement lapsed, input costs could rise; neither report cites the company.",
+        "evidence_status": "contested",
+        "exposure": {
+          "kind": "calculation",
+          "value": "6.1% of priced portfolio value",
+          "basis": "18 of 19 holdings priced at the Sep 25 regular-session close; SYN03 has no price."
+        },
+        "next_question": "Has Synthela 12 confirmed the agreement's status in a filing or release?",
+        "evidence": [
+          {
+            "id": "ev-syn12-news-a",
+            "source": "News (synthetic outlet A)",
+            "published_at": "2026-09-28T08:55:00Z",
+            "known_at": "2026-09-28T09:05:00Z",
+            "excerpt": "People familiar with the matter said the agreement was extended for two years."
+          },
+          {
+            "id": "ev-syn12-news-b",
+            "source": "News (synthetic outlet B)",
+            "published_at": "2026-09-28T09:02:00Z",
+            "known_at": "2026-09-28T09:10:00Z",
+            "excerpt": null
+          }
+        ]
+      },
+      {
+        "id": "issue-syn03-late-filing",
+        "holding": { "instrument_id": "00000000-0000-4000-8000-000000000003", "symbol": "SYN03", "name": "Synthela 03" },
+        "observation": {
+          "text": "Synthela 03 filed a notice that its quarterly report will be late.",
+          "source": "SEC filing (NT 10-Q)",
+          "observed_at": "2026-09-27T21:15:00Z"
+        },
+        "interpretation": "A late filing can signal accounting review, but the notice gives no reason.",
+        "evidence_status": "insufficient",
+        "exposure": {
+          "kind": "unavailable",
+          "reason": "No price observation for SYN03 at the cutoff."
+        },
+        "next_question": "Does the notice or any later filing state why the report is delayed?",
+        "evidence": [
+          {
+            "id": "ev-syn03-nt10q",
+            "source": "SEC filing (NT 10-Q)",
+            "published_at": "2026-09-27T21:15:00Z",
+            "known_at": "2026-09-27T21:40:00Z",
+            "excerpt": "The registrant could not complete its quarterly report without unreasonable effort or expense."
+          }
+        ]
+      }
+    ],
+    "upcoming_events": [
+      {
+        "id": "event-syn08-earnings",
+        "holding": { "instrument_id": "00000000-0000-4000-8000-000000000008", "symbol": "SYN08", "name": "Synthela 08" },
+        "title": "Quarterly earnings call",
+        "at": "2026-09-29T20:30:00Z"
+      },
+      {
+        "id": "event-syn16-meeting",
+        "holding": { "instrument_id": "00000000-0000-4000-8000-000000000016", "symbol": "SYN16", "name": "Synthela 16" },
+        "title": "Annual shareholder meeting",
+        "at": "2026-10-01T14:00:00Z"
+      }
+    ]
+  }
+}
