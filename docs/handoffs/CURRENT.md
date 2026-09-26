@@ -1,34 +1,37 @@
-# Handoff — main after T-004 merge
+# Handoff — main after T-005 spec
 
 - **Updated:** 2026-09-26 by Claude Code
 - **Branch / worktree:** main @ ~/code/market-sentinel
-- **Status:** T-004 merged; T-007 awaiting Codex review; T-005 needs a spec
+- **Status:** T-005 `ready`; T-007 awaiting Codex review
 
 ## Next step (exact — the next agent starts here)
-In parallel:
-- **Codex** reviews T-007 in `~/code/ms-wt/api`: `git checkout --detach origin/task/T-007-today`
-  (the branch itself is checked out in `~/code/ms-wt/web`), then follow the "Next step" in that
-  branch's `docs/handoffs/CURRENT.md`. Write findings to the user; do not commit to T-007.
-- **Claude Code** writes `docs/tasks/T-005-instrument-resolution.md` on `main` and moves T-005 to
-  `ready` in the ledger. Input: T-004's preview (`resolution: "pending"`, `parsed.symbol`).
+- **Codex**, first: review T-007 in `~/code/ms-wt/api` (`git checkout --detach origin/task/T-007-today`),
+  following the "Next step" in that branch's `docs/handoffs/CURRENT.md`. Report findings to the
+  user; do not commit to T-007.
+- **Codex**, then in a fresh session: in `~/code/ms-wt/api`, `git checkout -b task/T-005-instrument-resolution origin/main`
+  and implement `docs/tasks/T-005-instrument-resolution.md`, starting with planned commit 1
+  (synthetic instrument master in `evals/fixtures/generate.py`).
 
 ## Done this session
-- Reviewed T-004 twice (44024cb, 4d77997). Codex fixed: browser CSV MIME variants with `.csv`
-  filenames, one issue per formula cell, `blank_row` warning, `negative_cost_basis` error.
-- Merged T-004 to `main` with `--no-ff`; ledger row set to `merged`.
+- Wrote `docs/tasks/T-005-instrument-resolution.md`: exact, date-effective symbol lookup against a
+  generated synthetic instrument master; per-row `resolution` object replaces `"pending"`;
+  `GET /instruments?symbol=` lookup; select/clear endpoints for ambiguous and typo rows.
+- Ledger: T-005 → `ready`.
 
 ## Tests run
-- At 4d77997: `make test` → 210 Python + 1 Vitest passed; `make lint` → pass;
-  `make contracts && git diff --exit-code packages/contracts` → pass.
+- None (docs only).
 
 ## Contract changes proposed (not applied)
 - T-007 proposes `issue.schema.json` (v1.1 candidate); see its branch handoff.
+- T-005 will propose `instrument` and `symbol_mapping` schemas; bundle both into one v1.1 bump.
 
 ## Unresolved / assumptions
-- Upload size is checked after Starlette receives the whole body; a request-size limit is needed at
-  deploy time before the endpoint is exposed.
-- Import previews are process-local until persistence/`confirm` lands.
-- T-007 merge will conflict on `CURRENT.md` and `LEDGER.md` (both edited on branches); resolve by hand.
-  Consider one handoff file per task.
-- Still open from before: horizon enum (T-000), JEV access (blocks T-009), T-009 injection variant on
-  usable data, consumers must enable date-time format checking (ADR-001 §3).
+- T-005 changes the `resolution` field shape in the import preview API (string → object). Nothing
+  consumes it yet; T-007 is fixture-driven.
+- `as_of` = UTC date of `received_at`. Whether confirm (later) re-resolves at confirm time is open.
+- The app's default instrument repository reads `evals/fixtures/instruments/` until T-008 brings
+  provider reference data.
+- Carried over: upload request-size limit needed before exposing `/imports`; previews are
+  process-local; T-007 merge will conflict on `CURRENT.md`/`LEDGER.md` (consider one handoff file
+  per task); horizon enum (T-000); JEV access (blocks T-009); T-009 injection variant on usable
+  data; consumers must enable date-time format checking (ADR-001 §3).
