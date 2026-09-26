@@ -158,3 +158,31 @@ def test_openapi_import_contract():
         assert post["responses"][str(status)]["content"]["application/json"]["schema"] == {
             "$ref": "#/components/schemas/Problem"
         }
+
+
+@pytest.mark.parametrize(
+    "media_type", ["application/vnd.ms-excel", "text/plain", "application/octet-stream"]
+)
+@pytest.mark.parametrize(
+    "filename", ["holdings.csv", "HOLDINGS.CSV", "holdings.xls", "holdings.csv.exe"]
+)
+def test_fallback_media_types_require_csv_filename(client, media_type, filename):
+    response = client[0].post(
+        "/imports", files={"file": (filename, PORTFOLIO.read_bytes(), media_type)}
+    )
+    if filename.lower().endswith(".csv"):
+        assert response.status_code == 201
+        assert len(response.json()["rows"]) == 20
+    else:
+        assert response.status_code == 415
+        assert client[1].saved == []
+
+
+@pytest.mark.parametrize(
+    "media_type", ["application/vnd.ms-excel", "text/plain", "application/octet-stream"]
+)
+def test_fallback_media_types_still_validate_content(client, media_type):
+    response = upload(client[0], (FIXTURES / "latin1.csv").read_bytes(), media_type)
+    assert response.status_code == 422
+    assert response.json()["code"] == "invalid_encoding"
+    assert client[1].saved == []

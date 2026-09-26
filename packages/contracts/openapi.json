@@ -379,7 +379,7 @@
     },
     "/imports": {
       "post": {
-        "description": "Preview a UTF-8 CSV (text/csv or application/csv), up to 1 MiB and 1,000 rows.\n\nAll rows stay pending. Previews are process-local and disappear on restart.",
+        "description": "Preview a UTF-8 CSV, up to 1 MiB and 1,000 rows.\n\nAccept text/csv or application/csv; also accept application/vnd.ms-excel,\ntext/plain, and application/octet-stream when the filename ends in .csv.\n\nAll rows stay pending. Previews are process-local and disappear on restart.",
         "operationId": "upload_import_imports_post",
         "requestBody": {
           "content": {

@@ -83,14 +83,25 @@ Repository = Annotated[PreviewRepository, Depends(get_repository)]
 async def upload_import(
     repository: Repository, file: Annotated[UploadFile, File()]
 ) -> ImportPreview:
-    """Preview a UTF-8 CSV (text/csv or application/csv), up to 1 MiB and 1,000 rows.
+    """Preview a UTF-8 CSV, up to 1 MiB and 1,000 rows.
+
+    Accept text/csv or application/csv; also accept application/vnd.ms-excel,
+    text/plain, and application/octet-stream when the filename ends in .csv.
 
     All rows stay pending. Previews are process-local and disappear on restart.
     """
     content_type = (file.content_type or "").split(";", 1)[0].strip().lower()
-    if content_type not in {"text/csv", "application/csv"}:
+    csv_filename = (file.filename or "").lower().endswith(".csv")
+    fallback_type = content_type in {
+        "application/vnd.ms-excel",
+        "text/plain",
+        "application/octet-stream",
+    }
+    if content_type not in {"text/csv", "application/csv"} and not (csv_filename and fallback_type):
         raise ImportProblem(
-            "unsupported_media_type", "File content type must be text/csv or application/csv.", 415
+            "unsupported_media_type",
+            "Supply a CSV content type or a .csv filename with an Excel, plain-text, or binary content type.",
+            415,
         )
     content = await file.read(MAX_BYTES + 1)
     return create_preview(content, repository)
