@@ -30,6 +30,9 @@ export function TodayHeader({ header, status }: { header: Header; status: Surfac
           {coverage.checked.length > 0
             ? `${plural(coverage.checked.length, "source", "sources")} checked: ${list(coverage.checked)}.`
             : "No sources checked."}
+          {coverage.pending && coverage.pending.length > 0 && (
+            <span> Still checking: {list(coverage.pending)}.</span>
+          )}
           {coverage.failed.length > 0 && (
             <span className="text-warn">
               {" "}<WarningIcon /> {plural(coverage.failed.length, "source", "sources")} failed: {list(coverage.failed)}.

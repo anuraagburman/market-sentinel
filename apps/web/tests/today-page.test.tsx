@@ -140,6 +140,36 @@ describe("failed", () => {
   });
 });
 
+describe("stale", () => {
+  test("says the data is out of date and keeps the last good brief apart", () => {
+    const { container } = renderState("stale");
+    const notice = screen.getByRole("status");
+    expect(notice.textContent).toContain("This brief is out of date");
+    expect(notice.textContent).toContain("The newest complete data is from Fri, Sep 25, 5:00 PM EDT");
+    expect(notice.textContent).toContain("nothing here is current");
+    expect(notice.querySelector("svg[aria-hidden='true']")).toBeTruthy();
+    expect(within(notice).getByRole("link", { name: "Retry" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Material changes" })).toBeNull();
+    expectLastGoodSnapshotApart(container, "Fri, Sep 25, 5:00 PM EDT (Fri, 2:00 PM PDT your time)");
+    expectNoForbiddenContent(container);
+  });
+});
+
+describe("running", () => {
+  test("says what's checked and pending, with no results or clean-day copy", () => {
+    const { container } = renderState("running");
+    expect(screen.getByText("Checking data up to")).toBeTruthy();
+    const notice = screen.getByRole("status");
+    expect(notice.textContent).toContain("Brief in progress");
+    expect(notice.textContent).toContain("Checked so far: Company releases. Still checking: SEC filings, News.");
+    expect(screen.getByTestId("coverage-line").textContent).toContain("Still checking: SEC filings, News.");
+    expect(screen.queryAllByRole("article")).toHaveLength(0);
+    expect(screen.queryByText(/No new material changes/)).toBeNull();
+    expect(screen.queryByRole("heading", { name: /Last complete brief/ })).toBeNull();
+    expectNoForbiddenContent(container);
+  });
+});
+
 describe("unreadable fixture", () => {
   test("says Today couldn't load and shows no financial content", () => {
     const { container } = renderState("unreadable");

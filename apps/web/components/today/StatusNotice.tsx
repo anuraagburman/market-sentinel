@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { TodayView } from "../../lib/today/types";
+import { Timestamp } from "./IssueCard";
 import { WarningIcon } from "./Labels";
 
 const labels = (items: { label: string }[]) => items.map((s) => s.label).join(", ");
@@ -19,8 +20,28 @@ export function RetryLink({ href }: { href: string }) {
 
 /** What was checked and what's missing, for every state that isn't a clean ready brief. */
 export function StatusNotice({ view, retryHref }: { view: TodayView; retryHref: string }) {
-  const { checked, failed } = view.header.coverage;
+  const { checked, failed, pending = [] } = view.header.coverage;
+  const zones = { exchange: view.header.exchange_timezone, user: view.header.user_timezone };
   switch (view.status) {
+    case "running":
+      return (
+        <Notice title="Brief in progress">
+          <p>
+            Checked so far: {checked.length > 0 ? labels(checked) : "none"}. Still checking: {labels(pending)}.
+            Results appear once every source has been checked.
+          </p>
+        </Notice>
+      );
+    case "stale":
+      return (
+        <Notice title="This brief is out of date" warn>
+          <p>
+            The newest complete data is from <Timestamp utc={view.header.snapshot_at} zones={zones} />.
+            Today&apos;s refresh hasn&apos;t produced newer results, so nothing here is current.
+          </p>
+          <RetryLink href={retryHref} />
+        </Notice>
+      );
     case "partial":
       return (
         <Notice title="Partial brief" warn>
