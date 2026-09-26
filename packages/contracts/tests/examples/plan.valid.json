@@ -1,0 +1,32 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000060",
+    "instrument_id": "00000000-0000-4000-8000-000000000010",
+    "thesis_version": 1,
+    "thesis": "Margin recovery in FY2027 as input costs normalize.",
+    "thesis_state": "under_review",
+    "horizon": "multiweek",
+    "conditions": [
+      {
+        "kind": "wait",
+        "description": "Do nothing until the macro release and a full session of liquidity.",
+        "observable_evidence": "CPI release published and one regular session closed."
+      },
+      {
+        "kind": "reduce",
+        "description": "Reduce if the guidance cut reflects demand, not one-off costs.",
+        "observable_evidence": "Management commentary attributes the cut to volume declines.",
+        "price_reference": {
+          "value": "92.00",
+          "currency": "USD",
+          "source": "user",
+          "as_of": "2026-09-25T12:00:00Z"
+        }
+      }
+    ],
+    "invalidation": "Gross margin guidance cut for FY2027.",
+    "paper_size": null,
+    "revision": 1,
+    "created_at": "2026-09-25T12:00:00Z"
+  }
+]

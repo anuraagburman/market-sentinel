@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/decision.schema.json",
+  "title": "Decision envelope",
+  "description": "Application contract for one versioned judgment set on one event (blueprint §14). Not vendor request syntax. Deliberately has no confidence or probability field: calibrated values are added only after ADR + validation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "decision_id", "event_id", "as_of", "horizon", "packet_hash", "evidence_ids", "versions", "judgments", "research_action", "abstention_reasons", "status"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "decision_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "event_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "as_of": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "horizon": {"$ref": "common.schema.json#/$defs/horizon"},
+    "packet_hash": {"$ref": "common.schema.json#/$defs/sha256"},
+    "evidence_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taxonomy", "policy", "model", "calibration"],
+      "properties": {
+        "taxonomy": {"$ref": "common.schema.json#/$defs/version"},
+        "policy": {"$ref": "common.schema.json#/$defs/version"},
+        "model": {"type": "string", "minLength": 1, "description": "Recorded provider model id, or 'rules-only' / 'unavailable'."},
+        "calibration": {"oneOf": [{"$ref": "common.schema.json#/$defs/version"}, {"type": "null"}]}
+      }
+    },
+    "judgments": {
+      "description": "Keys and outputs must match decisions/taxonomy/v1.yaml (enforced by test). A judgment is omitted when its stage abstained or did not run; data_usability always runs first.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["data_usability"],
+      "properties": {
+        "data_usability": {"enum": ["usable", "partial", "unusable"]},
+        "event_family": {"$ref": "common.schema.json#/$defs/event_family"},
+        "primary_context": {"enum": ["company", "sector", "market", "mixed", "unknown"]},
+        "novelty": {"enum": ["new", "update", "repeated", "unclear"]},
+        "evidence_sufficiency": {"enum": ["sufficient", "partial", "insufficient"]},
+        "thesis_impact": {"enum": ["strengthens", "weakens", "invalidates", "unrelated", "unclear"]},
+        "research_relevance": {"type": "integer", "minimum": 1, "maximum": 5, "description": "Ordinal rubric score. Not a probability or expected return."},
+        "interpretation_conflict": {"enum": ["yes", "no"]}
+      }
+    },
+    "raw_provider_output_ref": {"oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]},
+    "research_action": {"$ref": "common.schema.json#/$defs/research_action"},
+    "abstention_reasons": {"type": "array", "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"}, "uniqueItems": true},
+    "status": {"enum": ["published", "superseded"]},
+    "superseded_by": {"$ref": "common.schema.json#/$defs/uuid"}
+  },
+  "allOf": [
+    {
+      "$comment": "Hard gate: unusable data always abstains; JEV cannot promote it.",
+      "if": {"properties": {"judgments": {"properties": {"data_usability": {"const": "unusable"}}}}},
+      "then": {"properties": {"research_action": {"const": "insufficient_evidence"}}}
+    },
+    {
+      "$comment": "Hard gate: insufficient evidence always abstains (policy v1). required keeps the rule from firing when the judgment is absent.",
+      "if": {"properties": {"judgments": {"required": ["evidence_sufficiency"], "properties": {"evidence_sufficiency": {"const": "insufficient"}}}}},
+      "then": {"properties": {"research_action": {"const": "insufficient_evidence"}}}
+    },
+    {
+      "$comment": "Abstention must say why.",
+      "if": {"properties": {"research_action": {"const": "insufficient_evidence"}}},
+      "then": {"properties": {"abstention_reasons": {"minItems": 1}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "superseded"}}},
+      "then": {"required": ["superseded_by"]}
+    }
+  ]
+}

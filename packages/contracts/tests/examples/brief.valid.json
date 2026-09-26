@@ -1,0 +1,38 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000050",
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+    "cutoff": "2026-09-25T12:00:00Z",
+    "published_at": "2026-09-25T12:04:00Z",
+    "status": "ready",
+    "decision_ids": [
+      "00000000-0000-4000-8000-000000000040"
+    ],
+    "coverage": {
+      "checked_sources": [
+        "sec_edgar",
+        "alpaca_iex"
+      ],
+      "failed_sources": []
+    },
+    "revision": 1
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000050",
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+    "cutoff": "2026-09-25T12:00:00Z",
+    "published_at": "2026-09-25T12:04:00Z",
+    "status": "no_material_change",
+    "decision_ids": [
+      "00000000-0000-4000-8000-000000000040"
+    ],
+    "coverage": {
+      "checked_sources": [
+        "sec_edgar",
+        "alpaca_iex"
+      ],
+      "failed_sources": []
+    },
+    "revision": 1
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/observation.schema.json",
+  "title": "Observation",
+  "description": "A market data point. observed_at (market time) and received_at (system time) are distinct.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "instrument_id", "metric", "value", "unit", "feed", "session", "adjustment", "observed_at", "received_at"],
+  "properties": {
+    "id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "instrument_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "metric": {"enum": ["last_price", "close", "open", "high", "low", "volume", "fx_rate"]},
+    "value": {"$ref": "common.schema.json#/$defs/decimal_string"},
+    "unit": {"type": "string", "description": "Currency code for prices, 'shares' for volume, 'ratio' for FX."},
+    "feed": {"$ref": "common.schema.json#/$defs/feed"},
+    "session": {"enum": ["regular", "pre", "post", "closed", "half_day"]},
+    "adjustment": {"enum": ["none", "split_adjusted", "split_and_dividend_adjusted"]},
+    "observed_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "received_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"}
+  }
+}

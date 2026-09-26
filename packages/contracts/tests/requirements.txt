@@ -1,0 +1,5 @@
+jsonschema>=4.23,<5
+rfc3339-validator>=0.1.4,<0.2  # enables date-time format checking
+referencing>=0.35
+pyyaml>=6,<7
+pytest>=8

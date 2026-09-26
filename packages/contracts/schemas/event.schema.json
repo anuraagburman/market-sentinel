@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/event.schema.json",
+  "title": "Event",
+  "description": "A candidate market event with a frozen evidence packet. packet_hash gives stable deduplication identity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "instrument_ids", "event_type", "cutoff", "packet_hash"],
+  "properties": {
+    "id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "instrument_ids": {"type": "array", "minItems": 1, "items": {"$ref": "common.schema.json#/$defs/uuid"}, "uniqueItems": true},
+    "event_type": {"$ref": "common.schema.json#/$defs/event_family"},
+    "cutoff": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "packet_hash": {"$ref": "common.schema.json#/$defs/sha256"},
+    "evidence_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "claim_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "coverage_gaps": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,250 @@
+[
+  {
+    "why": "unusable data promoted to investigate_now",
+    "doc": {
+      "schema_version": "1.0",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "event_id": "00000000-0000-4000-8000-000000000030",
+      "as_of": "2026-09-25T12:00:00Z",
+      "horizon": "swing",
+      "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ],
+      "versions": {
+        "taxonomy": "1.0",
+        "policy": "1.0",
+        "model": "record-provider-model-id",
+        "calibration": null
+      },
+      "judgments": {
+        "data_usability": "unusable",
+        "evidence_sufficiency": "partial"
+      },
+      "raw_provider_output_ref": "private-object-reference",
+      "research_action": "investigate_now",
+      "abstention_reasons": [
+        "missing_expectations_data"
+      ],
+      "status": "published"
+    }
+  },
+  {
+    "why": "abstention without a reason",
+    "doc": {
+      "schema_version": "1.0",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "event_id": "00000000-0000-4000-8000-000000000030",
+      "as_of": "2026-09-25T12:00:00Z",
+      "horizon": "swing",
+      "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ],
+      "versions": {
+        "taxonomy": "1.0",
+        "policy": "1.0",
+        "model": "record-provider-model-id",
+        "calibration": null
+      },
+      "judgments": {
+        "data_usability": "usable",
+        "evidence_sufficiency": "partial"
+      },
+      "raw_provider_output_ref": "private-object-reference",
+      "research_action": "insufficient_evidence",
+      "abstention_reasons": [],
+      "status": "published"
+    }
+  },
+  {
+    "why": "confidence field smuggled in",
+    "doc": {
+      "schema_version": "1.0",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "event_id": "00000000-0000-4000-8000-000000000030",
+      "as_of": "2026-09-25T12:00:00Z",
+      "horizon": "swing",
+      "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ],
+      "versions": {
+        "taxonomy": "1.0",
+        "policy": "1.0",
+        "model": "record-provider-model-id",
+        "calibration": null
+      },
+      "judgments": {
+        "data_usability": "usable",
+        "evidence_sufficiency": "partial"
+      },
+      "raw_provider_output_ref": "private-object-reference",
+      "research_action": "watch_condition",
+      "abstention_reasons": [
+        "missing_expectations_data"
+      ],
+      "status": "published",
+      "confidence": 0.92
+    }
+  },
+  {
+    "why": "research_relevance outside 1-5",
+    "doc": {
+      "schema_version": "1.0",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "event_id": "00000000-0000-4000-8000-000000000030",
+      "as_of": "2026-09-25T12:00:00Z",
+      "horizon": "swing",
+      "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ],
+      "versions": {
+        "taxonomy": "1.0",
+        "policy": "1.0",
+        "model": "record-provider-model-id",
+        "calibration": null
+      },
+      "judgments": {
+        "data_usability": "usable",
+        "evidence_sufficiency": "partial",
+        "research_relevance": 7
+      },
+      "raw_provider_output_ref": "private-object-reference",
+      "research_action": "watch_condition",
+      "abstention_reasons": [
+        "missing_expectations_data"
+      ],
+      "status": "published"
+    }
+  },
+  {
+    "why": "judgment label not in taxonomy",
+    "doc": {
+      "schema_version": "1.0",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "event_id": "00000000-0000-4000-8000-000000000030",
+      "as_of": "2026-09-25T12:00:00Z",
+      "horizon": "swing",
+      "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ],
+      "versions": {
+        "taxonomy": "1.0",
+        "policy": "1.0",
+        "model": "record-provider-model-id",
+        "calibration": null
+      },
+      "judgments": {
+        "data_usability": "usable",
+        "evidence_sufficiency": "partial",
+        "primary_context": "technical"
+      },
+      "raw_provider_output_ref": "private-object-reference",
+      "research_action": "watch_condition",
+      "abstention_reasons": [
+        "missing_expectations_data"
+      ],
+      "status": "published"
+    }
+  },
+  {
+    "why": "trade action instead of research action",
+    "doc": {
+      "schema_version": "1.0",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "event_id": "00000000-0000-4000-8000-000000000030",
+      "as_of": "2026-09-25T12:00:00Z",
+      "horizon": "swing",
+      "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ],
+      "versions": {
+        "taxonomy": "1.0",
+        "policy": "1.0",
+        "model": "record-provider-model-id",
+        "calibration": null
+      },
+      "judgments": {
+        "data_usability": "usable",
+        "evidence_sufficiency": "partial"
+      },
+      "raw_provider_output_ref": "private-object-reference",
+      "research_action": "sell",
+      "abstention_reasons": [
+        "missing_expectations_data"
+      ],
+      "status": "published"
+    }
+  },
+  {
+    "why": "data_usability stage missing",
+    "doc": {
+      "schema_version": "1.0",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "event_id": "00000000-0000-4000-8000-000000000030",
+      "as_of": "2026-09-25T12:00:00Z",
+      "horizon": "swing",
+      "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ],
+      "versions": {
+        "taxonomy": "1.0",
+        "policy": "1.0",
+        "model": "record-provider-model-id",
+        "calibration": null
+      },
+      "judgments": {
+        "evidence_sufficiency": "partial"
+      },
+      "raw_provider_output_ref": "private-object-reference",
+      "research_action": "watch_condition",
+      "abstention_reasons": [
+        "missing_expectations_data"
+      ],
+      "status": "published"
+    }
+  },
+  {
+    "why": "insufficient evidence promoted to investigate_now",
+    "doc": {
+      "schema_version": "1.0",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "event_id": "00000000-0000-4000-8000-000000000030",
+      "as_of": "2026-09-25T12:00:00Z",
+      "horizon": "swing",
+      "packet_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ],
+      "versions": {
+        "taxonomy": "1.0",
+        "policy": "1.0",
+        "model": "record-provider-model-id",
+        "calibration": null
+      },
+      "judgments": {
+        "data_usability": "usable",
+        "evidence_sufficiency": "insufficient"
+      },
+      "raw_provider_output_ref": "private-object-reference",
+      "research_action": "investigate_now",
+      "abstention_reasons": [
+        "missing_expectations_data"
+      ],
+      "status": "published"
+    }
+  }
+]
