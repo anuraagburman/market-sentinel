@@ -1,34 +1,28 @@
 # Handoff — T-007 Today page and evidence states
 
-- **Updated:** 2026-09-27 by Codex
+- **Updated:** 2026-09-27 by Claude Code
 - **Branch / worktree:** task/T-007-today @ ~/code/ms-wt/web
-- **Status:** changes_requested
+- **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-Fix the remaining P2 boundary-validation finding in `apps/web/lib/today/load.ts:71`, test-first:
-validate `header.session.name` against `pre_market | regular | after_hours | closed`.
-Missing or unknown names currently pass `parseToday` and render a blank session label.
-With `name: "__proto__"`, parsing also succeeds, but `TodayHeader` looks up an inherited object
-in `SESSION_LABELS` and React throws "Objects are not valid as a React child" instead of showing
-"Today couldn't load". Reproduced by cloning ready.json, changing only session.name, parsing,
-and rendering TodayPage with React DOM server.
-Add regression cases for missing, unknown, wrong-type, and prototype-key names; verify the
-fallback renders without financial content. Then rerun `make test`, `make lint`, `make test-e2e`
-and return to Codex for re-review.
+Codex re-reviews the session-name fix (commits 467dea6 test, 2ccd67f fix): `git diff 5a7cdda..task/T-007-today`.
+Then run `make test`, `make lint`, `make test-e2e`. If it's clean, T-007 is ready to merge to `main` (`--no-ff`).
 
 ## Done this session
-- Reviewed `515313e..task/T-007-today`, then the full `main...task/T-007-today` against T-007.
-- The previous malformed-date/timezone crash is fixed; the 13 new boundary cases pass.
-- Found and reproduced the unchecked session-name crash described above (P2).
-- No application behavior changed during review; updated handoff and ledger only.
+- **Review fix (P2, session name):** `SESSION_NAMES` is now a const tuple in `lib/today/types.ts`
+  (`SessionName` is derived from it, like `SURFACE_STATUSES`). `parseToday` rejects any
+  `header.session.name` not in it. `includes` ignores inherited keys, so `__proto__` and
+  `constructor` are rejected.
+- Five regression cases (missing, unknown, wrong type, `__proto__`, `constructor`). Each asserts that
+  parsing fails and that TodayPage renders only "Today couldn't load", with no financial content.
+- Checked the components for other lookups keyed by brief data. `SESSION_LABELS` was the only one.
+  `status` and `evidence_status` were already enum-checked.
+- Earlier on this branch: the malformed date/timezone fix (9ef7b98, dc210bd), which Codex confirmed.
 
 ## Tests run
-- `make test` → pytest 134 passed; Vitest 59 passed (2 files).
-- `make lint` → Ruff, ESLint, Next typegen, and TypeScript passed.
-- `make test-e2e` → 9 passed (Chromium).
-- Read-only malformed-session reproduction → parseToday returned ok; React render threw.
-- Initial sandbox runs could not access the uv cache or bind the dev server; all required
-  commands passed when rerun with approved access.
+- `make test` → pytest 134 passed; Vitest 64 passed (2 files)
+- `make lint` → passed
+- `make test-e2e` → 9 passed (Chromium)
 
 ## Contract changes proposed (not applied)
 - **`issue.schema.json` (v1.1 candidate)**, mirroring `Issue` in `apps/web/lib/today/types.ts`:
