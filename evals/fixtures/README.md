@@ -32,3 +32,19 @@ Packet 05's week-old close is explicitly stale for this fixture's morning-brief
 use case; no production freshness threshold is invented. `disabled_effects` lists
 hard-gate effects required by policy v1. Packet 10's brief is the expected partial
 output; no decision is fabricated for the failed coverage.
+
+## Synthetic instrument master
+
+`instruments/instruments.json` and `instruments/symbol_mappings.json` are generated
+reference data for T-005, temporary until provider reference data (T-008). They are
+entirely fictional and must not be used to identify real securities. Instrument
+IDs for Synthela 01–19 match `portfolio/positions.json`; new instruments use the
+reserved UUID suffixes 1001–1004, outside the existing generated ID range.
+
+Mappings use inclusive `valid_from` and exclusive `valid_to` dates; null means
+open-ended. The master covers common/preferred shares, ambiguous `SYN-AMB`, the
+Synthela 20 ticker change on 2026-06-01, and `SYN-RE` reuse on 2026-07-01 from
+CAD-denominated Synthela 21 to USD-denominated Synthela 22. `SYN-TYPO` has no mapping.
+The prescribed ambiguity fixture includes simultaneous aliases for both Synthela
+02 instruments. Local fixture schemas validate these records pending a shared
+contract version bump; existing v1 contract schemas are unchanged.

@@ -1,0 +1,164 @@
+[
+  {
+    "symbol": "SYN01",
+    "instrument_id": "00000000-0000-4000-8000-000000000001",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN02",
+    "instrument_id": "00000000-0000-4000-8000-000000000002",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN03",
+    "instrument_id": "00000000-0000-4000-8000-000000000003",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN04",
+    "instrument_id": "00000000-0000-4000-8000-000000000004",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN05",
+    "instrument_id": "00000000-0000-4000-8000-000000000005",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN06",
+    "instrument_id": "00000000-0000-4000-8000-000000000006",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN07",
+    "instrument_id": "00000000-0000-4000-8000-000000000007",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN08",
+    "instrument_id": "00000000-0000-4000-8000-000000000008",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN09",
+    "instrument_id": "00000000-0000-4000-8000-000000000009",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN10",
+    "instrument_id": "00000000-0000-4000-8000-000000000010",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN11",
+    "instrument_id": "00000000-0000-4000-8000-000000000011",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN12",
+    "instrument_id": "00000000-0000-4000-8000-000000000012",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN13",
+    "instrument_id": "00000000-0000-4000-8000-000000000013",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN14",
+    "instrument_id": "00000000-0000-4000-8000-000000000014",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN15",
+    "instrument_id": "00000000-0000-4000-8000-000000000015",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN16",
+    "instrument_id": "00000000-0000-4000-8000-000000000016",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN17",
+    "instrument_id": "00000000-0000-4000-8000-000000000017",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN18",
+    "instrument_id": "00000000-0000-4000-8000-000000000018",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN19",
+    "instrument_id": "00000000-0000-4000-8000-000000000019",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN02P",
+    "instrument_id": "00000000-0000-4000-8000-000000001001",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN-AMB",
+    "instrument_id": "00000000-0000-4000-8000-000000000002",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN-AMB",
+    "instrument_id": "00000000-0000-4000-8000-000000001001",
+    "valid_from": "2020-01-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN-OLD20",
+    "instrument_id": "00000000-0000-4000-8000-000000001002",
+    "valid_from": "2020-01-01",
+    "valid_to": "2026-06-01"
+  },
+  {
+    "symbol": "SYN20",
+    "instrument_id": "00000000-0000-4000-8000-000000001002",
+    "valid_from": "2026-06-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN-RE",
+    "instrument_id": "00000000-0000-4000-8000-000000001003",
+    "valid_from": "2020-01-01",
+    "valid_to": "2026-07-01"
+  },
+  {
+    "symbol": "SYN21",
+    "instrument_id": "00000000-0000-4000-8000-000000001003",
+    "valid_from": "2026-07-01",
+    "valid_to": null
+  },
+  {
+    "symbol": "SYN-RE",
+    "instrument_id": "00000000-0000-4000-8000-000000001004",
+    "valid_from": "2026-07-01",
+    "valid_to": null
+  }
+]
