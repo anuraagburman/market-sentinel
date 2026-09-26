@@ -17,4 +17,6 @@ Write a full task file only when a task moves to `ready` — specs written too e
 | T-009 | Staged JEV decisions (adapter + taxonomy v1) | 2 | Claude Code | Codex | — | T-000 (JEV access), T-003 | backlog |
 | T-010 | First evaluation report (rules-only vs persona vs JEV) | 2 | Codex | Anuraag + Claude Code | — | T-009 | backlog |
 
+T-004 review fixes: MIME compatibility, formula issue counts, blank-row warnings, and negative-cost validation pass all checks; ready_for_review.
+
 **Parallel lanes right now:** Codex → T-004 (`~/code/ms-wt/api`), Claude Code → T-007 (`~/code/ms-wt/web`), Anuraag → T-000.
