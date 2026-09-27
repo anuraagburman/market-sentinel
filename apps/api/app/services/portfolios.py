@@ -1,6 +1,7 @@
-"""Validated synthetic snapshots until portfolio confirmation/persistence exists."""
+"""Atomic temporary portfolio storage and validated synthetic observations."""
 
 import json
+from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import Protocol
@@ -126,7 +127,9 @@ class InMemoryPortfolioRepository:
             )
             if version.id != record.portfolio_version_id or version.id in self._versions:
                 raise ValueError("Invalid or existing version identity")
-            if version.status != "confirmed" or version.confirmed_at < version.imported_at:
+            if version.status != "confirmed" or datetime.fromisoformat(
+                version.confirmed_at
+            ) < datetime.fromisoformat(version.imported_at):
                 raise ValueError("Invalid confirmed version")
             if not positions or any(p.portfolio_version_id != version.id for p in positions):
                 raise ValueError("Positions must belong to the confirmed version")

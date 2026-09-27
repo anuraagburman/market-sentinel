@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.domain.valuation import value_portfolio
 from app.models.imports import Problem
+from app.models.confirm import PortfolioResponse
 from app.models.valuation import UTCTimestamp, Valuation
 from app.routes.imports import ImportRoute
 from app.services.imports import ImportProblem
@@ -75,4 +76,25 @@ def get_valuation(
         )
     return value_portfolio(
         version, portfolios.positions(version_id), observations.observations(), instant
+    )
+
+
+@router.get(
+    "/{id}",
+    response_model=PortfolioResponse,
+    response_model_exclude_unset=True,
+    responses={404: {"model": Problem}},
+)
+def get_portfolio(id: str, portfolios: Portfolios) -> PortfolioResponse:
+    try:
+        version_id = UUID(id)
+    except ValueError:
+        raise ImportProblem(
+            "portfolio_version_not_found", "Portfolio version was not found.", 404
+        ) from None
+    version = portfolios.get(version_id)
+    if version is None:
+        raise ImportProblem("portfolio_version_not_found", "Portfolio version was not found.", 404)
+    return PortfolioResponse(
+        portfolio_version=version, positions=list(portfolios.positions(version_id))
     )

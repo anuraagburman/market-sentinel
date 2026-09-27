@@ -94,7 +94,7 @@ def test_acceptance_selection_clear_and_audit(client):
         restored = client.delete(f"/imports/{preview['id']}/rows/{number}/resolution")
         assert restored.status_code == 200
         assert restored.json() == preview["rows"][number - 1]
-    assert client.get(f"/imports/{preview['id']}").json() == preview
+    assert client.get(f"/imports/{preview['id']}").json() == {**preview, "revision": 6}
 
 
 def test_selection_recomputes_currency_warning(client):

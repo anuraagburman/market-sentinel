@@ -1,6 +1,37 @@
 {
   "components": {
     "schemas": {
+      "Blocker": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "row_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Row Number"
+          }
+        },
+        "required": [
+          "row_number",
+          "code",
+          "message"
+        ],
+        "title": "Blocker",
+        "type": "object"
+      },
       "Body_upload_import_imports_post": {
         "properties": {
           "file": {
@@ -81,6 +112,143 @@
         "title": "Candidate",
         "type": "object"
       },
+      "Cash": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Amount",
+            "type": "string"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "title": "Cash",
+        "type": "object"
+      },
+      "ConfirmProblem": {
+        "additionalProperties": false,
+        "properties": {
+          "blockers": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Blocker"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blockers"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "portfolio_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Portfolio Version Id"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ConfirmProblem",
+        "type": "object"
+      },
+      "ConfirmRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "preview_revision": {
+            "minimum": 0.0,
+            "title": "Preview Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "preview_revision"
+        ],
+        "title": "ConfirmRequest",
+        "type": "object"
+      },
+      "ConfirmResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "excluded_rows": {
+            "items": {
+              "$ref": "#/components/schemas/ExcludedRow"
+            },
+            "title": "Excluded Rows",
+            "type": "array"
+          },
+          "import_id": {
+            "format": "uuid",
+            "title": "Import Id",
+            "type": "string"
+          },
+          "portfolio_version": {
+            "$ref": "#/components/schemas/PortfolioVersion"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/Position"
+            },
+            "title": "Positions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "portfolio_version",
+          "positions",
+          "import_id",
+          "excluded_rows"
+        ],
+        "title": "ConfirmResponse",
+        "type": "object"
+      },
+      "Confirmation": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+            "title": "Confirmed At",
+            "type": "string"
+          },
+          "portfolio_version_id": {
+            "format": "uuid",
+            "title": "Portfolio Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "portfolio_version_id",
+          "confirmed_at"
+        ],
+        "title": "Confirmation",
+        "type": "object"
+      },
       "Coverage": {
         "additionalProperties": false,
         "properties": {
@@ -124,6 +292,29 @@
           "by_reason"
         ],
         "title": "Coverage",
+        "type": "object"
+      },
+      "ExcludedRow": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "enum": [
+              "user_excluded",
+              "blank_row"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "row_number": {
+            "title": "Row Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "row_number",
+          "reason"
+        ],
+        "title": "ExcludedRow",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -231,6 +422,16 @@
             "title": "Columns",
             "type": "array"
           },
+          "confirmation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Confirmation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "file_sha256": {
             "title": "File Sha256",
             "type": "string"
@@ -240,10 +441,18 @@
             "title": "Id",
             "type": "string"
           },
+          "readiness": {
+            "$ref": "#/components/schemas/Readiness"
+          },
           "received_at": {
             "format": "date-time",
             "title": "Received At",
             "type": "string"
+          },
+          "revision": {
+            "default": 0,
+            "title": "Revision",
+            "type": "integer"
           },
           "rows": {
             "items": {
@@ -270,6 +479,11 @@
       "ImportRow": {
         "additionalProperties": false,
         "properties": {
+          "excluded": {
+            "default": false,
+            "title": "Excluded",
+            "type": "boolean"
+          },
           "issues": {
             "items": {
               "$ref": "#/components/schemas/ImportIssue"
@@ -488,6 +702,177 @@
         "title": "ParsedHolding",
         "type": "object"
       },
+      "PortfolioResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "portfolio_version": {
+            "$ref": "#/components/schemas/PortfolioVersion"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/Position"
+            },
+            "title": "Positions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "portfolio_version",
+          "positions"
+        ],
+        "title": "PortfolioResponse",
+        "type": "object"
+      },
+      "PortfolioVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "base_currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Base Currency",
+            "type": "string"
+          },
+          "cash": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Cash"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confirmed_at": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "imported_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+            "title": "Imported At",
+            "type": "string"
+          },
+          "previous_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Version Id"
+          },
+          "source_hash": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "title": "Source Hash",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "preview",
+              "confirmed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tenant_id",
+          "base_currency",
+          "imported_at",
+          "source_hash",
+          "status"
+        ],
+        "title": "PortfolioVersion",
+        "type": "object"
+      },
+      "Position": {
+        "additionalProperties": false,
+        "properties": {
+          "account_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Label"
+          },
+          "cost_basis": {
+            "anyOf": [
+              {
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Basis"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "display_symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Symbol"
+          },
+          "instrument_id": {
+            "format": "uuid",
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "portfolio_version_id": {
+            "format": "uuid",
+            "title": "Portfolio Version Id",
+            "type": "string"
+          },
+          "quantity": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Quantity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "portfolio_version_id",
+          "instrument_id",
+          "quantity",
+          "cost_basis",
+          "currency"
+        ],
+        "title": "Position",
+        "type": "object"
+      },
       "Price": {
         "additionalProperties": false,
         "properties": {
@@ -544,6 +929,27 @@
           "message"
         ],
         "title": "Problem",
+        "type": "object"
+      },
+      "Readiness": {
+        "additionalProperties": false,
+        "properties": {
+          "blockers": {
+            "items": {
+              "$ref": "#/components/schemas/Blocker"
+            },
+            "title": "Blockers",
+            "type": "array"
+          },
+          "confirmable": {
+            "title": "Confirmable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "confirmable"
+        ],
+        "title": "Readiness",
         "type": "object"
       },
       "Resolution": {
@@ -1123,7 +1529,6 @@
     },
     "/imports/{id}": {
       "get": {
-        "description": "Retrieve a preview from this process; unknown identifiers return 404.",
         "operationId": "get_import_imports__id__get",
         "parameters": [
           {
@@ -1169,6 +1574,250 @@
           }
         },
         "summary": "Get Import",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/imports/{id}/confirm": {
+      "post": {
+        "operationId": "confirm_imports__id__confirm_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "idempotency-key",
+            "required": true,
+            "schema": {
+              "maxLength": 200,
+              "minLength": 1,
+              "pattern": "^[ -~]+$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmProblem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmProblem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmProblem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmProblem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Confirm",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/imports/{id}/rows/{row_number}/exclusion": {
+      "delete": {
+        "operationId": "include_row_imports__id__rows__row_number__exclusion_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "row_number",
+            "required": true,
+            "schema": {
+              "title": "Row Number",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRow"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Include Row",
+        "tags": [
+          "imports"
+        ]
+      },
+      "put": {
+        "operationId": "exclude_row_imports__id__rows__row_number__exclusion_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "row_number",
+            "required": true,
+            "schema": {
+              "title": "Row Number",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRow"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Exclude Row",
         "tags": [
           "imports"
         ]
@@ -1388,6 +2037,58 @@
         "summary": "Lookup Instruments",
         "tags": [
           "instruments"
+        ]
+      }
+    },
+    "/portfolio-versions/{id}": {
+      "get": {
+        "operationId": "get_portfolio_portfolio_versions__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Portfolio",
+        "tags": [
+          "portfolios"
         ]
       }
     },
