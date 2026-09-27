@@ -3,21 +3,18 @@
 - **Updated:** 2026-09-27 by Claude Code
 - **Branch / worktree:** main (merge built in ~/code/ms-wt/web, pushed to origin/main; `~/code/ms-wt/api`
   and `~/code/market-sentinel` need `git pull --ff-only` / a fresh branch from `origin/main`)
-- **Status:** T-005 `merged`; T-006 `backlog` (spec not written yet)
+- **Status:** T-005 `merged`; T-006 `ready`
 
 ## Next step (exact — the next agent starts here)
-1. **Anuraag** answers the T-000 scope and cost questions (universe, horizons, currency handling,
-   briefing time/timezone, spend ceiling, data rights). Claude Code has the question list.
-2. **Claude Code** records the answers as `docs/decisions/ADR-002-scope-and-schedule.md` and
-   `ADR-003-cost-and-data-rights.md`, then writes `docs/tasks/T-006-portfolio-valuation.md` and
-   moves T-006 to `ready`. Valuation depends on the currency answer: the fixture master already
-   contains a CAD instrument (Synthela 21), so the spec must say whether FX is valued or flagged.
-3. **Codex**, once T-006 is `ready`: in `~/code/ms-wt/api`, `git checkout -b task/T-006-valuation origin/main`
-   and implement from the spec's planned commit 1.
+- **Codex**, in a fresh session: in `~/code/ms-wt/api`, `git fetch && git checkout -b task/T-006-valuation origin/main`
+  and implement `docs/tasks/T-006-portfolio-valuation.md`, starting with planned commit 1 (failing domain tests).
 
 ## Done this session
 - Reviewed `origin/main...task/T-005-instrument-resolution` (@ `f0caae1`) against the task file.
   No blocking findings. The branch was already at the user-approved alias rule.
+- Anuraag accepted the default scope/cost answers → `ADR-002-scope-and-schedule.md`, `ADR-003-cost-and-data-rights.md`;
+  T-000 checkboxes ticked. Wrote the T-006 spec (expected numbers computed from fixtures with `Decimal`).
+  Added T-011 (import confirm → PortfolioVersion) to the ledger: no task owned it.
 - Merged with `--no-ff`. Amended the T-005 task file so it allows simultaneous symbol aliases and
   rejects overlaps only for the same instrument and symbol, matching the code and fixtures.
 
@@ -43,6 +40,8 @@
   Master data is a process-lifetime snapshot; whether confirm re-resolves is open.
 - T-007: Today parses only UTC `Z` timestamps; stale = `cutoff` Friday / `published_at` Monday (confirm);
   Ajv runs with `strictTypes`/`strictRequired` off for if/then subschemas.
+- T-006 values the fixture PortfolioVersion through a file-backed repository until T-011 persists confirmed
+  versions. JEV pricing is outside the \$25 model cap until known (ADR-003 Open).
 - Carried over: upload request-size limit before exposing `/imports`; previews are process-local;
   one handoff file per task would avoid merge conflicts here; JEV access blocks T-009; T-009 injection
   variant on usable data; consumers must enable date-time format checking (ADR-001 §3).
