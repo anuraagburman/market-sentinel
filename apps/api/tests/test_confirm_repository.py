@@ -74,3 +74,22 @@ def test_latest_is_selected_atomically(repository):
         visited.add(current.id)
         current = repository.get(current.previous_version_id)
     assert visited == {v.id for _, v, _ in candidates}
+
+
+def test_fractional_timestamp_order_and_failed_transaction(repository):
+    record, version, positions = candidate()
+    version = version.model_copy(
+        update={"imported_at": "2026-09-25T21:00:00Z", "confirmed_at": "2026-09-25T21:00:00.1Z"}
+    )
+    repository.confirm(record, version, positions)
+    bad_record, bad_version, bad_positions = candidate()
+    bad_version = bad_version.model_copy(
+        update={"imported_at": "2026-09-25T21:00:00.1Z", "confirmed_at": "2026-09-25T21:00:00Z"}
+    )
+    with pytest.raises(ValueError):
+        repository.confirm(bad_record, bad_version, bad_positions)
+    assert repository.latest(version.tenant_id).id == version.id
+    assert repository.by_import(bad_record.import_id) is None
+    assert repository.by_idempotency_key(bad_record.idempotency_key) is None
+    assert repository.get(bad_version.id) is None
+    assert repository.positions(bad_version.id) == ()
