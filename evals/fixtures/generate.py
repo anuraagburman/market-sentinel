@@ -60,6 +60,35 @@ def evidence(n, text, **extra):
 
 
 def main():
+    # IDs 1001–1004 are reserved for reference instruments added by T-005.
+    instruments = [
+        dict(id=uid(n), name=f"Synthela {n:02d}", asset_type="common_stock", currency="USD")
+        for n in range(1, 20)
+    ]
+    instruments.extend([
+        dict(id=uid(1001), name="Synthela 02 Preferred", asset_type="preferred_stock", currency="USD"),
+        dict(id=uid(1002), name="Synthela 20", asset_type="common_stock", currency="USD"),
+        dict(id=uid(1003), name="Synthela 21", asset_type="common_stock", currency="CAD"),
+        dict(id=uid(1004), name="Synthela 22", asset_type="common_stock", currency="USD"),
+    ])
+
+    def mapping(symbol, n, start="2020-01-01", end=None):
+        return dict(symbol=symbol, instrument_id=uid(n), valid_from=start, valid_to=end)
+
+    mappings = [mapping(f"SYN{n:02d}", n) for n in range(1, 20)]
+    mappings.extend([
+        mapping("SYN02P", 1001),
+        mapping("SYN-AMB", 2),
+        mapping("SYN-AMB", 1001),
+        mapping("SYN-OLD20", 1002, end="2026-06-01"),
+        mapping("SYN20", 1002, start="2026-06-01"),
+        mapping("SYN-RE", 1003, end="2026-07-01"),
+        mapping("SYN21", 1003, start="2026-07-01"),
+        mapping("SYN-RE", 1004, start="2026-07-01"),
+    ])
+    write(ROOT / "instruments/instruments.json", instruments)
+    write(ROOT / "instruments/symbol_mappings.json", mappings)
+
     # Quantity, total cost basis, and close; each row has distinct valuation inputs.
     holdings = [
         ("10", "5800.00", "625.50"),

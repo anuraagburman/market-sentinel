@@ -6,6 +6,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from app.models.instruments import Resolution, ResolutionStatus
+
 FieldName = Literal["symbol", "quantity", "cost_basis", "currency"]
 RowStatus = Literal["ok", "warning", "error"]
 
@@ -39,12 +41,13 @@ class ImportRow(ImportModel):
     parsed: ParsedHolding
     status: RowStatus
     issues: list[ImportIssue]
-    resolution: Literal["pending"] = "pending"
+    resolution: Resolution
 
 
 class ImportSummary(ImportModel):
     by_status: dict[RowStatus, int]
     by_code: dict[str, int]
+    by_resolution: dict[ResolutionStatus, int]
 
 
 class ImportPreview(ImportModel):

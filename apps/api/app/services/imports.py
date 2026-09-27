@@ -1,16 +1,20 @@
-"""CSV import validation. Cells are data only; no symbol resolution or valuation."""
+"""CSV validation and instrument resolution; cells are data only, never formulas."""
 
 import csv
 import hashlib
 import io
 import re
 from collections import Counter
+from collections.abc import Callable
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Protocol
 from uuid import UUID, uuid4
 
-from app.models.imports import ImportPreview
+from app.models.imports import ImportPreview, ImportRow
+from app.domain.instruments import currency_issues, display_symbol, resolve
+from app.models.instruments import Resolution
+from app.services.instruments import InstrumentRepository, get_instrument_repository
 
 MAX_BYTES = 1024 * 1024
 MAX_ROWS = 1000
@@ -222,9 +226,78 @@ class InMemoryPreviewRepository:
         return preview.model_copy(deep=True) if preview is not None else None
 
 
-def create_preview(content: bytes, repository: PreviewRepository) -> ImportPreview:
-    received_at = datetime.now(UTC)
+def utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
+def create_preview(
+    content: bytes,
+    repository: PreviewRepository,
+    instruments: InstrumentRepository | None = None,
+    clock: Callable[[], datetime] = utc_now,
+) -> ImportPreview:
+    received_at = clock()
+    if received_at.tzinfo is None or received_at.utcoffset() is None:
+        raise ValueError("Preview clock must return a timezone-aware datetime")
+    received_at = received_at.astimezone(UTC)
     data = parse_csv(content)
+    instruments = instruments if instruments is not None else get_instrument_repository()
+    for row in data["rows"]:
+        symbol = row["parsed"]["symbol"]
+        if any(i["code"] == "formula_like_value" and i["field"] == "symbol" for i in row["issues"]):
+            symbol = None
+        row["resolution"] = resolve(
+            symbol, row["parsed"]["currency"], received_at.date(), instruments
+        )
+    data["summary"]["by_resolution"] = dict(Counter(r["resolution"].status for r in data["rows"]))
     preview = ImportPreview(id=uuid4(), received_at=received_at, **data)
     repository.save(preview)
     return preview
+
+
+def set_resolution(
+    preview: ImportPreview,
+    row_number: int,
+    instrument_id: UUID | None,
+    repository: PreviewRepository,
+    instruments: InstrumentRepository,
+    clock: Callable[[], datetime] = utc_now,
+) -> ImportRow:
+    row = next((row for row in preview.rows if row.row_number == row_number), None)
+    if row is None:
+        raise ImportProblem("row_not_found", "Import row was not found.", 404)
+    if any(issue.code == "blank_row" for issue in row.issues):
+        raise ImportProblem("row_not_resolvable", "Blank rows cannot be resolved.", 409)
+    as_of = preview.received_at.astimezone(UTC).date()
+    symbol = row.parsed.symbol
+    if any(i.code == "formula_like_value" and i.field == "symbol" for i in row.issues):
+        symbol = None
+    automatic = resolve(symbol, row.parsed.currency, as_of, instruments)
+    if instrument_id is None:
+        row.resolution = automatic
+    else:
+        instrument = instruments.get(instrument_id)
+        if instrument is None:
+            raise ImportProblem("unknown_instrument", "Instrument was not found.")
+        label = display_symbol(instrument_id, as_of, instruments)
+        if label is None:
+            raise ImportProblem(
+                "instrument_not_listed", "Instrument has no active mapping on the preview date."
+            )
+        selected_at = clock()
+        if selected_at.tzinfo is None or selected_at.utcoffset() is None:
+            raise ValueError("Selection clock must return a timezone-aware datetime")
+        row.resolution = Resolution(
+            status="resolved",
+            method="user_selected",
+            instrument_id=instrument_id,
+            display_symbol=label,
+            candidates=automatic.candidates,
+            issues=[i for i in automatic.issues if i.code != "currency_mismatch"]
+            + currency_issues(instrument, row.parsed.currency),
+            as_of=as_of,
+            selected_at=selected_at.astimezone(UTC),
+        )
+    preview.summary.by_resolution = dict(Counter(r.resolution.status for r in preview.rows))
+    repository.save(preview)
+    return row

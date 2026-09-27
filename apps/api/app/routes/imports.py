@@ -1,6 +1,9 @@
 """Synchronous CSV preview endpoints; no confirmation or persistent storage yet."""
 
 from typing import Annotated
+from collections.abc import Callable
+from contextlib import asynccontextmanager
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Request, UploadFile
@@ -9,14 +12,18 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from starlette.exceptions import HTTPException
 
-from app.models.imports import ImportPreview, Problem
+from app.models.imports import ImportPreview, ImportRow, Problem
+from app.models.instruments import InstrumentSelection
 from app.services.imports import (
     MAX_BYTES,
     ImportProblem,
     InMemoryPreviewRepository,
     PreviewRepository,
     create_preview,
+    utc_now,
+    set_resolution,
 )
+from app.services.instruments import InstrumentRepository, get_instrument_repository
 
 
 class ImportRoute(APIRoute):
@@ -45,8 +52,12 @@ class ImportRoute(APIRoute):
                 return JSONResponse(
                     status_code=422,
                     content={
-                        "code": "invalid_upload",
-                        "message": "A file upload named 'file' is required.",
+                        "code": "invalid_upload" if request.method == "POST" else "invalid_request",
+                        "message": (
+                            "A file upload named 'file' is required."
+                            if request.method == "POST"
+                            else "Request parameters or body are invalid."
+                        ),
                     },
                 )
             except HTTPException as exc:
@@ -63,7 +74,14 @@ class ImportRoute(APIRoute):
         return handle
 
 
-router = APIRouter(prefix="/imports", tags=["imports"], route_class=ImportRoute)
+@asynccontextmanager
+async def lifespan(app):
+    loader = app.dependency_overrides.get(get_instrument_repository, get_instrument_repository)
+    loader()  # Fail startup before serving requests if the full master is invalid.
+    yield
+
+
+router = APIRouter(prefix="/imports", tags=["imports"], route_class=ImportRoute, lifespan=lifespan)
 _repository = InMemoryPreviewRepository()
 
 
@@ -72,6 +90,14 @@ def get_repository() -> PreviewRepository:
 
 
 Repository = Annotated[PreviewRepository, Depends(get_repository)]
+Instruments = Annotated[InstrumentRepository, Depends(get_instrument_repository)]
+
+
+def get_clock() -> Callable[[], datetime]:
+    return utc_now
+
+
+Clock = Annotated[Callable[[], datetime], Depends(get_clock)]
 
 
 @router.post(
@@ -81,14 +107,18 @@ Repository = Annotated[PreviewRepository, Depends(get_repository)]
     responses={code: {"model": Problem} for code in (400, 413, 415, 422)},
 )
 async def upload_import(
-    repository: Repository, file: Annotated[UploadFile, File()]
+    repository: Repository,
+    instruments: Instruments,
+    clock: Clock,
+    file: Annotated[UploadFile, File()],
 ) -> ImportPreview:
     """Preview a UTF-8 CSV, up to 1 MiB and 1,000 rows.
 
     Accept text/csv or application/csv; also accept application/vnd.ms-excel,
     text/plain, and application/octet-stream when the filename ends in .csv.
 
-    All rows stay pending. Previews are process-local and disappear on restart.
+    Symbols resolve against synthetic reference data as of the upload's UTC date.
+    Previews are process-local and disappear on restart.
     """
     content_type = (file.content_type or "").split(";", 1)[0].strip().lower()
     csv_filename = (file.filename or "").lower().endswith(".csv")
@@ -104,7 +134,7 @@ async def upload_import(
             415,
         )
     content = await file.read(MAX_BYTES + 1)
-    return create_preview(content, repository)
+    return create_preview(content, repository, instruments, clock)
 
 
 @router.get("/{id}", response_model=ImportPreview, responses={404: {"model": Problem}})
@@ -118,3 +148,42 @@ def get_import(id: str, repository: Repository) -> ImportPreview:
     if preview is None:
         raise ImportProblem("import_not_found", "Import preview was not found.", 404)
     return preview
+
+
+@router.put(
+    "/{id}/rows/{row_number}/resolution",
+    response_model=ImportRow,
+    responses={code: {"model": Problem} for code in (404, 409, 422)},
+)
+def select_resolution(
+    id: str,
+    row_number: int,
+    selection: InstrumentSelection,
+    repository: Repository,
+    instruments: Instruments,
+    clock: Clock,
+) -> ImportRow:
+    """Select a listed instrument explicitly, retaining automatic issues and candidates."""
+    return set_resolution(
+        get_import(id, repository),
+        row_number,
+        selection.instrument_id,
+        repository,
+        instruments,
+        clock,
+    )
+
+
+@router.delete(
+    "/{id}/rows/{row_number}/resolution",
+    response_model=ImportRow,
+    responses={code: {"model": Problem} for code in (404, 409, 422)},
+)
+def clear_resolution(
+    id: str,
+    row_number: int,
+    repository: Repository,
+    instruments: Instruments,
+) -> ImportRow:
+    """Restore automatic resolution on the preview's original date."""
+    return set_resolution(get_import(id, repository), row_number, None, repository, instruments)

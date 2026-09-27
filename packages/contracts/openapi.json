@@ -15,6 +15,47 @@
         "title": "Body_upload_import_imports_post",
         "type": "object"
       },
+      "Candidate": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_type": {
+            "enum": [
+              "common_stock",
+              "preferred_stock"
+            ],
+            "title": "Asset Type",
+            "type": "string"
+          },
+          "display_symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Symbol"
+          },
+          "instrument_id": {
+            "format": "uuid",
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instrument_id",
+          "display_symbol",
+          "name",
+          "asset_type"
+        ],
+        "title": "Candidate",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -177,10 +218,7 @@
             "type": "array"
           },
           "resolution": {
-            "const": "pending",
-            "default": "pending",
-            "title": "Resolution",
-            "type": "string"
+            "$ref": "#/components/schemas/Resolution"
           },
           "row_number": {
             "title": "Row Number",
@@ -201,7 +239,8 @@
           "raw",
           "parsed",
           "status",
-          "issues"
+          "issues",
+          "resolution"
         ],
         "title": "ImportRow",
         "type": "object"
@@ -214,6 +253,21 @@
               "type": "integer"
             },
             "title": "By Code",
+            "type": "object"
+          },
+          "by_resolution": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "resolved",
+                "ambiguous",
+                "unresolved",
+                "not_attempted"
+              ]
+            },
+            "title": "By Resolution",
             "type": "object"
           },
           "by_status": {
@@ -233,9 +287,78 @@
         },
         "required": [
           "by_status",
-          "by_code"
+          "by_code",
+          "by_resolution"
         ],
         "title": "ImportSummary",
+        "type": "object"
+      },
+      "Instrument": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_type": {
+            "enum": [
+              "common_stock",
+              "preferred_stock"
+            ],
+            "title": "Asset Type",
+            "type": "string"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "asset_type",
+          "currency"
+        ],
+        "title": "Instrument",
+        "type": "object"
+      },
+      "InstrumentMatch": {
+        "additionalProperties": false,
+        "properties": {
+          "instrument": {
+            "$ref": "#/components/schemas/Instrument"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/SymbolMapping"
+          }
+        },
+        "required": [
+          "instrument",
+          "mapping"
+        ],
+        "title": "InstrumentMatch",
+        "type": "object"
+      },
+      "InstrumentSelection": {
+        "additionalProperties": false,
+        "properties": {
+          "instrument_id": {
+            "format": "uuid",
+            "title": "Instrument Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instrument_id"
+        ],
+        "title": "InstrumentSelection",
         "type": "object"
       },
       "ParsedHolding": {
@@ -314,6 +437,167 @@
         "title": "Problem",
         "type": "object"
       },
+      "Resolution": {
+        "additionalProperties": false,
+        "properties": {
+          "as_of": {
+            "format": "date",
+            "title": "As Of",
+            "type": "string"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/Candidate"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "display_symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Symbol"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ResolutionIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "enum": [
+                  "exact_symbol",
+                  "user_selected"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Method"
+          },
+          "selected_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected At"
+          },
+          "status": {
+            "enum": [
+              "resolved",
+              "ambiguous",
+              "unresolved",
+              "not_attempted"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "as_of"
+        ],
+        "title": "Resolution",
+        "type": "object"
+      },
+      "ResolutionIssue": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "field",
+          "message"
+        ],
+        "title": "ResolutionIssue",
+        "type": "object"
+      },
+      "SymbolMapping": {
+        "additionalProperties": false,
+        "properties": {
+          "instrument_id": {
+            "format": "uuid",
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "symbol": {
+            "minLength": 1,
+            "title": "Symbol",
+            "type": "string"
+          },
+          "valid_from": {
+            "format": "date",
+            "title": "Valid From",
+            "type": "string"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "symbol",
+          "instrument_id",
+          "valid_from",
+          "valid_to"
+        ],
+        "title": "SymbolMapping",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -379,7 +663,7 @@
     },
     "/imports": {
       "post": {
-        "description": "Preview a UTF-8 CSV, up to 1 MiB and 1,000 rows.\n\nAccept text/csv or application/csv; also accept application/vnd.ms-excel,\ntext/plain, and application/octet-stream when the filename ends in .csv.\n\nAll rows stay pending. Previews are process-local and disappear on restart.",
+        "description": "Preview a UTF-8 CSV, up to 1 MiB and 1,000 rows.\n\nAccept text/csv or application/csv; also accept application/vnd.ms-excel,\ntext/plain, and application/octet-stream when the filename ends in .csv.\n\nSymbols resolve against synthetic reference data as of the upload's UTC date.\nPreviews are process-local and disappear on restart.",
         "operationId": "upload_import_imports_post",
         "requestBody": {
           "content": {
@@ -499,6 +783,223 @@
         "summary": "Get Import",
         "tags": [
           "imports"
+        ]
+      }
+    },
+    "/imports/{id}/rows/{row_number}/resolution": {
+      "delete": {
+        "description": "Restore automatic resolution on the preview's original date.",
+        "operationId": "clear_resolution_imports__id__rows__row_number__resolution_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "row_number",
+            "required": true,
+            "schema": {
+              "title": "Row Number",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRow"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Clear Resolution",
+        "tags": [
+          "imports"
+        ]
+      },
+      "put": {
+        "description": "Select a listed instrument explicitly, retaining automatic issues and candidates.",
+        "operationId": "select_resolution_imports__id__rows__row_number__resolution_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "row_number",
+            "required": true,
+            "schema": {
+              "title": "Row Number",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstrumentSelection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRow"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Select Resolution",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/instruments": {
+      "get": {
+        "description": "Return all exact active matches, never pick one of several candidates.",
+        "operationId": "lookup_instruments_instruments_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Symbol",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "as_of",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InstrumentMatch"
+                  },
+                  "title": "Response Lookup Instruments Instruments Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Lookup Instruments",
+        "tags": [
+          "instruments"
         ]
       }
     }

@@ -48,6 +48,30 @@ EXPECTED_SCHEMA = {
     },
 }
 PACKETS = sorted((FIXTURES / "packets").iterdir())
+INSTRUMENT_SCHEMAS = {
+    "instruments": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["id", "name", "asset_type", "currency"],
+        "properties": {
+            "id": {"type": "string", "format": "uuid"},
+            "name": {"type": "string", "minLength": 1},
+            "asset_type": {"enum": ["common_stock", "preferred_stock"]},
+            "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+        },
+    },
+    "symbol_mappings": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["symbol", "instrument_id", "valid_from", "valid_to"],
+        "properties": {
+            "symbol": {"type": "string", "minLength": 1},
+            "instrument_id": {"type": "string", "format": "uuid"},
+            "valid_from": {"type": "string", "format": "date"},
+            "valid_to": {"type": ["string", "null"], "format": "date"},
+        },
+    },
+}
 
 
 def load(path):
@@ -77,6 +101,12 @@ def test_schema(path):
     doc = load(path)
     if path.name == "expected.json":
         Draft202012Validator(EXPECTED_SCHEMA).validate(doc)
+    elif path.parent.name == "instruments":
+        for item in doc:
+            Draft202012Validator(
+                INSTRUMENT_SCHEMAS[path.stem],
+                format_checker=Draft202012Validator.FORMAT_CHECKER,
+            ).validate(item)
     else:
         entity = {
             "positions": "position",
@@ -270,3 +300,51 @@ def test_adversarial_payloads():
     assert set(brief["coverage"]["unpriced_instrument_ids"]) <= ids
     for status in ("no_material_change", "ready"):
         assert list(validator("brief").iter_errors(brief | {"status": status}))
+
+
+def test_instrument_master_integrity():
+    master = load(FIXTURES / "instruments/instruments.json")
+    mappings = load(FIXTURES / "instruments/symbol_mappings.json")
+    ids = {item["id"] for item in master}
+    assert len(ids) == len(master) == 23
+    positions = load(FIXTURES / "portfolio/positions.json")
+    assert {p["instrument_id"] for p in positions} <= ids
+    # Entity IDs must be unique globally. Packet-local evidence/claim IDs are
+    # deliberately reused; instrument_id and other foreign keys are references.
+    entity_ids = []
+    for path in FIXTURES.rglob("*.json"):
+        doc = load(path)
+        for item in doc if isinstance(doc, list) else [doc]:
+            value = item.get("id")
+            if value and value.startswith("00000000-"):
+                entity_ids.append(value)
+    assert len(entity_ids) == len(set(entity_ids))
+    assert len(mappings) == 27
+    for mapping in mappings:
+        assert mapping["instrument_id"] in ids
+        assert mapping["valid_to"] is None or mapping["valid_from"] < mapping["valid_to"]
+        for other in mappings:
+            if other is mapping or (other["instrument_id"], other["symbol"]) != (
+                mapping["instrument_id"], mapping["symbol"]
+            ):
+                continue
+            assert (mapping["valid_to"] or "9999-12-31") <= other["valid_from"] or (
+                other["valid_to"] or "9999-12-31"
+            ) <= mapping["valid_from"]
+    by_name = {item["name"]: item for item in master}
+    def active(symbol, day):
+        return {m["instrument_id"] for m in mappings if m["symbol"] == symbol
+                and m["valid_from"] <= day and (m["valid_to"] is None or day < m["valid_to"])}
+    for position in positions:
+        assert active(position["display_symbol"], "2026-09-25") == {position["instrument_id"]}
+    assert active("SYN-AMB", "2026-09-25") == {
+        by_name["Synthela 02"]["id"], by_name["Synthela 02 Preferred"]["id"]
+    }
+    assert by_name["Synthela 02 Preferred"]["asset_type"] == "preferred_stock"
+    assert active("SYN-OLD20", "2026-05-31") == {by_name["Synthela 20"]["id"]}
+    assert not active("SYN-OLD20", "2026-06-01")
+    assert active("SYN20", "2026-06-01") == {by_name["Synthela 20"]["id"]}
+    assert active("SYN-RE", "2026-06-30") == {by_name["Synthela 21"]["id"]}
+    assert active("SYN-RE", "2026-07-01") == {by_name["Synthela 22"]["id"]}
+    assert by_name["Synthela 21"]["currency"] == "CAD"
+    assert not active("SYN-TYPO", "2026-09-25")
