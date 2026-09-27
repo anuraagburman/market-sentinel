@@ -6,7 +6,7 @@ Phase 0 exits when one packet can traverse the contracts and every critical unkn
 (blueprint §20). These need a human answer; agents shouldn't guess them.
 
 ## Access (blocking)
-- [ ] JEV / TypeSafe account and API access confirmed → unblocks T-009
+- [x] (2026-09-27; key in `~/.config/market-sentinel/.env`, pricing still open) JEV / TypeSafe account and API access confirmed → unblocks T-009
 - [ ] Alpaca market-data account; feed chosen and stored explicitly (IEX vs SIP) → T-008
 - [ ] SEC EDGAR: User-Agent contact string per SEC access guidance → T-008
 - [ ] Fundamentals/calendar provider (e.g. Financial Modeling Prep) plan + endpoints checked
