@@ -42,6 +42,7 @@ class ImportRow(ImportModel):
     status: RowStatus
     issues: list[ImportIssue]
     resolution: Resolution
+    excluded: bool = False
 
 
 class ImportSummary(ImportModel):

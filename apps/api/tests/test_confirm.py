@@ -25,16 +25,21 @@ def test_fixture_blockers_are_in_row_order():
     result = readiness(p.rows, ids(p))
     assert not result.confirmable
     assert [(b.row_number, b.code) for b in result.blockers] == [
-        (1, "duplicate_instrument"), (2, "row_unresolved"),
-        (5, "row_unresolved"), (20, "duplicate_instrument"),
+        (1, "duplicate_instrument"),
+        (2, "row_unresolved"),
+        (5, "row_unresolved"),
+        (20, "duplicate_instrument"),
     ]
 
 
 def test_errors_missing_instruments_duplicates_and_exclusions():
     p = preview(b"symbol,quantity,cost_basis,currency\nSYN01,-1,,USD\nSYN01,2,,USD\n")
     assert [(b.row_number, b.code) for b in readiness(p.rows, set()).blockers] == [
-        (1, "row_has_errors"), (1, "instrument_missing"), (1, "duplicate_instrument"),
-        (2, "instrument_missing"), (2, "duplicate_instrument"),
+        (1, "row_has_errors"),
+        (1, "instrument_missing"),
+        (1, "duplicate_instrument"),
+        (2, "instrument_missing"),
+        (2, "duplicate_instrument"),
     ]
     p.rows[0].excluded = True
     assert readiness(p.rows, ids(p)).confirmable
@@ -57,7 +62,10 @@ def test_mapping_preserves_strings_null_and_currency():
     assert positions[0].model_dump(exclude_unset=True) == {
         "portfolio_version_id": version_id,
         "instrument_id": p.rows[0].resolution.instrument_id,
-        "display_symbol": "SYN01", "quantity": "10.00", "cost_basis": None, "currency": "CAD",
+        "display_symbol": "SYN01",
+        "quantity": "10.00",
+        "cost_basis": None,
+        "currency": "CAD",
     }
 
 
