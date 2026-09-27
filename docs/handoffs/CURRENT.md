@@ -1,47 +1,71 @@
-# Handoff — main after T-005 merge
+# Handoff — T-006 Deterministic portfolio valuation
 
-- **Updated:** 2026-09-27 by Claude Code
-- **Branch / worktree:** main (merge built in ~/code/ms-wt/web, pushed to origin/main; `~/code/ms-wt/api`
-  and `~/code/market-sentinel` need `git pull --ff-only` / a fresh branch from `origin/main`)
-- **Status:** T-005 `merged`; T-006 `ready`
+- **Updated:** 2026-09-27 by Codex
+- **Branch / worktree:** task/T-006-valuation @ ~/code/ms-wt/api
+- **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-- **Codex**, in a fresh session: in `~/code/ms-wt/api`, `git fetch && git checkout -b task/T-006-valuation origin/main`
-  and implement `docs/tasks/T-006-portfolio-valuation.md`, starting with planned commit 1 (failing domain tests).
+Claude Code reviews `git diff origin/main...task/T-006-valuation` against
+`docs/tasks/T-006-portfolio-valuation.md`, then runs `make test`, `make lint`, and
+`make contracts && git diff --exit-code packages/contracts`.
 
 ## Done this session
-- Reviewed `origin/main...task/T-005-instrument-resolution` (@ `f0caae1`) against the task file.
-  No blocking findings. The branch was already at the user-approved alias rule.
-- Anuraag accepted the default scope/cost answers → `ADR-002-scope-and-schedule.md`, `ADR-003-cost-and-data-rights.md`;
-  T-000 checkboxes ticked. Wrote the T-006 spec (expected numbers computed from fixtures with `Decimal`).
-  Added T-011 (import confirm → PortfolioVersion) to the ledger: no task owned it.
-- Merged with `--no-ff`. Amended the T-005 task file so it allows simultaneous symbol aliases and
-  rejects overlaps only for the same instrument and symbol, matching the code and fixtures.
+- Created the requested branch from fetched `origin/main` and implemented planned commits 1–4;
+  this handoff/ledger update is planned commit 5. The initial specification commit intentionally
+  fails collection because the domain module does not yet exist; subsequent implementation passes.
+- Added pure Decimal valuation in a local precision-34, half-even context. Both observation and
+  receipt times must satisfy the supplied cutoff. Latest conflicting values remain unavailable;
+  equal values use the smallest observation UUID. Currency restrictions precede selection.
+- Added explicit unavailable amounts, partial coverage, source prices, P/L, priced-value weights,
+  cash, and total-value precedence. Calculations remain unquantized until response serialization;
+  money uses two places and weights six. Raw quantity/cost strings and null cost basis survive.
+- Added injectable portfolio/observation repository protocols and immutable synthetic file-backed
+  snapshots. Startup validates complete snapshots and rejects invalid records, unknown version
+  references, duplicate positions, non-positive quantities, and duplicate observation IDs.
+- Added `GET /portfolio-versions/{id}/valuation?cutoff=...Z` with problem bodies for missing versions,
+  previews, unsupported base currency, malformed cutoffs, and pre-confirmation cutoffs.
+- Registered the router and regenerated OpenAPI. No fixture or shared JSON-schema edits.
+- Added 57 deterministic tests across domain behavior, Decimal precision/rounding, canonical input
+  contract compatibility, loaders, dependency injection, startup failure, and API errors.
 
 ## Tests run
-- On the T-005 branch head: `make test` → pytest 243 passed, Vitest 64 passed; `make lint` passed;
-  fixture regeneration and `make contracts` both byte-identical.
-- Startup fail-fast checked by hand: overriding the instrument repository with a raising loader
-  makes `TestClient(app)` raise before serving.
-- On the merge result: `make test` → 243 + 64 passed; `make lint` passed.
+- Initial domain specification → expected missing-module collection failure (planned commit 1).
+- Final targeted valuation suite → 57 passed.
+- `make test` → 300 Python tests and 64 Vitest tests passed.
+- `make lint` → Ruff check/format, ESLint, Next typegen, and TypeScript passed.
+- `make contracts && git diff --exit-code packages/contracts` → passed after generated-file commit.
+- `git diff --check origin/main...HEAD` → passed.
+- One existing upstream Starlette/AnyIO deprecation warning; no test failures.
 
 ## Contract changes proposed (not applied)
-- One v1.1 bump should bundle: T-007's `issue.schema.json` and `brief.coverage.pending_sources`,
-  and T-005's `instrument.schema.json` / `symbol_mapping.schema.json` (full shapes are in the T-005 handoff,
-  commit `f0caae1`, and T-007 handoff, commit `3e744e2`). Best landed before or with T-006 so valuation
-  builds on final shapes.
+Add `valuation.schema.json` at the next shared schema bump, reusing the T-007 Amount/Exposure shape:
+- Root: no additional properties; required portfolio_version_id (UUID), base_currency (constant USD),
+  cutoff (UTC timestamp), positions (array), totals, coverage.
+- Amount: discriminated union of `{kind: calculation, value: decimal-string, basis: nonempty string}`
+  and `{kind: unavailable, reason: code}`. Money calculation strings have exactly two fractional
+  digits; weight calculation strings have six. Values are rounded half-even only at serialization.
+- Reason enum: no_price, conflicting_prices, unit_mismatch, currency_out_of_scope,
+  market_value_unavailable, cost_basis_unknown, no_priced_value, cash_unknown, positions_unpriced.
+- Position: required instrument_id, display_symbol (string or null if absent in stored position),
+  quantity (positive decimal string), cost_basis (decimal string or null), price (object or null),
+  market_value, unrealized_pl, weight. Preserve repository position order and original quantity/
+  cost_basis strings. Price requires value (original decimal string), observation_id (UUID),
+  observed_at (UTC timestamp), and feed (existing feed enum).
+- Totals: required priced_value, cash, total_value, each Amount. priced_value is the sum before
+  quantization, never the sum of independently rounded position response values.
+- Coverage: required nonnegative positions, priced, unpriced counts and by_reason map of positive
+  counts, limited to market-value reasons (no_price, conflicting_prices, unit_mismatch,
+  currency_out_of_scope). Cross-field count/sum invariants remain application-level.
 
 ## Unresolved / assumptions
-- T-005 review nits (non-blocking, fix opportunistically): `domain/instruments.py` imports the
-  `InstrumentRepository` protocol from `services/` (move it into `domain/` by T-008); bare `assert`
-  in production resolver code; function-local `from datetime import UTC` in `routes/instruments.py`.
-- T-005: display symbol with several active aliases uses a least-shared-then-lexical rule (labels only);
-  provider data should define primary symbols. Future-only mappings return `symbol_not_found`.
-  Master data is a process-lifetime snapshot; whether confirm re-resolves is open.
-- T-007: Today parses only UTC `Z` timestamps; stale = `cutoff` Friday / `published_at` Monday (confirm);
-  Ajv runs with `strictTypes`/`strictRequired` off for if/then subschemas.
-- T-006 values the fixture PortfolioVersion through a file-backed repository until T-011 persists confirmed
-  versions. JEV pricing is outside the \$25 model cap until known (ADR-003 Open).
-- Carried over: upload request-size limit before exposing `/imports`; previews are process-local;
-  one handoff file per task would avoid merge conflicts here; JEV access blocks T-009; T-009 injection
-  variant on usable data; consumers must enable date-time format checking (ADR-001 §3).
+- Price.value preserves the selected observation's original precision rather than rounding the
+  evidence to cents. Computed monetary amounts alone are rounded to cents; weights to six places.
+- A unit mismatch retains the selected source price with its observation reference, while market
+  value is unavailable. Currency-out-of-scope and missing/conflicting prices expose price null.
+- Empty confirmed portfolios have priced_value unavailable/no_priced_value; if USD cash is known,
+  total_value is that cash (every position is vacuously priced). An absent display label is null.
+- Arithmetic follows the specified precision-34 Decimal context; sums use stable value order so
+  position permutations do not affect results at that context's precision boundary.
+- Synthetic repositories are process-lifetime snapshots, not durable portfolio persistence. T-011
+  still owns confirmation and immutable version storage. No provider calls, FX, freshness judgments,
+  live orders, or web UI changes were added.
