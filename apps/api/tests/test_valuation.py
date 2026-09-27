@@ -38,7 +38,10 @@ def unavailable(reason):
 def test_frozen_acceptance():
     result = calculate(*records()).model_dump(mode="json")
     assert result["coverage"] == {
-        "positions": 19, "priced": 18, "unpriced": 1, "by_reason": {"no_price": 1}
+        "positions": 19,
+        "priced": 18,
+        "unpriced": 1,
+        "by_reason": {"no_price": 1},
     }
     assert result["totals"]["priced_value"]["value"] == "12812.83"
     assert result["totals"]["cash"] == unavailable("cash_unknown")
@@ -55,7 +58,11 @@ def test_frozen_acceptance():
             mv, pl, weight = expected[row["display_symbol"]]
             assert row["market_value"]["value"] == mv
             assert row["weight"]["value"] == weight
-            assert row["unrealized_pl"] == unavailable("cost_basis_unknown") if pl is None else row["unrealized_pl"]["value"] == pl
+            assert (
+                row["unrealized_pl"] == unavailable("cost_basis_unknown")
+                if pl is None
+                else row["unrealized_pl"]["value"] == pl
+            )
     first, second, third, fourth = result["positions"][:4]
     assert first["price"]["value"] == "625.50"
     assert first["price"]["observation_id"] == records()[2][0]["id"]
@@ -69,13 +76,19 @@ def test_frozen_acceptance():
         assert third[field] == unavailable("market_value_unavailable")
 
 
-@pytest.mark.parametrize("change", [
-    {"received_at": "2026-09-25T21:00:01Z"},
-    {"observed_at": "2026-09-25T21:00:01Z"},
-    {"session": "pre"}, {"session": "post"}, {"session": "closed"},
-    {"metric": "last_price"}, {"adjustment": "split_adjusted"},
-    {"adjustment": "split_and_dividend_adjusted"},
-])
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"received_at": "2026-09-25T21:00:01Z"},
+        {"observed_at": "2026-09-25T21:00:01Z"},
+        {"session": "pre"},
+        {"session": "post"},
+        {"session": "closed"},
+        {"metric": "last_price"},
+        {"adjustment": "split_adjusted"},
+        {"adjustment": "split_and_dividend_adjusted"},
+    ],
+)
 def test_ineligible_close_falls_back_or_is_missing(change):
     v, p, o = records()
     bad = dict(o[0], **change)
@@ -86,7 +99,12 @@ def test_ineligible_close_falls_back_or_is_missing(change):
 
 def test_half_day_and_cutoff_inclusive():
     v, p, o = records()
-    close = dict(o[0], session="half_day", observed_at="2026-09-25T21:00:00Z", received_at="2026-09-25T21:00:00Z")
+    close = dict(
+        o[0],
+        session="half_day",
+        observed_at="2026-09-25T21:00:00Z",
+        received_at="2026-09-25T21:00:00Z",
+    )
     assert calculate(v, p[:1], [close]).positions[0].market_value.value == Decimal("6255")
 
 
@@ -104,7 +122,10 @@ def test_latest_ties_are_order_independent(value, reason):
             assert str(row.price.observation_id) == o[0]["id"]
 
 
-@pytest.mark.parametrize("currency,unit,reason", [("CAD", "USD", "currency_out_of_scope"), ("USD", "CAD", "unit_mismatch")])
+@pytest.mark.parametrize(
+    "currency,unit,reason",
+    [("CAD", "USD", "currency_out_of_scope"), ("USD", "CAD", "unit_mismatch")],
+)
 def test_currency_reasons(currency, unit, reason):
     v, p, o = records()
     result = calculate(v, [dict(p[0], currency=currency)], [dict(o[0], unit=unit)])
@@ -113,10 +134,20 @@ def test_currency_reasons(currency, unit, reason):
     assert result.totals.priced_value.reason == "no_priced_value"
     if currency == "CAD":
         assert result.positions[0].price is None
-        assert calculate(v, [dict(p[0], currency=currency)], []).positions[0].market_value.reason == reason
+        assert (
+            calculate(v, [dict(p[0], currency=currency)], []).positions[0].market_value.reason
+            == reason
+        )
 
 
-@pytest.mark.parametrize("cash,reason", [(None, "cash_unknown"), ({"amount": "1000.00", "currency": "CAD"}, "currency_out_of_scope"), ({"amount": "1000.00", "currency": "USD"}, None)])
+@pytest.mark.parametrize(
+    "cash,reason",
+    [
+        (None, "cash_unknown"),
+        ({"amount": "1000.00", "currency": "CAD"}, "currency_out_of_scope"),
+        ({"amount": "1000.00", "currency": "USD"}, None),
+    ],
+)
 def test_cash_and_total_precedence(cash, reason):
     v, p, o = records()
     if cash is not None:
@@ -150,8 +181,14 @@ def test_permutations_scaling_and_exact_sum():
     assert reordered.totals == baseline.totals
     for k in ("0.1", "2", "7.25"):
         scaled = dict(p[0], quantity=str(Decimal(p[0]["quantity"]) * Decimal(k)))
-        assert calculate(v, [scaled], o).positions[0].market_value.value == baseline.positions[0].market_value.value * Decimal(k)
-    assert baseline.totals.priced_value.value == sum(row.market_value.value for row in baseline.positions if row.market_value.kind == "calculation")
+        assert calculate(v, [scaled], o).positions[0].market_value.value == baseline.positions[
+            0
+        ].market_value.value * Decimal(k)
+    assert baseline.totals.priced_value.value == sum(
+        row.market_value.value
+        for row in baseline.positions
+        if row.market_value.kind == "calculation"
+    )
 
 
 def test_round_once_half_even_and_local_precision():
@@ -167,4 +204,9 @@ def test_round_once_half_even_and_local_precision():
     assert [row["market_value"]["value"] for row in response["positions"]] == ["0.00", "0.00"]
     assert response["totals"]["priced_value"]["value"] == "0.01"
     assert response["positions"][0]["cost_basis"] == "0.000"
-    assert calculate(v, positions[:1], [dict(o[0], value="0.015")]).model_dump(mode="json")["positions"][0]["market_value"]["value"] == "0.02"
+    assert (
+        calculate(v, positions[:1], [dict(o[0], value="0.015")]).model_dump(mode="json")[
+            "positions"
+        ][0]["market_value"]["value"]
+        == "0.02"
+    )
