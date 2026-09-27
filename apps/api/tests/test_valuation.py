@@ -129,11 +129,12 @@ def test_latest_ties_are_order_independent(value, reason):
 def test_currency_reasons(currency, unit, reason):
     v, p, o = records()
     result = calculate(v, [dict(p[0], currency=currency)], [dict(o[0], unit=unit)])
-    assert result.positions[0].market_value.reason == reason
+    row = result.positions[0]
+    assert row.market_value.reason == reason
+    assert row.price is None
     assert result.coverage.by_reason == {reason: 1}
     assert result.totals.priced_value.reason == "no_priced_value"
     if currency == "CAD":
-        assert result.positions[0].price is None
         assert (
             calculate(v, [dict(p[0], currency=currency)], []).positions[0].market_value.reason
             == reason

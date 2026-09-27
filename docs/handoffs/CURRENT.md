@@ -2,39 +2,23 @@
 
 - **Updated:** 2026-09-27 by Codex
 - **Branch / worktree:** task/T-006-valuation @ ~/code/ms-wt/api
-- **Status:** ready_for_review
+- **Status:** ready_to_merge
 
 ## Next step (exact — the next agent starts here)
-Claude Code reviews `git diff origin/main...task/T-006-valuation` against
-`docs/tasks/T-006-portfolio-valuation.md`, then runs `make test`, `make lint`, and
-`make contracts && git diff --exit-code packages/contracts`.
+Claude Code verifies the requested unit-mismatch review fix, then merges
+`task/T-006-valuation` into `main` with `--no-ff` and pushes `main`.
 
 ## Done this session
-- Created the requested branch from fetched `origin/main` and implemented planned commits 1–4;
-  this handoff/ledger update is planned commit 5. The initial specification commit intentionally
-  fails collection because the domain module does not yet exist; subsequent implementation passes.
-- Added pure Decimal valuation in a local precision-34, half-even context. Both observation and
-  receipt times must satisfy the supplied cutoff. Latest conflicting values remain unavailable;
-  equal values use the smallest observation UUID. Currency restrictions precede selection.
-- Added explicit unavailable amounts, partial coverage, source prices, P/L, priced-value weights,
-  cash, and total-value precedence. Calculations remain unquantized until response serialization;
-  money uses two places and weights six. Raw quantity/cost strings and null cost basis survive.
-- Added injectable portfolio/observation repository protocols and immutable synthetic file-backed
-  snapshots. Startup validates complete snapshots and rejects invalid records, unknown version
-  references, duplicate positions, non-positive quantities, and duplicate observation IDs.
-- Added `GET /portfolio-versions/{id}/valuation?cutoff=...Z` with problem bodies for missing versions,
-  previews, unsupported base currency, malformed cutoffs, and pre-confirmation cutoffs.
-- Registered the router and regenerated OpenAPI. No fixture or shared JSON-schema edits.
-- Added 57 deterministic tests across domain behavior, Decimal precision/rounding, canonical input
-  contract compatibility, loaders, dependency injection, startup failure, and API errors.
+- Applied the sole requested T-006 review fix: a selected observation whose unit differs from
+  the position currency now yields price null and unavailable/unit_mismatch.
+- Updated `test_currency_reasons` to assert `row.price is None` for both unit mismatch and
+  currency-out-of-scope cases.
+- Corrected the previous handoff's unit-mismatch assumption and updated the ledger for merge.
 
 ## Tests run
-- Initial domain specification → expected missing-module collection failure (planned commit 1).
-- Final targeted valuation suite → 57 passed.
 - `make test` → 300 Python tests and 64 Vitest tests passed.
 - `make lint` → Ruff check/format, ESLint, Next typegen, and TypeScript passed.
-- `make contracts && git diff --exit-code packages/contracts` → passed after generated-file commit.
-- `git diff --check origin/main...HEAD` → passed.
+- `git diff --check` → passed.
 - One existing upstream Starlette/AnyIO deprecation warning; no test failures.
 
 ## Contract changes proposed (not applied)
@@ -60,8 +44,8 @@ Add `valuation.schema.json` at the next shared schema bump, reusing the T-007 Am
 ## Unresolved / assumptions
 - Price.value preserves the selected observation's original precision rather than rounding the
   evidence to cents. Computed monetary amounts alone are rounded to cents; weights to six places.
-- A unit mismatch retains the selected source price with its observation reference, while market
-  value is unavailable. Currency-out-of-scope and missing/conflicting prices expose price null.
+- Unit mismatch, currency-out-of-scope, and missing/conflicting prices all expose price null.
+  The review correction resolves the earlier unit-mismatch interpretation; no new assumptions.
 - Empty confirmed portfolios have priced_value unavailable/no_priced_value; if USD cash is known,
   total_value is that cash (every position is vacuously priced). An absent display label is null.
 - Arithmetic follows the specified precision-34 Decimal context; sums use stable value order so

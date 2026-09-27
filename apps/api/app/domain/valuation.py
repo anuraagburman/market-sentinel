@@ -47,7 +47,7 @@ def select_price(position: Position, observations: Sequence[Observation], cutoff
         feed=selected.feed,
     )
     if selected.unit != position.currency:
-        return price, Unavailable(reason="unit_mismatch")
+        return None, Unavailable(reason="unit_mismatch")
     return price, Calculation(
         value=Decimal(position.quantity) * Decimal(selected.value), basis="quantity × close"
     )
