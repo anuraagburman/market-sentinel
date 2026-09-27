@@ -14,12 +14,12 @@ Phase 0 exits when one packet can traverse the contracts and every critical unkn
 - [ ] News provider: deferred until coverage, timeliness, model-processing and retention rights are confirmed
 
 ## Decisions (record each as an ADR in `docs/decisions/`)
-- [ ] Supported universe and horizons; explicit exclusions (default: liquid US common equities +
+- [x] (ADR-002) Supported universe and horizons; explicit exclusions (default: liquid US common equities +
       benchmark ETFs; swing/multiweek)
-- [ ] Data rights: private use, model processing, public screenshots, later multi-user delivery
+- [x] (ADR-003; multi-user review still open) Data rights: private use, model processing, public screenshots, later multi-user delivery
 - [ ] Who reviews taxonomy labels (qualified practitioner?) — else labels are "provisional"
-- [ ] Monthly spend ceiling (data + model) and which enrichments are optional
-- [ ] Briefing time and timezone policy (you're outside US market hours)
+- [x] (ADR-003; JEV cost still open) Monthly spend ceiling (data + model) and which enrichments are optional
+- [x] (ADR-002) Briefing time and timezone policy (you're outside US market hours)
 - [ ] Retention: holdings, evidence, journals, raw model outputs
 - [ ] What needs product/jurisdictional review before any public release
 
