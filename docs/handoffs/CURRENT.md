@@ -1,32 +1,38 @@
-# Handoff — main after T-006 merge
+# Handoff — T-011 spec written
 
 - **Updated:** 2026-09-27 by Claude Code
-- **Branch / worktree:** main (merge built in ~/code/ms-wt/web, pushed to origin/main; `~/code/ms-wt/api`
-  and `~/code/market-sentinel` need `git pull --ff-only` / a fresh branch from `origin/main`)
-- **Status:** T-006 `merged`; no task `ready`
+- **Branch / worktree:** main (spec commit made in ~/code/ms-wt/web, pushed to origin/main)
+- **Status:** T-011 `ready`; T-012 and T-013 added as `backlog`
 
 ## Next step (exact — the next agent starts here)
-- **Claude Code**, in a fresh session: write `docs/tasks/T-011-import-confirm.md` (import confirm →
-  immutable PortfolioVersion) so Codex can start it, then mark T-011 `ready` in the ledger.
-  Before that, or with it, decide whether to land the contracts v1.1 bump (below).
+- **Codex**, in `~/code/ms-wt/api`: `git fetch && git switch -c task/T-011-import-confirm origin/main`,
+  read `docs/tasks/T-011-import-confirm.md`, and start with planned commit 1 (failing confirm-rule tests).
+- **Claude Code** (parallel, no path overlap): write the T-013 contracts v1.1 spec, or implement it directly
+  since Claude Code owns contracts (T-002).
 
 ## Done this session
-- Reviewed `origin/main...task/T-006-valuation` @ `99fabc3` against the task file. One finding:
-  `unit_mismatch` returned a non-null price, and since `Price` has no `unit`, a USD row would have shown a
-  CAD number. Codex fixed it in `cc8f1f5` (price null + regression assertion); verified.
-- Merged with `--no-ff`.
+- Wrote `docs/tasks/T-011-import-confirm.md`. Scope decisions made there:
+  - Postgres persistence split out to **T-012**. T-011 ships an atomic in-memory store behind the
+    `PortfolioRepository` protocol, with a reusable store contract suite that T-012 must pass.
+  - Duplicate removal = explicit row exclusion (`PUT/DELETE /imports/{id}/rows/{n}/exclusion`), never
+    aggregation. Two included rows on the same instrument block confirm.
+  - Confirm needs `Idempotency-Key` + `preview_revision`. It does not re-resolve instruments.
+  - The default store is seeded with the fixture version, so T-006 valuation of `…0100` keeps working.
+- Contracts v1.1 bump kept out of T-011 (no schema change needed) and filed as **T-013**.
+- Checked the spec's acceptance step 1 against the real preview code: rows 2/5 unresolved, rows 1/20
+  share SYN01. The fixture `source_hash` matches `holdings.csv`.
 
 ## Tests run
-- On the T-006 head `99fabc3`: `make test` → pytest 300 passed, Vitest 64 passed; `make lint` passed;
-  `make contracts` byte-identical.
-- On the merge result: `make test` → 300 + 64 passed; `make lint` passed; `make contracts` byte-identical.
+- None (docs only).
 
 ## Contract changes proposed (not applied)
-- One v1.1 bump should bundle: T-006's `valuation.schema.json` (full shape in the T-006 handoff,
-  commit `cc8f1f5`), T-007's `issue.schema.json` and `brief.coverage.pending_sources`, and T-005's
-  `instrument.schema.json` / `symbol_mapping.schema.json` (T-005 handoff `f0caae1`, T-007 handoff `3e744e2`).
+- Unchanged from the T-006 handoff; now tracked as T-013: `valuation.schema.json` (T-006 `cc8f1f5`),
+  `issue.schema.json` + `brief.coverage.pending_sources` (T-007 `3e744e2`),
+  `instrument.schema.json` / `symbol_mapping.schema.json` (T-005 `f0caae1`).
 
 ## Unresolved / assumptions
+- T-011: tenant is a placeholder constant (the fixture tenant) until auth. `revision` increments on no-op
+  row edits too. Blank rows are auto-excluded, not user-excluded.
 - T-006 follow-up (for T-008): a `0` or negative close passes observation validation and is valued as
   a real price (a `0` close → market value `0.00`, counted as priced, weight `no_priced_value`).
   Provider adapters should reject non-positive closes.
@@ -36,7 +42,7 @@
   `services/` (move into `domain/` by T-008); bare `assert` in resolver code; function-local
   `from datetime import UTC` in `routes/instruments.py`.
 - T-005: display-symbol rule for several active aliases is labels-only; future-only mappings return
-  `symbol_not_found`; master data is a process-lifetime snapshot; whether confirm re-resolves is open (T-011).
+  `symbol_not_found`; master data is a process-lifetime snapshot; confirm does not re-resolve (settled in the T-011 spec).
 - T-007: Today parses only UTC `Z` timestamps; stale = `cutoff` Friday / `published_at` Monday (confirm);
   Ajv runs with `strictTypes`/`strictRequired` off for if/then subschemas.
 - Carried over: upload request-size limit before exposing `/imports`; previews are process-local;

@@ -16,6 +16,8 @@ Write a full task file only when a task moves to `ready` — specs written too e
 | T-008 | Provider adapters (Alpaca, SEC EDGAR) | 1 | Codex | Claude Code | — | T-000, T-002 | backlog |
 | T-009 | Staged JEV decisions (adapter + taxonomy v1) | 2 | Claude Code | Codex | — | T-000 (JEV access), T-003 | backlog |
 | T-010 | First evaluation report (rules-only vs persona vs JEV) | 2 | Codex | Anuraag + Claude Code | — | T-009 | backlog |
-| T-011 | Import confirm → immutable PortfolioVersion (persistence, duplicate removal) | 1 | Codex | Claude Code | — | T-005, T-006 | backlog |
+| T-011 | Import confirm → immutable PortfolioVersion (row exclusion, idempotent confirm, in-memory store) | 1 | Codex | Claude Code | task/T-011-import-confirm | T-004, T-005, T-006 | ready |
+| T-012 | Postgres portfolio store (SQLAlchemy + first Alembic migration, CI Postgres service) | 1 | Codex | Claude Code | — | T-011 | backlog |
+| T-013 | Contracts v1.1 bump (valuation, issue, instrument, symbol_mapping, brief.coverage.pending_sources) | 1 | Claude Code | Codex | — | T-005, T-006, T-007 | backlog |
 
-**Parallel lanes right now:** Codex → free (T-011 needs a spec) · Claude Code → write the T-011 spec (and optionally the contracts v1.1 bump) · Anuraag → remaining T-000 (JEV access, Alpaca/SEC/FRED signups, retention, label reviewer).
+**Parallel lanes right now:** Codex → T-011 (`ready`) · Claude Code → T-013 contracts v1.1 (no overlap with T-011's paths) · Anuraag → remaining T-000 (Alpaca/SEC/FRED signups, retention, label reviewer).
