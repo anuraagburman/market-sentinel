@@ -39,5 +39,14 @@ The pilot is a single-user research tool, so cost should stay minimal. The swing
 - The run pipeline needs a per-month spend meter and a "stage skipped: budget" coverage reason.
 - An upgrade (e.g. Alpaca's paid real-time SIP plan) needs a new ADR with the reason.
 
+## JEV / TypeSafe budget (amended 2026-09-27)
+- Prepaid **$5 of credit**, counted inside the $25/month model cap. Top-ups are a manual decision by
+  Anuraag, never automatic.
+- Credit running out is a normal state, not a crash: the adapter maps it to the budget-skipped
+  coverage reason in §2, so briefs publish as a visible partial.
+- Every live JEV response is recorded once (with the request, model id and cost), then replayed from
+  fixtures. Tests and eval re-runs never spend credit. T-010 plans its labeled-set size from the
+  measured cost per call on a small pilot batch, not an estimate.
+
 ## Open
-JEV / TypeSafe pricing is unknown and not yet inside the $25 cap. Record it when access is confirmed.
+Per-call JEV price: measure it from the first recorded calls in T-009 and add it here.
