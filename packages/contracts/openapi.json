@@ -15,6 +15,31 @@
         "title": "Body_upload_import_imports_post",
         "type": "object"
       },
+      "Calculation": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "title": "Basis",
+            "type": "string"
+          },
+          "kind": {
+            "const": "calculation",
+            "default": "calculation",
+            "title": "Kind",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "basis"
+        ],
+        "title": "Calculation",
+        "type": "object"
+      },
       "Candidate": {
         "additionalProperties": false,
         "properties": {
@@ -54,6 +79,51 @@
           "asset_type"
         ],
         "title": "Candidate",
+        "type": "object"
+      },
+      "Coverage": {
+        "additionalProperties": false,
+        "properties": {
+          "by_reason": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "no_price",
+                "conflicting_prices",
+                "unit_mismatch",
+                "currency_out_of_scope",
+                "market_value_unavailable",
+                "cost_basis_unknown",
+                "no_priced_value",
+                "cash_unknown",
+                "positions_unpriced"
+              ]
+            },
+            "title": "By Reason",
+            "type": "object"
+          },
+          "positions": {
+            "title": "Positions",
+            "type": "integer"
+          },
+          "priced": {
+            "title": "Priced",
+            "type": "integer"
+          },
+          "unpriced": {
+            "title": "Unpriced",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "positions",
+          "priced",
+          "unpriced",
+          "by_reason"
+        ],
+        "title": "Coverage",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -418,6 +488,45 @@
         "title": "ParsedHolding",
         "type": "object"
       },
+      "Price": {
+        "additionalProperties": false,
+        "properties": {
+          "feed": {
+            "enum": [
+              "iex",
+              "sip",
+              "delayed_15m",
+              "eod",
+              "fixture"
+            ],
+            "title": "Feed",
+            "type": "string"
+          },
+          "observation_id": {
+            "format": "uuid",
+            "title": "Observation Id",
+            "type": "string"
+          },
+          "observed_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+            "title": "Observed At",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "observation_id",
+          "observed_at",
+          "feed"
+        ],
+        "title": "Price",
+        "type": "object"
+      },
       "Problem": {
         "additionalProperties": false,
         "properties": {
@@ -598,6 +707,103 @@
         "title": "SymbolMapping",
         "type": "object"
       },
+      "Totals": {
+        "additionalProperties": false,
+        "properties": {
+          "cash": {
+            "discriminator": {
+              "mapping": {
+                "calculation": "#/components/schemas/Calculation",
+                "unavailable": "#/components/schemas/Unavailable"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Calculation"
+              },
+              {
+                "$ref": "#/components/schemas/Unavailable"
+              }
+            ],
+            "title": "Cash"
+          },
+          "priced_value": {
+            "discriminator": {
+              "mapping": {
+                "calculation": "#/components/schemas/Calculation",
+                "unavailable": "#/components/schemas/Unavailable"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Calculation"
+              },
+              {
+                "$ref": "#/components/schemas/Unavailable"
+              }
+            ],
+            "title": "Priced Value"
+          },
+          "total_value": {
+            "discriminator": {
+              "mapping": {
+                "calculation": "#/components/schemas/Calculation",
+                "unavailable": "#/components/schemas/Unavailable"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Calculation"
+              },
+              {
+                "$ref": "#/components/schemas/Unavailable"
+              }
+            ],
+            "title": "Total Value"
+          }
+        },
+        "required": [
+          "priced_value",
+          "cash",
+          "total_value"
+        ],
+        "title": "Totals",
+        "type": "object"
+      },
+      "Unavailable": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unavailable",
+            "default": "unavailable",
+            "title": "Kind",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "no_price",
+              "conflicting_prices",
+              "unit_mismatch",
+              "currency_out_of_scope",
+              "market_value_unavailable",
+              "cost_basis_unknown",
+              "no_priced_value",
+              "cash_unknown",
+              "positions_unpriced"
+            ],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "Unavailable",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -629,6 +835,188 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "Valuation": {
+        "additionalProperties": false,
+        "properties": {
+          "base_currency": {
+            "const": "USD",
+            "default": "USD",
+            "title": "Base Currency",
+            "type": "string"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/Coverage"
+          },
+          "cutoff": {
+            "format": "date-time",
+            "title": "Cutoff",
+            "type": "string"
+          },
+          "portfolio_version_id": {
+            "format": "uuid",
+            "title": "Portfolio Version Id",
+            "type": "string"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/ValuedPosition"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/Totals"
+          }
+        },
+        "required": [
+          "portfolio_version_id",
+          "cutoff",
+          "positions",
+          "totals",
+          "coverage"
+        ],
+        "title": "Valuation",
+        "type": "object"
+      },
+      "ValuedPosition": {
+        "additionalProperties": false,
+        "properties": {
+          "cost_basis": {
+            "anyOf": [
+              {
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Basis"
+          },
+          "display_symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Symbol"
+          },
+          "instrument_id": {
+            "format": "uuid",
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "market_value": {
+            "discriminator": {
+              "mapping": {
+                "calculation": "#/components/schemas/Calculation",
+                "unavailable": "#/components/schemas/Unavailable"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Calculation"
+              },
+              {
+                "$ref": "#/components/schemas/Unavailable"
+              }
+            ],
+            "title": "Market Value"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Price"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "quantity": {
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Quantity",
+            "type": "string"
+          },
+          "unrealized_pl": {
+            "discriminator": {
+              "mapping": {
+                "calculation": "#/components/schemas/Calculation",
+                "unavailable": "#/components/schemas/Unavailable"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Calculation"
+              },
+              {
+                "$ref": "#/components/schemas/Unavailable"
+              }
+            ],
+            "title": "Unrealized Pl"
+          },
+          "weight": {
+            "discriminator": {
+              "mapping": {
+                "calculation": "#/components/schemas/WeightCalculation",
+                "unavailable": "#/components/schemas/Unavailable"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WeightCalculation"
+              },
+              {
+                "$ref": "#/components/schemas/Unavailable"
+              }
+            ],
+            "title": "Weight"
+          }
+        },
+        "required": [
+          "instrument_id",
+          "display_symbol",
+          "quantity",
+          "cost_basis",
+          "price",
+          "market_value",
+          "unrealized_pl",
+          "weight"
+        ],
+        "title": "ValuedPosition",
+        "type": "object"
+      },
+      "WeightCalculation": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "title": "Basis",
+            "type": "string"
+          },
+          "kind": {
+            "const": "calculation",
+            "default": "calculation",
+            "title": "Kind",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "basis"
+        ],
+        "title": "WeightCalculation",
         "type": "object"
       }
     }
@@ -1000,6 +1388,79 @@
         "summary": "Lookup Instruments",
         "tags": [
           "instruments"
+        ]
+      }
+    },
+    "/portfolio-versions/{id}/valuation": {
+      "get": {
+        "description": "Compute USD values using closes observed and received by the UTC Z cutoff.\n\nDefaults use synthetic fixtures until confirmation and persistence exist.\nMissing values stay explicit; price age is left to downstream policy.",
+        "operationId": "get_valuation_portfolio_versions__id__valuation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cutoff",
+            "required": true,
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+              "title": "Cutoff",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Valuation"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Get Valuation",
+        "tags": [
+          "portfolios"
         ]
       }
     }

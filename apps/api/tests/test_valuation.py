@@ -210,3 +210,30 @@ def test_round_once_half_even_and_local_precision():
         ][0]["market_value"]["value"]
         == "0.02"
     )
+
+
+def test_precision_34_is_independent_of_callers_rounding():
+    from decimal import ROUND_UP
+
+    v, p, o = records()
+    positions = [dict(row, quantity="1") for row in p[:2]]
+    observations = [dict(o[0], value="1"), dict(o[1], value="2")]
+    with localcontext() as context:
+        context.prec = 2
+        context.rounding = ROUND_UP
+        result = calculate(v, positions, observations)
+        response = result.model_dump(mode="json")
+        assert context.prec == 2
+        assert context.rounding == ROUND_UP
+    assert result.positions[0].weight.value == Decimal("0.3333333333333333333333333333333333")
+    assert response["positions"][0]["weight"]["value"] == "0.333333"
+    assert response["positions"][1]["weight"]["value"] == "0.666667"
+
+
+def test_weight_half_even_ties():
+    v, p, o = records()
+    positions = [dict(row, quantity="1") for row in p[:2]]
+    for first, second, expected in (("1", "127", "0.007812"), ("3", "125", "0.023438")):
+        observations = [dict(o[0], value=first), dict(o[1], value=second)]
+        response = calculate(v, positions, observations).model_dump(mode="json")
+        assert response["positions"][0]["weight"]["value"] == expected

@@ -87,3 +87,33 @@ def test_invalid_observations_fail(tmp_path, case):
     write_records(tmp_path, v, p, o)
     with pytest.raises(ValueError):
         FileObservationRepository(tmp_path)
+
+
+def test_loaded_inputs_conform_to_canonical_contracts():
+    """Guard the hand-written input models against the shared v1 schemas."""
+    from pathlib import Path
+
+    from jsonschema import Draft202012Validator, FormatChecker
+    from referencing import Registry, Resource
+
+    directory = Path(__file__).resolve().parents[3] / "packages/contracts/schemas"
+    schemas = {
+        name: json.loads((directory / f"{name}.schema.json").read_text())
+        for name in ("common", "portfolio_version", "position", "observation")
+    }
+    registry = Registry().with_resources(
+        (schema["$id"], Resource.from_contents(schema)) for schema in schemas.values()
+    )
+    portfolios = FilePortfolioRepository()
+    version = portfolios.get(UUID(records()[0]["id"]))
+    groups = {
+        "portfolio_version": [version],
+        "position": portfolios.positions(version.id),
+        "observation": FileObservationRepository().observations(),
+    }
+    for name, rows in groups.items():
+        validator = Draft202012Validator(
+            schemas[name], registry=registry, format_checker=FormatChecker()
+        )
+        for row in rows:
+            validator.validate(row.model_dump(mode="json", exclude_unset=True))
