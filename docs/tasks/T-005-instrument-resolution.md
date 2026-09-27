@@ -42,8 +42,10 @@ Every existing fixture file must regenerate byte-identical.
 
 - Instrument: `id` (UUID), `name`, `asset_type` (`common_stock | preferred_stock`), `currency`.
 - Symbol mapping: `symbol`, `instrument_id`, `valid_from` (date, inclusive), `valid_to` (date,
-  exclusive, `null` = open). One instrument never has two overlapping mappings. Overlapping mappings
-  of one symbol to different instruments are allowed; that is what "ambiguous" means.
+  exclusive, `null` = open). One instrument never has two overlapping mappings **for the same
+  symbol**; different symbols may alias one instrument at the same time (e.g. `SYN02` and `SYN-AMB`).
+  Overlapping mappings of one symbol to different instruments are allowed; that is what "ambiguous"
+  means. (Amended at merge: the original wording forbade all overlaps, which contradicted the fixtures.)
 
 Contents:
 | Issuer | Instrument | Mappings | Case it covers |
@@ -59,7 +61,7 @@ New ids stay outside every id `generate.py` already emits; a fixture test assert
 across all generated files. `SYN-TYPO` has no mapping.
 
 The loader validates on startup and fails fast on duplicate ids, `valid_to <= valid_from`, a mapping
-to an unknown instrument, or overlapping mappings for one instrument. The app reads the master
+to an unknown instrument, or overlapping mappings for one instrument and symbol. The app reads the master
 through an `InstrumentRepository` protocol; the file-backed default is documented as synthetic and
 temporary until provider reference data (T-008). Tests inject their own repository.
 
