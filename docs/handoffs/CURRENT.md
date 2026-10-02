@@ -1,65 +1,30 @@
-# Handoff — T-013 contracts v1.1 ready for review; T-012 still with Codex
+# Handoff — T-013 review: changes requested
 
-- **Updated:** 2026-10-02 by Claude Code
-- **Branch / worktree:** task/T-013-contracts-v1-1 @ ~/code/ms-wt/web
-- **Status:** T-013 ready_for_review · T-012 unchanged by this session (Codex, `task/T-012-postgres-store`)
+- **Updated:** 2026-10-02 by Codex
+- **Branch / worktree:** task/T-013-contracts-v1-1 @ ~/code/ms-wt/api
+- **Status:** changes_requested
 
 ## Next step (exact — the next agent starts here)
-- **Codex — T-013 review.** Review `git diff origin/main...origin/task/T-013-contracts-v1-1` against
-  `docs/tasks/T-013-contracts-v1-1.md` and `docs/decisions/ADR-004-contracts-v1-1.md`. Check that each schema
-  fits its producer (`apps/api/app/models/valuation.py`, `models/instruments.py`) and that the additive rule
-  (ADR-004 §1) holds. Then run the validation commands in the task file.
-- **Codex — T-012.** Continue as specified in `docs/tasks/T-012-postgres-store.md`. T-013 touches no T-012 path.
-  It adds only the new file `apps/api/tests/test_contracts_v1_1.py`.
+Claude Code: address the two findings below with regression cases first. No implementation fixes were made during review. Reviewed origin/task/T-013-contracts-v1-1 at 3aaf300 after git fetch.
 
 ## Done this session
-- Wrote the T-013 spec. Ledger: T-013 → `review`.
-- Added 4 new schemas: `valuation`, `issue`, `instrument` and `symbol_mapping`.
-- Added `common` defs: `date`, `money_string`, `weight_string`, `unavailable_reason`, `unavailable`, `amount`
-  and `weight_amount`.
-- Added optional `issues` (at most 3) and `coverage.pending_sources` to the brief.
-  - New rule: nonempty `pending_sources` ⇒ `running`.
-  - New rule: `no_material_change` carries no issues.
-- Wrote ADR-004. It covers the additive rule, the tagged calculation/unavailable shape, Issue exposure as the
-  T-006 weight, and the OpenAPI-only scope for confirm/readiness.
-- Examples went from 13 valid / 31 invalid to 23 valid / 69 invalid.
-  - I printed why each new invalid case is rejected; each fails on its intended rule.
-  - The v1 examples are unchanged and still pass.
-- `apps/api/tests/test_contracts_v1_1.py` validates the real valuation response, the empty-portfolio and
-  unknown-cash valuation, and every loaded instrument and mapping, with format checking on.
-  - A mutation check (temporarily requiring 3-place money) made it fail, so it catches drift.
-- The Today `running.json` brief now carries `pending_sources`, and the fixture test pins it to the view's
-  `pending` ids.
+- Reviewed task spec, ADR-004, branch handoff, schemas, examples, producer tests and valuation/instrument producers.
+- P2: new patterns accept trailing newlines. symbol_mapping.schema.json:13 accepts "EXCO\n", although FileInstrumentRepository rejects it as untrimmed. common.schema.json:35,40 accept "1.00\n" and "0.500000\n". Python jsonschema uses search and $ matches before a final newline. Add strict end-of-string enforcement that also works in the web validator, with regressions for these cases.
+- P2: valuation.schema.json:78 requires positive price.value, but existing API producer accepts zero/negative closes. Reproduced by replacing fixture close values with "0" and "-1": GET valuation returns 200, then shared schema validation fails at positions[*].price. Existing producer tests use only positive closes and miss this gap. Resolve the producer/schema mismatch (coordinate ownership if producer validation changes); retain a conformance regression. The prior handoff acknowledged the gap, but future adapter validation does not protect the current producer.
+- Additive inspection: existing common definitions are unchanged; new brief conditions act only on new optional fields. All 13 original v1 valid examples remain byte-equivalent as parsed documents and pass v1.1 validation.
 
 ## Tests run
-- `make test` → 375 pytest passed; Vitest 64 passed (2 files).
-- `make lint` → exit 0.
-- `python3 packages/contracts/tests/gen_examples.py && git diff --exit-code packages/contracts/tests/examples`
-  → clean.
-- `make contracts && git diff --exit-code packages/contracts/openapi.json` → clean (no OpenAPI change).
-- `git diff --check` → clean.
+- `python3 packages/contracts/tests/gen_examples.py` → 23 valid / 69 invalid; examples diff clean.
+- `make test` → 375 pytest passed, 64 Vitest passed.
+- `make lint` → passed.
+- `make contracts && git diff --exit-code packages/contracts` → passed, no diff.
+- Read-only edge reproductions → trailing-newline inputs accepted; zero/negative closes return 200 bodies rejected by valuation schema.
+- Existing Starlette/AnyIO deprecation warning only.
 
 ## Contract changes proposed (not applied)
-- none (v1.1 is applied on this branch, pending review).
+- None during review. ADR-004 remains proposed; T-013 needs re-review after findings are resolved.
 
 ## Unresolved / assumptions
-- `price.value` must be a positive decimal. A zero or non-positive close now violates the contract. This is
-  consistent with the T-008 note, but the valuation domain doesn't reject such a close yet.
-- `symbol_mapping.symbol` rejects ASCII lowercase and leading or trailing whitespace. It allows other
-  characters (`BRK.B`), matching `FileInstrumentRepository`.
-- Issue `id` is a UUID. The T-007 view fixtures use slug ids (`issue-syn01-outlook`), which is fine because
-  the view isn't the contract. When the /briefs web task puts `issues` into the fixture briefs, the view
-  needs a weight→text formatter and a reason-code→text mapping.
-- Deferred to later work:
-  - Whether every issue `decision_id` appears in the brief's `decision_ids`. The publish verifier must check
-    this.
-  - Codegen.
-- Carried over:
-  - Web lane: group `row_has_errors` and `row_unresolved` per row in the import UI.
-  - Provider adapters should reject non-positive closes (T-008).
-  - T-005 nits: `domain/instruments.py` imports from `services/`; a bare `assert`; a local `UTC` import.
-  - Add an upload request-size limit before exposing `/imports`.
-  - JEV pricing sits outside the $25 model cap (ADR-003 Open).
-  - T-009 injection variant on usable data.
-  - Consumers must enable date-time format checking (ADR-001 §3).
-  - Today parses only UTC `Z` timestamps.
+- Optional pending_sources and issues are additive as implemented. Count/sum checks, mapping intervals/FKs, and issue decision membership remain application-level per ADR.
+- T-012 fixes were pushed on task/T-012-postgres-store (b93fd5c); ready for Claude Code re-review. Its validation and follow-ups are in that branch's handoff.
+- Carry forward: /briefs projection formatter, codegen, upload size limit, provider non-positive close validation, per-tenant keys and observation persistence.
