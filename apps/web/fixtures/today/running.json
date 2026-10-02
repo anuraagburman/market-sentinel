@@ -13,6 +13,10 @@
       "failed_sources": [],
       "unpriced_instrument_ids": [
         "00000000-0000-4000-8000-000000000003"
+      ],
+      "pending_sources": [
+        "synthetic-filings",
+        "synthetic-news"
       ]
     },
     "revision": 1

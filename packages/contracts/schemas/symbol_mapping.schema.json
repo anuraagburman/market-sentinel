@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/symbol_mapping.schema.json",
+  "title": "SymbolMapping",
+  "description": "Effective-dated symbol for an instrument. v1.1. Different symbols may alias one instrument and one symbol may map to several instruments (ambiguity). Foreign keys, valid_to > valid_from, and no overlap for the same instrument AND symbol are repository checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["symbol", "instrument_id", "valid_from", "valid_to"],
+  "properties": {
+    "symbol": {
+      "description": "Trimmed, with no ASCII lowercase.",
+      "type": "string",
+      "pattern": "^[^a-z\\s]([^a-z]*[^a-z\\s])?$(?!\\n)"
+    },
+    "instrument_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "valid_from": {"description": "Inclusive.", "$ref": "common.schema.json#/$defs/date"},
+    "valid_to": {
+      "description": "Exclusive; null means open-ended, never unknown.",
+      "oneOf": [{"$ref": "common.schema.json#/$defs/date"}, {"type": "null"}]
+    }
+  }
+}

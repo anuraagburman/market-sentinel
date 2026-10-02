@@ -34,5 +34,73 @@
       "failed_sources": []
     },
     "revision": 1
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000050",
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+    "cutoff": "2026-09-25T12:00:00Z",
+    "published_at": "2026-09-25T12:04:00Z",
+    "status": "running",
+    "decision_ids": [
+      "00000000-0000-4000-8000-000000000040"
+    ],
+    "coverage": {
+      "checked_sources": [
+        "sec_edgar",
+        "alpaca_iex"
+      ],
+      "failed_sources": [],
+      "pending_sources": [
+        "news_vendor"
+      ]
+    },
+    "revision": 1
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000050",
+    "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+    "cutoff": "2026-09-25T12:00:00Z",
+    "published_at": "2026-09-25T12:04:00Z",
+    "status": "ready",
+    "decision_ids": [
+      "00000000-0000-4000-8000-000000000040"
+    ],
+    "coverage": {
+      "checked_sources": [
+        "sec_edgar",
+        "alpaca_iex"
+      ],
+      "failed_sources": [],
+      "pending_sources": []
+    },
+    "revision": 1,
+    "issues": [
+      {
+        "id": "00000000-0000-4000-8000-000000000080",
+        "decision_id": "00000000-0000-4000-8000-000000000040",
+        "holding": {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "symbol": "EXCO",
+          "name": "ExampleCo"
+        },
+        "observation": {
+          "text": "ExampleCo lowered FY2026 revenue guidance.",
+          "source": "ExampleCo company release",
+          "observed_at": "2026-09-24T21:05:00Z"
+        },
+        "interpretation": "The release supports the guidance change; the margin effect is unresolved.",
+        "evidence_status": "supported",
+        "exposure": {
+          "kind": "calculation",
+          "value": "0.488000",
+          "basis": "share of priced value (excludes cash and unpriced positions)"
+        },
+        "next_question": "Does the lower outlook change the margin assumption in your thesis?",
+        "evidence_ids": [
+          "ev-1",
+          "ev-2"
+        ]
+      }
+    ]
   }
 ]

@@ -1,46 +1,33 @@
-# Handoff — T-012 merged; T-013 back to Claude Code with review changes
+# Handoff — T-013 re-review: producer finding remains
 
-- **Updated:** 2026-10-02 by Claude Code
-- **Branch / worktree:** main (merge `76fd6ff`, done from the main checkout). T-013 lives on `task/T-013-contracts-v1-1`.
-- **Status:** T-012 `merged` · T-013 `changes_requested`
+- **Updated:** 2026-10-02 by Codex
+- **Branch / worktree:** task/T-013-contracts-v1-1 @ ~/code/ms-wt/api
+- **Status:** changes_requested
 
 ## Next step (exact — the next agent starts here)
-- **Codex** (`~/code/ms-wt/api`): release the T-013 branch (`git switch --detach origin/main`) so Claude Code can
-  check it out. Codex's lane is otherwise free. T-008 (provider adapters) is next once it has a spec.
-- **Claude Code** (`~/code/ms-wt/web`): `git fetch && git switch task/T-013-contracts-v1-1 && git merge origin/main`
-  (T-012 regenerated `packages/contracts/openapi.json`, so resolve any conflict there by re-running `make contracts`).
-  Then fix the two Codex findings in the T-013 branch handoff, writing the regression tests first:
-  1. Pattern anchors accept a trailing newline (`symbol_mapping.schema.json:13`, `common.schema.json:35,40`).
-  2. `valuation.schema.json` requires a positive `price.value`, but the API producer still returns 200 for zero
-     or negative closes. Producer validation is in the api lane, so either agree on an owner in the handoff or
-     scope the schema to what the producer guarantees.
+Resolve the non-positive-close producer conformance finding with the API owner, or obtain explicit acceptance of merging with this known gap. Keep the strict schema per the recorded user decision. Do not merge under the current instruction to merge only if both findings are resolved.
 
 ## Done this session
-- Re-reviewed T-012 fix commits `ee75abb` (migration URL isolation, guard on non-`_test` `DATABASE_URL`) and
-  `effdd5a` (NUL rejected before storage, 503 limited to connection, pool-timeout and retry-exhausted failures).
-  Both blockers are fixed.
-- Approved two deviations from the spec:
-  - A NUL in an upload now returns `422 invalid_csv` (a tightening of T-011).
-  - `IntegrityError` / `DataError` return 500, not 503. A 503 tells the client to retry, and these errors mean a
-    bug.
-- Merged `task/T-012-postgres-store` with `--no-ff` (`76fd6ff`). The only conflict was the LEDGER lanes line.
-  Apart from docs, the merge tree is identical to the reviewed tip `b93fd5c`.
+- Fast-forwarded the local T-013 branch from 09a8046 to f6a98ab. Both worktrees were initially detached; the pull succeeded after checking out T-013 in api. Web remains detached.
+- Reviewed `git diff 09a8046..origin/task/T-013-contracts-v1-1` against the two findings.
+- Trailing-newline finding resolved: new v1.1 patterns reject final newlines and regression fixtures cover money, weight, symbol and date.
+- Non-positive-close finding remains: API returns HTTP 200 with a price that violates the strict schema. Strict xfail tests track the mismatch; they do not correct producer behavior. The decision to retain the strict schema is honored.
+- No merge performed because the user's merge condition requires both findings resolved.
 
-## Tests run (reviewed tip `b93fd5c`, scratch worktree, DB `sentinel_review_test`)
-- `pytest apps/api/tests packages/contracts/tests evals/tests` → 380 passed, 0 skipped (Postgres included).
-- Repository, API, worker and operations suites run 8 times → 65 passed each run (520 total).
-- `alembic check` → no new upgrade operations.
-- `python -m app.export_openapi` + `git diff --exit-code packages/contracts` → no diff.
-- `ruff check` and `ruff format --check` → clean.
-- `CI=true` with no `TEST_DATABASE_URL` → UsageError, so CI can't go green by skipping. A non-`_test`
-  `DATABASE_URL` → UsageError.
-- `grep -rn IMPORT_LOCK apps/api/app apps/api/tests` → nothing.
-- Vitest and ESLint not run, because the branch has no `apps/web` changes.
+## Tests run
+- `make test` → 385 Python passed, 50 skipped (Postgres tests unavailable without test database configuration), 2 xfailed; 64 Vitest passed.
+- `make lint` → passed (Ruff, ESLint, TypeScript).
 
 ## Contract changes proposed (not applied)
-- none (T-012 changed only OpenAPI `responses`, adding 503, through `make contracts`)
+- Optional v1.2: anchor the v1 patterns (`uuid`, `utc_timestamp`, `decimal_string`,
+  `positive_decimal_string`, `currency`, `sha256`, feed version) the same way. Under ECMA-262 this narrows
+  nothing; it only makes Python agree.
 
 ## Unresolved / assumptions
+- Follow-up for Codex (fold into T-008): the valuation producer treats a non-positive close as unavailable
+  (`no_price`, or a dedicated reason via a contract bump), and the strict xfail is removed. This is the T-008
+  carry-forward "provider non-positive close rejection".
+- T-012 is merged (`76fd6ff`) and merged into this branch; its tests pass here.
 - T-012 follow-ups (no task yet; fold them into the next api-lane store task):
   - UNIQUE on `import_confirmations.portfolio_version_id`.
   - Composite (`tenant_id`, `previous_version_id`) FK.
@@ -51,12 +38,4 @@
   - `.env.example` defaults `MS_ENV=dev`, which weakens the seed guard if the file is copied as-is.
 - Running tests with a dev `DATABASE_URL` exported in your shell now fails by design. Unset it or point it at a
   `_test` database.
-- Carried over:
-  - Per-tenant idempotency keys at auth time.
-  - Managed-Postgres settings and observation persistence.
-  - Upload request-size limit.
-  - Web grouping of `row_has_errors` + `row_unresolved`.
-  - Provider adapters reject non-positive closes (T-008); this also bears on T-013 finding 2.
-  - T-005 nits.
-  - JEV pricing sits outside the $25 model cap (ADR-003 Open).
-  - Today parses only UTC `Z` timestamps.
+- Carry forward: /briefs projection formatter, codegen, upload size limit, per-tenant keys, observation persistence.

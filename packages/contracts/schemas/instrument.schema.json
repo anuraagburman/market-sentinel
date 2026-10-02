@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/instrument.schema.json",
+  "title": "Instrument",
+  "description": "Instrument master record. v1.1. Identity is the UUID, never a symbol; symbols live in SymbolMapping.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "asset_type", "currency"],
+  "properties": {
+    "id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "name": {"type": "string", "minLength": 1},
+    "asset_type": {"enum": ["common_stock", "preferred_stock"]},
+    "currency": {"$ref": "common.schema.json#/$defs/currency"}
+  }
+}

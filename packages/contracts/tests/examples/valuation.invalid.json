@@ -1,0 +1,1280 @@
+[
+  {
+    "why": "money with one fractional digit",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.0",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "weight with two fractional digits",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.00",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "money with a trailing newline",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00\n",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "weight with a trailing newline",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000\n",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "money weight in a weight slot",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "float amount instead of decimal string",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": 4050.0,
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "calculation without basis",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "unknown unavailable reason",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "stale_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "unavailable amount carrying a value (missing is not zero)",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price",
+            "value": "0.00"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "price without feed",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "price key missing (unpriced must be explicit null)",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "by_reason key outside market-value reasons",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "cost_basis_unknown": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "by_reason zero count",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 0
+        }
+      }
+    }
+  },
+  {
+    "why": "negative coverage count",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": -1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "non-USD base currency",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "EUR",
+      "cutoff": "2026-09-25T12:00:00Z",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  },
+  {
+    "why": "offset cutoff",
+    "doc": {
+      "portfolio_version_id": "00000000-0000-4000-8000-000000000001",
+      "base_currency": "USD",
+      "cutoff": "2026-09-25T08:00:00-04:00",
+      "positions": [
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000010",
+          "display_symbol": "EXCO",
+          "quantity": "40",
+          "cost_basis": "3600.00",
+          "price": {
+            "value": "101.25",
+            "observation_id": "00000000-0000-4000-8000-000000000020",
+            "observed_at": "2026-09-24T20:00:00Z",
+            "feed": "fixture"
+          },
+          "market_value": {
+            "kind": "calculation",
+            "value": "4050.00",
+            "basis": "quantity \u00d7 close"
+          },
+          "unrealized_pl": {
+            "kind": "calculation",
+            "value": "450.00",
+            "basis": "market value \u2212 total cost basis"
+          },
+          "weight": {
+            "kind": "calculation",
+            "value": "1.000000",
+            "basis": "share of priced value (excludes cash and unpriced positions)"
+          }
+        },
+        {
+          "instrument_id": "00000000-0000-4000-8000-000000000011",
+          "display_symbol": null,
+          "quantity": "10",
+          "cost_basis": null,
+          "price": null,
+          "market_value": {
+            "kind": "unavailable",
+            "reason": "no_price"
+          },
+          "unrealized_pl": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          },
+          "weight": {
+            "kind": "unavailable",
+            "reason": "market_value_unavailable"
+          }
+        }
+      ],
+      "totals": {
+        "priced_value": {
+          "kind": "calculation",
+          "value": "4050.00",
+          "basis": "exact sum of available market values, rounded once"
+        },
+        "cash": {
+          "kind": "calculation",
+          "value": "1500.00",
+          "basis": "supplied USD cash"
+        },
+        "total_value": {
+          "kind": "unavailable",
+          "reason": "positions_unpriced"
+        }
+      },
+      "coverage": {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {
+          "no_price": 1
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/valuation.schema.json",
+  "title": "Valuation",
+  "description": "Deterministic USD valuation of one confirmed portfolio version at a cutoff. v1.1. Positions keep repository order and their original quantity and cost_basis strings. Count/sum agreement and price null <=> unavailable market_value are checked by the producer, not here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["portfolio_version_id", "base_currency", "cutoff", "positions", "totals", "coverage"],
+  "properties": {
+    "portfolio_version_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "base_currency": {"const": "USD"},
+    "cutoff": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+    "positions": {"type": "array", "items": {"$ref": "#/$defs/valued_position"}},
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["priced_value", "cash", "total_value"],
+      "properties": {
+        "priced_value": {
+          "description": "Exact sum of available market values, rounded once; never a sum of rounded position values.",
+          "$ref": "common.schema.json#/$defs/amount"
+        },
+        "cash": {"$ref": "common.schema.json#/$defs/amount"},
+        "total_value": {"$ref": "common.schema.json#/$defs/amount"}
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["positions", "priced", "unpriced", "by_reason"],
+      "properties": {
+        "positions": {"type": "integer", "minimum": 0},
+        "priced": {"type": "integer", "minimum": 0},
+        "unpriced": {"type": "integer", "minimum": 0},
+        "by_reason": {
+          "description": "Unpriced positions by market-value reason. Only nonzero counts appear.",
+          "type": "object",
+          "propertyNames": {"enum": ["no_price", "conflicting_prices", "unit_mismatch", "currency_out_of_scope"]},
+          "additionalProperties": {"type": "integer", "minimum": 1}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "valued_position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instrument_id", "display_symbol", "quantity", "cost_basis", "price", "market_value", "unrealized_pl", "weight"
+      ],
+      "properties": {
+        "instrument_id": {"$ref": "common.schema.json#/$defs/uuid"},
+        "display_symbol": {
+          "description": "Label only; null when the stored position has none.",
+          "oneOf": [{"type": "string"}, {"type": "null"}]
+        },
+        "quantity": {"$ref": "common.schema.json#/$defs/positive_decimal_string"},
+        "cost_basis": {"oneOf": [{"$ref": "common.schema.json#/$defs/decimal_string"}, {"type": "null"}]},
+        "price": {
+          "description": "The selected observation, or null when market_value is unavailable.",
+          "oneOf": [{"$ref": "#/$defs/price"}, {"type": "null"}]
+        },
+        "market_value": {"$ref": "common.schema.json#/$defs/amount"},
+        "unrealized_pl": {"$ref": "common.schema.json#/$defs/amount"},
+        "weight": {
+          "description": "Share of priced value; excludes cash and unpriced positions.",
+          "$ref": "common.schema.json#/$defs/weight_amount"
+        }
+      }
+    },
+    "price": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "observation_id", "observed_at", "feed"],
+      "properties": {
+        "value": {
+          "description": "The observation's original decimal string; evidence is not rounded.",
+          "$ref": "common.schema.json#/$defs/positive_decimal_string"
+        },
+        "observation_id": {"$ref": "common.schema.json#/$defs/uuid"},
+        "observed_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"},
+        "feed": {"$ref": "common.schema.json#/$defs/feed"}
+      }
+    }
+  }
+}
