@@ -1,52 +1,61 @@
-# Handoff — T-012 spec ready; Codex implements T-012, Claude Code starts T-013
+# Handoff — T-013 contracts v1.1 ready for review; T-012 still with Codex
 
 - **Updated:** 2026-10-02 by Claude Code
-- **Branch / worktree:** main (spec written from ~/code/ms-wt/web, detached at origin/main)
-- **Status:** T-012 `ready` (spec `c44c2b0`); T-013 `backlog`
+- **Branch / worktree:** task/T-013-contracts-v1-1 @ ~/code/ms-wt/web
+- **Status:** T-013 ready_for_review · T-012 unchanged by this session (Codex, `task/T-012-postgres-store`)
 
 ## Next step (exact — the next agent starts here)
-- **Codex** (`~/code/ms-wt/api`): `git fetch && git switch -c task/T-012-postgres-store origin/main`,
-  read `docs/tasks/T-012-postgres-store.md`, and implement it in its planned commit order. CI must run the
-  Postgres tests (not skip them).
-- **Claude Code** (`~/code/ms-wt/web`): write the T-013 spec (contracts v1.1) and implement it on
-  `task/T-013-contracts-v1-1`. It has no path overlap with T-012. T-012 changes no JSON schemas.
+- **Codex — T-013 review.** Review `git diff origin/main...origin/task/T-013-contracts-v1-1` against
+  `docs/tasks/T-013-contracts-v1-1.md` and `docs/decisions/ADR-004-contracts-v1-1.md`. Check that each schema
+  fits its producer (`apps/api/app/models/valuation.py`, `models/instruments.py`) and that the additive rule
+  (ADR-004 §1) holds. Then run the validation commands in the task file.
+- **Codex — T-012.** Continue as specified in `docs/tasks/T-012-postgres-store.md`. T-013 touches no T-012 path.
+  It adds only the new file `apps/api/tests/test_contracts_v1_1.py`.
 
 ## Done this session
-- Wrote `docs/tasks/T-012-postgres-store.md`. It covers every T-012 requirement from the T-011 handoff:
-  - The repository contract runs on memory and Postgres.
-  - Unique `import_id` and `idempotency_key`.
-  - Version, positions, receipt and predecessor go in one transaction behind a tenant-head row lock, with
-    UNIQUE (`tenant_id`, `previous_version_id`) NULLS NOT DISTINCT as a backstop.
-  - A collision returns the existing receipt, and a validation failure writes nothing.
-  - Previews are persisted. A per-import unit of work (`SELECT … FOR UPDATE` on the preview row) replaces
-    `IMPORT_LOCK`, with lock order preview → tenant head.
-  - Postgres is never seeded; `seed_fixture` is explicit and limited to dev/test.
-  - All four T-011 review nits are folded in. Row-blocker grouping goes to the web lane.
-- Added requirements the handoff didn't list:
-  - Round-trip fidelity (decimal and timestamp text, absent vs null `cash`).
-  - Database-level immutability triggers.
-  - Startup fails rather than falling back to memory.
-  - `503 store_unavailable`.
-  - A `_test`-suffix guard on the test database. With `CI=true`, a missing `TEST_DATABASE_URL` fails.
-  - Cross-worker and durability tests.
-  - Alembic up/down/check.
-- Ledger: T-012 → `ready`.
+- Wrote the T-013 spec. Ledger: T-013 → `review`.
+- Added 4 new schemas: `valuation`, `issue`, `instrument` and `symbol_mapping`.
+- Added `common` defs: `date`, `money_string`, `weight_string`, `unavailable_reason`, `unavailable`, `amount`
+  and `weight_amount`.
+- Added optional `issues` (at most 3) and `coverage.pending_sources` to the brief.
+  - New rule: nonempty `pending_sources` ⇒ `running`.
+  - New rule: `no_material_change` carries no issues.
+- Wrote ADR-004. It covers the additive rule, the tagged calculation/unavailable shape, Issue exposure as the
+  T-006 weight, and the OpenAPI-only scope for confirm/readiness.
+- Examples went from 13 valid / 31 invalid to 23 valid / 69 invalid.
+  - I printed why each new invalid case is rejected; each fails on its intended rule.
+  - The v1 examples are unchanged and still pass.
+- `apps/api/tests/test_contracts_v1_1.py` validates the real valuation response, the empty-portfolio and
+  unknown-cash valuation, and every loaded instrument and mapping, with format checking on.
+  - A mutation check (temporarily requiring 3-place money) made it fail, so it catches drift.
+- The Today `running.json` brief now carries `pending_sources`, and the fixture test pins it to the view's
+  `pending` ids.
 
 ## Tests run
-- None. This was a docs-only change, with no code touched.
+- `make test` → 375 pytest passed; Vitest 64 passed (2 files).
+- `make lint` → exit 0.
+- `python3 packages/contracts/tests/gen_examples.py && git diff --exit-code packages/contracts/tests/examples`
+  → clean.
+- `make contracts && git diff --exit-code packages/contracts/openapi.json` → clean (no OpenAPI change).
+- `git diff --check` → clean.
 
 ## Contract changes proposed (not applied)
-- Still T-013: `valuation.schema.json` (T-006 `cc8f1f5`), `issue.schema.json` +
-  `brief.coverage.pending_sources` (T-007 `3e744e2`), `instrument.schema.json` /
-  `symbol_mapping.schema.json` (T-005 `f0caae1`). Consider whether confirm/readiness shapes need schemas too.
-- T-012 adds `503 store_unavailable` to OpenAPI responses only, through `make contracts`.
+- none (v1.1 is applied on this branch, pending review).
 
 ## Unresolved / assumptions
-- The spec chooses SQLAlchemy Core (not the ORM) and READ COMMITTED isolation with explicit row locks.
-  Codex may challenge either choice in its handoff if the implementation shows a problem.
-- Idempotency keys stay globally unique until auth exists. Making them per-tenant is a later migration.
-- Web lane (later): group `row_has_errors` + `row_unresolved` per row in the import UI.
+- `price.value` must be a positive decimal. A zero or non-positive close now violates the contract. This is
+  consistent with the T-008 note, but the valuation domain doesn't reject such a close yet.
+- `symbol_mapping.symbol` rejects ASCII lowercase and leading or trailing whitespace. It allows other
+  characters (`BRK.B`), matching `FileInstrumentRepository`.
+- Issue `id` is a UUID. The T-007 view fixtures use slug ids (`issue-syn01-outlook`), which is fine because
+  the view isn't the contract. When the /briefs web task puts `issues` into the fixture briefs, the view
+  needs a weight→text formatter and a reason-code→text mapping.
+- Deferred to later work:
+  - Whether every issue `decision_id` appears in the brief's `decision_ids`. The publish verifier must check
+    this.
+  - Codegen.
 - Carried over:
+  - Web lane: group `row_has_errors` and `row_unresolved` per row in the import UI.
   - Provider adapters should reject non-positive closes (T-008).
   - T-005 nits: `domain/instruments.py` imports from `services/`; a bare `assert`; a local `UTC` import.
   - Add an upload request-size limit before exposing `/imports`.
