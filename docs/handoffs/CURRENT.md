@@ -1,53 +1,55 @@
-# Handoff — T-011 import confirmation ready for review
+# Handoff — T-011 merged; next T-012 spec and T-013 contracts
 
-- **Updated:** 2026-09-27 09:02 +08 by Codex
-- **Branch / worktree:** task/T-011-import-confirm @ ~/code/ms-wt/api
-- **Status:** ready_for_review
+- **Updated:** 2026-10-02 by Claude Code
+- **Branch / worktree:** main @ ~/code/market-sentinel (review done from ~/code/ms-wt/web, detached)
+- **Status:** T-011 `merged` (`b8c5dc4`, `--no-ff`); T-012 and T-013 `backlog`
 
 ## Next step (exact — the next agent starts here)
-- **Claude Code:** review `task/T-011-import-confirm` against `docs/tasks/T-011-import-confirm.md`,
-  focusing on transaction boundaries, idempotency precedence, and the reusable repository suite.
-  Review from your own worktree; do not edit the API worktree concurrently.
-- After approval, merge with `--no-ff` and push main. This session did not merge.
+- **Claude Code:** write `docs/tasks/T-012-postgres-store.md` (move T-012 to `ready`). It must carry the
+  T-012 requirements listed under "Unresolved" below. Then start T-013 (contracts v1.1), which Claude Code owns.
+- **Codex:** idle until the T-012 spec lands. `~/code/ms-wt/api` can be reset to `origin/main`.
 
 ## Done this session
-- Fetched origin, created the requested task branch from origin/main, and fast-forwarded
-  `~/code/market-sentinel` to `ff060ce`.
-- Added pure row-order blockers and exact string/null portfolio mapping; confirm never re-resolves.
-- Added revisioned row exclusions, auto-excluded blank rows, computed readiness, and confirmation
-  metadata derived from the portfolio store. Computed fields are not persisted in preview snapshots.
-- Added atomic in-memory portfolio storage, seeded from the validated fixture, with copies on reads,
-  unique import/key receipts, and predecessor selection under the write lock.
-- Added idempotent confirm and portfolio snapshot GET, post-confirm edit rejection, and generated OpenAPI.
-  Cash/account fields remain absent when not supplied; null cost basis stays explicit.
-- Added fixture-to-valuation acceptance, retry/key reuse, concurrency, edit/confirm serialization,
-  exclusion properties, removed-instrument, clock, and reusable repository contract tests.
-- Updated the existing resolution round-trip assertion to require revision 6 while retaining equality
-  for all other fields. Failed row decisions still leave revision unchanged.
+- Reviewed `task/T-011-import-confirm` (`030a4a6`) against `docs/tasks/T-011-import-confirm.md`.
+  Focus areas: transaction boundaries, idempotency precedence, and the reusable repository suite. No
+  blocking findings. Every endpoint, blocker code, status mapping and acceptance step in the spec is implemented and tested.
+  - Idempotency precedence: key receipt → import receipt → revision → readiness → store.confirm. The store
+    re-checks key/import under its lock, so a race returns the existing receipt (200, 409 or 422).
+  - The store validates before writing and writes version, positions, receipt and predecessor under one lock.
+    Reads are deep copies, and there is no update/delete.
+  - The repository suite is parametrized (`memory` only), and T-012 adds its factory there.
+- Merged to main with `--no-ff` and pushed.
 
 ## Tests run
-- Initial pure-domain tests failed because the confirm module did not exist (expected red step).
-- Targeted confirmation and resolution suite → 35 passed.
-- `make test` → 324 Python tests and 64 web tests passed.
-- `make lint` → Ruff checks/format, ESLint, Next type generation, and TypeScript passed.
-- `make contracts && git diff --exit-code packages/contracts` → passed; generated contract is stable.
-- Existing Starlette/AnyIO deprecation warning remains; no live data/model APIs or database used.
+- `make test` → 324 Python + 64 web passed (on the branch; main was the merge base, so the tree is identical).
+- `make lint` → passed. `make contracts && git diff --exit-code packages/contracts` → clean.
+- Confirm API + repository suites run 8× in a row → 19 passed each time (concurrency tests stable).
 
 ## Contract changes proposed (not applied)
-- JSON schemas unchanged. T-013 still owns the v1.1 additions carried from T-005/T-006/T-007:
-  valuation, issue, instrument, symbol_mapping, and brief.coverage.pending_sources.
+- Unchanged and tracked as T-013: `valuation.schema.json` (T-006 `cc8f1f5`), `issue.schema.json` +
+  `brief.coverage.pending_sources` (T-007 `3e744e2`), `instrument.schema.json` /
+  `symbol_mapping.schema.json` (T-005 `f0caae1`). Consider whether confirm/readiness shapes need schemas too.
 
 ## Unresolved / assumptions
-- T-012: implement the same repository contract suite (`test_confirm_repository.py`) with Postgres.
-  Enforce unique `import_id` and `idempotency_key`; version, positions, receipt, and tenant predecessor
-  selection must share one transaction. Key collisions return the existing receipt for service-level
-  200/409/422 mapping. Validation failures must write nothing.
-- T-012 must also replace process-wide `IMPORT_LOCK` with transactional coordination of preview
-  revision/row edits and confirmation. A portfolio-store transaction alone cannot prevent stale
-  preview edits. The current global lock serializes API operations within this process only.
-- Store and previews are temporary, lost on restart, and not shared across workers. The placeholder
-  tenant remains the fixture tenant. No-op successful decisions increment revision.
-- Authentication, Postgres, cash entry, aggregation, and the import UI remain outside T-011.
-- Carried forward: provider adapters should reject non-positive closes (T-008); request-size limits
-  before exposing uploads; JEV pricing outside the $25 model cap (ADR-003 Open); T-009 injection
-  variant on usable data; consumers must enable date-time format checking (ADR-001 §3).
+- **For the T-012 spec:**
+  - Pass `apps/api/tests/test_confirm_repository.py`. Unique `import_id` and unique `idempotency_key`.
+    Version, positions, receipt and predecessor selection go in one transaction. A key or import
+    collision returns the existing receipt. A validation failure writes nothing.
+  - Replace the process-wide `IMPORT_LOCK` with transactional coordination of preview revision, row
+    edits and confirm. Previews must persist too, or stale-edit protection breaks across workers.
+  - Seeding: the default store is seeded with the synthetic fixture version for the placeholder tenant.
+    The first real confirm in a running server therefore gets `previous_version_id` = the fixture id.
+    Postgres should not seed production data. Keep the fixture only for tests/dev.
+- Review nits (non-blocking, fold into T-012):
+  - The async `upload_import` takes the threading `IMPORT_LOCK` on the event loop, so it blocks the loop
+    while a sync route holds the lock.
+  - `confirm_import` computes `previous` that the store then overrides. The seed and the tests read
+    `FilePortfolioRepository._version`, a private attribute.
+  - `test_edit_cannot_cross_confirmation_transaction` passes even if the edit arrives after confirm,
+    because the race isn't forced.
+  - An error row that is also unresolved shows both `row_has_errors` and `row_unresolved`. That is allowed
+    by the spec table, but the UI should group blockers per row.
+- Carried over: provider adapters should reject non-positive closes (T-008); T-005 nits (`domain/instruments.py`
+  imports from `services/`; bare `assert`; local `UTC` import); upload request-size limit before exposing
+  `/imports`; JEV pricing outside the $25 model cap (ADR-003 Open); T-009 injection variant on usable data;
+  consumers must enable date-time format checking (ADR-001 §3); Today parses only UTC `Z` timestamps.
