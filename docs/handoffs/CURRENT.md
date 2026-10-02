@@ -1,28 +1,22 @@
-# Handoff — T-013 contracts v1.1: review findings addressed
+# Handoff — T-013 re-review: producer finding remains
 
-- **Updated:** 2026-10-02 by Claude Code
-- **Branch / worktree:** task/T-013-contracts-v1-1 @ ~/code/ms-wt/web (detached push; the api worktree's local branch is behind, run `git pull --ff-only` there)
-- **Status:** ready_for_review
+- **Updated:** 2026-10-02 by Codex
+- **Branch / worktree:** task/T-013-contracts-v1-1 @ ~/code/ms-wt/api
+- **Status:** changes_requested
 
 ## Next step (exact — the next agent starts here)
-Codex: re-review `git diff 09a8046..origin/task/T-013-contracts-v1-1` (3 fix commits, plus the origin/main merge) against your two findings.
-If they're resolved, merge T-013 to main with `--no-ff` and push main.
+Resolve the non-positive-close producer conformance finding with the API owner, or obtain explicit acceptance of merging with this known gap. Keep the strict schema per the recorded user decision. Do not merge under the current instruction to merge only if both findings are resolved.
 
 ## Done this session
-- P2 trailing newlines: the four v1.1 patterns (`money_string`, `weight_string`, `date`,
-  `symbol_mapping.symbol`) now end in `$(?!\n)`. That rejects a final newline under Python `re.search` and
-  ECMA-262 (Ajv). The v1 patterns keep plain `$`, so this bump doesn't narrow any v1 rule. ADR-004 records why.
-  New invalid examples: money, weight, symbol and date, each with a trailing newline. The date case already
-  failed through `format: date`; the pattern now rejects it without format checking.
-- P2 non-positive close (user decision: keep the strict contract): `price.value` stays positive. A new
-  `test_non_positive_close_conforms[0|-1]` is `xfail(strict=True, raises=ValidationError)`, so it fails as
-  soon as the producer stops returning such prices. ADR-004 states the producer gap.
+- Fast-forwarded the local T-013 branch from 09a8046 to f6a98ab. Both worktrees were initially detached; the pull succeeded after checking out T-013 in api. Web remains detached.
+- Reviewed `git diff 09a8046..origin/task/T-013-contracts-v1-1` against the two findings.
+- Trailing-newline finding resolved: new v1.1 patterns reject final newlines and regression fixtures cover money, weight, symbol and date.
+- Non-positive-close finding remains: API returns HTTP 200 with a price that violates the strict schema. Strict xfail tests track the mismatch; they do not correct producer behavior. The decision to retain the strict schema is honored.
+- No merge performed because the user's merge condition requires both findings resolved.
 
 ## Tests run
-- `python3 packages/contracts/tests/gen_examples.py && git diff --exit-code …/examples` → 23 valid / 73 invalid, clean.
-- Red step: 3 new invalid cases failed (money, weight, symbol) before the pattern fix.
-- `make test` → 379 pytest passed, 2 xfailed (the tracked producer gap); 64 Vitest passed.
-- `make lint` → exit 0. `make contracts && git diff --exit-code packages/contracts` → clean.
+- `make test` → 385 Python passed, 50 skipped (Postgres tests unavailable without test database configuration), 2 xfailed; 64 Vitest passed.
+- `make lint` → passed (Ruff, ESLint, TypeScript).
 
 ## Contract changes proposed (not applied)
 - Optional v1.2: anchor the v1 patterns (`uuid`, `utc_timestamp`, `decimal_string`,
