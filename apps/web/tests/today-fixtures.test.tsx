@@ -46,7 +46,7 @@ function holdingsIn(view: TodayView) {
 }
 
 describe.each(fixtures)("$state fixture", ({ state, fixture }) => {
-  test("brief validates against the v1 schema with formats", () => {
+  test("brief validates against the v1.1 schema with formats", () => {
     const ok = validateBrief(fixture.brief);
     expect(validateBrief.errors ?? []).toEqual([]);
     expect(ok).toBe(true);
@@ -54,13 +54,19 @@ describe.each(fixtures)("$state fixture", ({ state, fixture }) => {
 
   test("brief and view agree on status, cutoff, and coverage", () => {
     const { brief, view } = fixture;
-    const coverage = brief.coverage as { checked_sources: string[]; failed_sources: string[]; unpriced_instrument_ids?: string[] };
+    const coverage = brief.coverage as {
+      checked_sources: string[];
+      failed_sources: string[];
+      unpriced_instrument_ids?: string[];
+      pending_sources?: string[];
+    };
     expect(view.status).toBe(state);
     expect(brief.status).toBe(state);
     expect(view.header.snapshot_at).toBe(brief.cutoff);
     expect(view.header.coverage.checked.map((s) => s.id)).toEqual(coverage.checked_sources);
     expect(view.header.coverage.failed.map((s) => s.id)).toEqual(coverage.failed_sources);
     expect(view.header.coverage.unpriced.map((h) => h.instrument_id)).toEqual(coverage.unpriced_instrument_ids ?? []);
+    expect((view.header.coverage.pending ?? []).map((s) => s.id)).toEqual(coverage.pending_sources ?? []);
   });
 
   test("every instrument id resolves against the portfolio fixture", () => {
