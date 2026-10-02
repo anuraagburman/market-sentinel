@@ -8,7 +8,7 @@ from sqlalchemy import create_engine, pool
 from app.db.tables import metadata
 
 config = context.config
-url = os.environ.get("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
+url = config.get_main_option("sqlalchemy.url") or os.environ.get("DATABASE_URL")
 
 
 def run():

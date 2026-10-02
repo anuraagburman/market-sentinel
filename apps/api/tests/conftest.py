@@ -9,6 +9,10 @@ from sqlalchemy.engine import make_url
 
 from app.db.engine import migration_config, new_engine
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL and not (make_url(DATABASE_URL).database or "").endswith("_test"):
+    raise pytest.UsageError("DATABASE_URL database name must end in _test when running tests")
+
 URL = os.environ.get("TEST_DATABASE_URL")
 if os.environ.get("CI", "").lower() == "true" and not URL:
     raise pytest.UsageError("CI requires TEST_DATABASE_URL; Postgres tests must not be skipped")
