@@ -1,6 +1,7 @@
 """Atomic temporary portfolio storage and validated synthetic observations."""
 
 import json
+import os
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -59,6 +60,10 @@ class FilePortfolioRepository:
         self._version = version
         self._positions = positions
 
+    @property
+    def version(self) -> PortfolioVersion:
+        return self._version.model_copy(deep=True)
+
     def get(self, version_id: UUID) -> PortfolioVersion | None:
         return self._version if version_id == self._version.id else None
 
@@ -82,7 +87,7 @@ class InMemoryPortfolioRepository:
         self._keys = {}
         self._latest = {}
         if seed is not None:
-            version = seed._version.model_copy(deep=True)
+            version = seed.version
             self._versions[version.id] = version
             self._positions[version.id] = tuple(
                 p.model_copy(deep=True) for p in seed.positions(version.id)
@@ -161,8 +166,17 @@ class FileObservationRepository:
 
 
 @lru_cache(maxsize=1)
-def get_portfolio_repository() -> PortfolioRepository:
+def memory_portfolio_repository():
     return InMemoryPortfolioRepository(FilePortfolioRepository())
+
+
+def get_portfolio_repository() -> PortfolioRepository:
+    if os.environ.get("DATABASE_URL"):
+        from app.db.engine import get_engine
+        from app.db.repositories import PostgresPortfolioRepository
+
+        return PostgresPortfolioRepository(get_engine())
+    return memory_portfolio_repository()
 
 
 @lru_cache(maxsize=1)

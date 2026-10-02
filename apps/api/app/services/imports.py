@@ -6,13 +6,14 @@ import io
 import re
 from collections import Counter
 from collections.abc import Callable
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from decimal import Decimal
 from threading import RLock
 from typing import Protocol
 from uuid import UUID, uuid4
 
-from app.domain.confirm import TENANT_ID, build_portfolio, excluded_rows, is_blank, readiness
+from app.domain.confirm import build_portfolio, excluded_rows, is_blank, readiness
 from app.models.confirm import Confirmation, ConfirmationRecord, ConfirmResponse
 from app.services.portfolios import PortfolioRepository
 
@@ -20,9 +21,6 @@ from app.models.imports import ImportPreview, ImportRow
 from app.domain.instruments import currency_issues, display_symbol, resolve
 from app.models.instruments import Resolution
 from app.services.instruments import InstrumentRepository, get_instrument_repository
-
-# Serialize preview reads/edits with confirmation in this process until T-012.
-IMPORT_LOCK = RLock()
 
 MAX_BYTES = 1024 * 1024
 MAX_ROWS = 1000
@@ -64,6 +62,8 @@ def parse_csv(content: bytes) -> dict:
         text = content.decode("utf-8-sig")
     except UnicodeDecodeError as exc:
         raise ImportProblem("invalid_encoding", "CSV must be UTF-8 encoded.") from exc
+    if "\x00" in text:
+        raise ImportProblem("invalid_csv", "CSV must not contain NUL bytes.")
     reader = csv.reader(io.StringIO(text, newline=""), strict=True)
     try:
         headers = next(reader, [])
@@ -210,11 +210,13 @@ def parse_csv(content: bytes) -> dict:
 
 
 class PreviewRepository(Protocol):
-    """Preview snapshots; callers serialize decisions and confirmation with IMPORT_LOCK."""
+    """Preview snapshots and per-import decision transactions."""
 
     def save(self, preview: ImportPreview) -> None: ...
 
     def get(self, preview_id: UUID) -> ImportPreview | None: ...
+
+    def import_transaction(self, import_id: UUID, portfolios: PortfolioRepository): ...
 
 
 class InMemoryPreviewRepository:
@@ -226,6 +228,23 @@ class InMemoryPreviewRepository:
 
     def __init__(self):
         self._previews: dict[UUID, dict] = {}
+        self._guard = RLock()
+        self._locks = {}
+
+    @contextmanager
+    def import_transaction(self, import_id, portfolios):
+        with self._guard:
+            lock = self._locks.setdefault(import_id, RLock())
+        with lock:
+            tx = InMemoryPreviewRepository()
+            preview = self.get(import_id)
+            if preview is not None:
+                tx.save(preview)
+            tx.portfolios = portfolios
+            yield tx
+            updated = tx.get(import_id)
+            if updated is not None:
+                self.save(updated)
 
     def save(self, preview: ImportPreview) -> None:
         self._previews[preview.id] = preview.model_dump(exclude={"readiness", "confirmation"})
@@ -401,10 +420,7 @@ def confirm_import(
             409,
             blockers=[b.model_dump() for b in preview.readiness.blockers],
         )
-    previous = portfolios.latest(TENANT_ID)
-    version, positions = build_portfolio(
-        preview, uuid4(), clock(), previous.id if previous else None
-    )
+    version, positions = build_portfolio(preview, uuid4(), clock())
     record = ConfirmationRecord(
         import_id=preview.id,
         idempotency_key=key,

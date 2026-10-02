@@ -5,7 +5,7 @@
 - **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-Codex: re-review `git diff 09a8046..origin/task/T-013-contracts-v1-1` (3 commits) against your two findings.
+Codex: re-review `git diff 09a8046..origin/task/T-013-contracts-v1-1` (3 fix commits, plus the origin/main merge) against your two findings.
 If they're resolved, merge T-013 to main with `--no-ff` and push main.
 
 ## Done this session
@@ -30,8 +30,18 @@ If they're resolved, merge T-013 to main with `--no-ff` and push main.
   nothing; it only makes Python agree.
 
 ## Unresolved / assumptions
-- Follow-up for Codex after T-012 merges: the valuation producer treats a non-positive close as unavailable
+- Follow-up for Codex (fold into T-008): the valuation producer treats a non-positive close as unavailable
   (`no_price`, or a dedicated reason via a contract bump), and the strict xfail is removed. This is the T-008
   carry-forward "provider non-positive close rejection".
-- T-012: Codex pushed fixes (`b93fd5c`); Claude Code re-review is pending.
+- T-012 is merged (`76fd6ff`) and merged into this branch; its tests pass here.
+- T-012 follow-ups (no task yet; fold them into the next api-lane store task):
+  - UNIQUE on `import_confirmations.portfolio_version_id`.
+  - Composite (`tenant_id`, `previous_version_id`) FK.
+  - `seed_fixture` refuses when a tenant head already exists. Today it chains the fixture on top of real data.
+  - Prune `InMemoryPreviewRepository._locks`.
+  - `PostgresPreviewRepository.write` picks insert or update implicitly and doesn't check that the update hit a
+    row. Use an explicit upsert or assert `rowcount == 1`.
+  - `.env.example` defaults `MS_ENV=dev`, which weakens the seed guard if the file is copied as-is.
+- Running tests with a dev `DATABASE_URL` exported in your shell now fails by design. Unset it or point it at a
+  `_test` database.
 - Carry forward: /briefs projection formatter, codegen, upload size limit, per-tenant keys, observation persistence.

@@ -1,5 +1,10 @@
 """CSV preview decisions and atomic process-local portfolio confirmation."""
 
+import os
+
+from sqlalchemy.exc import InterfaceError, OperationalError, TimeoutError
+from app.db.errors import retry_transaction
+
 from typing import Annotated
 from collections.abc import Callable
 from contextlib import asynccontextmanager
@@ -11,12 +16,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from starlette.exceptions import HTTPException
+from starlette.concurrency import run_in_threadpool
 
 from app.models.imports import ConfirmProblem, ImportPreview, ImportRow, Problem
 from app.models.confirm import ConfirmRequest, ConfirmResponse
 from app.models.instruments import InstrumentSelection
 from app.services.imports import (
-    IMPORT_LOCK,
     confirm_import,
     decorate_preview,
     ensure_editable,
@@ -52,6 +57,14 @@ class ImportRoute(APIRoute):
                             415,
                         )
                 return await handler(request)
+            except (InterfaceError, OperationalError, TimeoutError):
+                return JSONResponse(
+                    status_code=503,
+                    content={
+                        "code": "store_unavailable",
+                        "message": "Portfolio store is unavailable; retry later.",
+                    },
+                )
             except ImportProblem as exc:
                 return JSONResponse(
                     status_code=exc.status_code,
@@ -97,6 +110,11 @@ _repository = InMemoryPreviewRepository()
 
 
 def get_repository() -> PreviewRepository:
+    if os.environ.get("DATABASE_URL"):
+        from app.db.engine import get_engine
+        from app.db.repositories import PostgresPreviewRepository
+
+        return PostgresPreviewRepository(get_engine())
     return _repository
 
 
@@ -118,7 +136,7 @@ Clock = Annotated[Callable[[], datetime], Depends(get_clock)]
     "",
     status_code=201,
     response_model=ImportPreview,
-    responses={code: {"model": Problem} for code in (400, 413, 415, 422)},
+    responses={code: {"model": Problem} for code in (400, 413, 415, 422, 503)},
 )
 async def upload_import(
     repository: Repository,
@@ -133,7 +151,7 @@ async def upload_import(
     text/plain, and application/octet-stream when the filename ends in .csv.
 
     Symbols resolve against synthetic reference data as of the upload's UTC date.
-    Previews are process-local and disappear on restart.
+    Previews persist when DATABASE_URL is configured.
     """
     content_type = (file.content_type or "").split(";", 1)[0].strip().lower()
     csv_filename = (file.filename or "").lower().endswith(".csv")
@@ -149,37 +167,47 @@ async def upload_import(
             415,
         )
     content = await file.read(MAX_BYTES + 1)
-    with IMPORT_LOCK:
+
+    def store_upload():
         return decorate_preview(
             create_preview(content, repository, instruments, clock), instruments, portfolios
         )
 
+    return await run_in_threadpool(store_upload)
 
-def load_import(id: str, repository: PreviewRepository) -> ImportPreview:
-    """Retrieve a preview from this process; unknown identifiers return 404."""
+
+def parse_import_id(id: str) -> UUID:
     try:
         preview_id = UUID(id)
     except ValueError:
         raise ImportProblem("import_not_found", "Import preview was not found.", 404) from None
-    preview = repository.get(preview_id)
+    return preview_id
+
+
+def load_import(id: str, repository: PreviewRepository) -> ImportPreview:
+    preview = repository.get(parse_import_id(id))
     if preview is None:
         raise ImportProblem("import_not_found", "Import preview was not found.", 404)
     return preview
 
 
-@router.get("/{id}", response_model=ImportPreview, responses={404: {"model": Problem}})
+@router.get(
+    "/{id}",
+    response_model=ImportPreview,
+    responses={code: {"model": Problem} for code in (404, 503)},
+)
 def get_import(
     id: str, repository: Repository, instruments: Instruments, portfolios: Portfolios
 ) -> ImportPreview:
-    with IMPORT_LOCK:
-        return decorate_preview(load_import(id, repository), instruments, portfolios)
+    return decorate_preview(load_import(id, repository), instruments, portfolios)
 
 
 @router.put(
     "/{id}/rows/{row_number}/resolution",
     response_model=ImportRow,
-    responses={code: {"model": Problem} for code in (404, 409, 422)},
+    responses={code: {"model": Problem} for code in (404, 409, 422, 503)},
 )
+@retry_transaction
 def select_resolution(
     id: str,
     row_number: int,
@@ -190,7 +218,8 @@ def select_resolution(
     portfolios: Portfolios,
 ) -> ImportRow:
     """Select a listed instrument explicitly, retaining automatic issues and candidates."""
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         preview = load_import(id, repository)
         ensure_editable(preview, portfolios)
         return set_resolution(
@@ -201,8 +230,9 @@ def select_resolution(
 @router.delete(
     "/{id}/rows/{row_number}/resolution",
     response_model=ImportRow,
-    responses={code: {"model": Problem} for code in (404, 409, 422)},
+    responses={code: {"model": Problem} for code in (404, 409, 422, 503)},
 )
+@retry_transaction
 def clear_resolution(
     id: str,
     row_number: int,
@@ -211,7 +241,8 @@ def clear_resolution(
     portfolios: Portfolios,
 ) -> ImportRow:
     """Restore automatic resolution on the preview's original date."""
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         preview = load_import(id, repository)
         ensure_editable(preview, portfolios)
         return set_resolution(preview, row_number, None, repository, instruments)
@@ -220,12 +251,14 @@ def clear_resolution(
 @router.put(
     "/{id}/rows/{row_number}/exclusion",
     response_model=ImportRow,
-    responses={code: {"model": Problem} for code in (404, 409, 422)},
+    responses={code: {"model": Problem} for code in (404, 409, 422, 503)},
 )
+@retry_transaction
 def exclude_row(
     id: str, row_number: int, repository: Repository, portfolios: Portfolios
 ) -> ImportRow:
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         preview = load_import(id, repository)
         ensure_editable(preview, portfolios)
         return set_exclusion(preview, row_number, True, repository)
@@ -234,12 +267,14 @@ def exclude_row(
 @router.delete(
     "/{id}/rows/{row_number}/exclusion",
     response_model=ImportRow,
-    responses={code: {"model": Problem} for code in (404, 409, 422)},
+    responses={code: {"model": Problem} for code in (404, 409, 422, 503)},
 )
+@retry_transaction
 def include_row(
     id: str, row_number: int, repository: Repository, portfolios: Portfolios
 ) -> ImportRow:
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         preview = load_import(id, repository)
         ensure_editable(preview, portfolios)
         return set_exclusion(preview, row_number, False, repository)
@@ -261,9 +296,10 @@ def validate_key(key: str | None) -> None:
     response_model_exclude_unset=True,
     responses={
         200: {"model": ConfirmResponse},
-        **{code: {"model": ConfirmProblem} for code in (400, 404, 409, 422)},
+        **{code: {"model": ConfirmProblem} for code in (400, 404, 409, 422, 503)},
     },
 )
+@retry_transaction
 def confirm(
     id: str,
     body: ConfirmRequest,
@@ -275,7 +311,8 @@ def confirm(
     idempotency_key: Annotated[str, Header(min_length=1, max_length=200, pattern=r"^[ -~]+$")],
 ) -> ConfirmResponse:
     validate_key(idempotency_key)
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         result, status = confirm_import(
             load_import(id, repository),
             body.preview_revision,
