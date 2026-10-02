@@ -27,17 +27,17 @@
       "description": "Calendar date, YYYY-MM-DD. v1.1. format rejects impossible dates such as 2026-02-30.",
       "type": "string",
       "format": "date",
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$(?!\\n)"
     },
     "money_string": {
       "description": "Computed money, rounded half-even to cents at serialization only. v1.1.",
       "type": "string",
-      "pattern": "^-?\\d+\\.\\d{2}$"
+      "pattern": "^-?\\d+\\.\\d{2}$(?!\\n)"
     },
     "weight_string": {
       "description": "Computed share as a fraction (0.488000 is 48.8%), rounded half-even to six places at serialization only. v1.1.",
       "type": "string",
-      "pattern": "^\\d+\\.\\d{6}$"
+      "pattern": "^\\d+\\.\\d{6}$(?!\\n)"
     },
     "unavailable_reason": {
       "description": "Why a computed value is missing. Missing is never zero. v1.1.",

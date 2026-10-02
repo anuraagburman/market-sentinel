@@ -46,6 +46,9 @@ to one bump, so each producer could drift from what the other lane expects.
   - Valuation counts and sums agree, and `price: null` ⇔ an unavailable `market_value`.
   - Mapping foreign keys, `valid_to > valid_from`, and no overlapping intervals.
   - Each issue's `decision_id` appears in the brief's `decision_ids`.
+- New v1.1 patterns end in `$(?!\n)`. Python's `jsonschema` matches with `re.search`, where `$` also
+  matches before a final newline. The lookahead makes Python and ECMA-262 (Ajv) agree that `"EXCO\n"`
+  is invalid. The v1 patterns keep plain `$`, so this bump doesn't narrow them.
 - `price.value` must be positive. A zero or negative close from a provider now violates the contract, which
   matches the T-008 note that adapters reject non-positive closes.
 

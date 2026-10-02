@@ -10,7 +10,7 @@
     "symbol": {
       "description": "Trimmed, with no ASCII lowercase.",
       "type": "string",
-      "pattern": "^[^a-z\\s]([^a-z]*[^a-z\\s])?$"
+      "pattern": "^[^a-z\\s]([^a-z]*[^a-z\\s])?$(?!\\n)"
     },
     "instrument_id": {"$ref": "common.schema.json#/$defs/uuid"},
     "valid_from": {"description": "Inclusive.", "$ref": "common.schema.json#/$defs/date"},
