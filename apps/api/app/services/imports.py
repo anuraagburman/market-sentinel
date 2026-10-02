@@ -8,13 +8,21 @@ from collections import Counter
 from collections.abc import Callable
 from datetime import UTC, datetime
 from decimal import Decimal
+from threading import RLock
 from typing import Protocol
 from uuid import UUID, uuid4
+
+from app.domain.confirm import TENANT_ID, build_portfolio, excluded_rows, is_blank, readiness
+from app.models.confirm import Confirmation, ConfirmationRecord, ConfirmResponse
+from app.services.portfolios import PortfolioRepository
 
 from app.models.imports import ImportPreview, ImportRow
 from app.domain.instruments import currency_issues, display_symbol, resolve
 from app.models.instruments import Resolution
 from app.services.instruments import InstrumentRepository, get_instrument_repository
+
+# Serialize preview reads/edits with confirmation in this process until T-012.
+IMPORT_LOCK = RLock()
 
 MAX_BYTES = 1024 * 1024
 MAX_ROWS = 1000
@@ -26,11 +34,12 @@ csv.field_size_limit(MAX_BYTES)
 
 
 class ImportProblem(Exception):
-    def __init__(self, code: str, message: str, status_code: int = 422):
+    def __init__(self, code: str, message: str, status_code: int = 422, **details):
         super().__init__(message)
         self.code = code
         self.message = message
         self.status_code = status_code
+        self.details = details
 
 
 def formula_like(value: str) -> bool:
@@ -201,7 +210,7 @@ def parse_csv(content: bytes) -> dict:
 
 
 class PreviewRepository(Protocol):
-    """Storage boundary for future persistence; confirmation is outside this task."""
+    """Preview snapshots; callers serialize decisions and confirmation with IMPORT_LOCK."""
 
     def save(self, preview: ImportPreview) -> None: ...
 
@@ -216,14 +225,14 @@ class InMemoryPreviewRepository:
     """
 
     def __init__(self):
-        self._previews: dict[UUID, ImportPreview] = {}
+        self._previews: dict[UUID, dict] = {}
 
     def save(self, preview: ImportPreview) -> None:
-        self._previews[preview.id] = preview.model_copy(deep=True)
+        self._previews[preview.id] = preview.model_dump(exclude={"readiness", "confirmation"})
 
     def get(self, preview_id: UUID) -> ImportPreview | None:
         preview = self._previews.get(preview_id)
-        return preview.model_copy(deep=True) if preview is not None else None
+        return ImportPreview.model_validate(preview) if preview is not None else None
 
 
 def utc_now() -> datetime:
@@ -246,6 +255,7 @@ def create_preview(
         symbol = row["parsed"]["symbol"]
         if any(i["code"] == "formula_like_value" and i["field"] == "symbol" for i in row["issues"]):
             symbol = None
+        row["excluded"] = any(i["code"] == "blank_row" for i in row["issues"])
         row["resolution"] = resolve(
             symbol, row["parsed"]["currency"], received_at.date(), instruments
         )
@@ -299,5 +309,110 @@ def set_resolution(
             selected_at=selected_at.astimezone(UTC),
         )
     preview.summary.by_resolution = dict(Counter(r.resolution.status for r in preview.rows))
+    preview.revision += 1
     repository.save(preview)
     return row
+
+
+def decorate_preview(
+    preview: ImportPreview, instruments: InstrumentRepository, portfolios: PortfolioRepository
+) -> ImportPreview:
+    instrument_ids = {
+        r.resolution.instrument_id
+        for r in preview.rows
+        if r.resolution.instrument_id is not None
+        and instruments.get(r.resolution.instrument_id) is not None
+    }
+    preview.readiness = readiness(preview.rows, instrument_ids)
+    record = portfolios.by_import(preview.id)
+    if record is not None:
+        version = portfolios.get(record.portfolio_version_id)
+        preview.confirmation = Confirmation(
+            portfolio_version_id=version.id, confirmed_at=version.confirmed_at
+        )
+    return preview
+
+
+def ensure_editable(preview: ImportPreview, portfolios: PortfolioRepository) -> None:
+    if portfolios.by_import(preview.id) is not None:
+        raise ImportProblem("import_confirmed", "Confirmed imports cannot be edited.", 409)
+
+
+def set_exclusion(
+    preview: ImportPreview, row_number: int, excluded: bool, repository: PreviewRepository
+) -> ImportRow:
+    row = next((r for r in preview.rows if r.row_number == row_number), None)
+    if row is None:
+        raise ImportProblem("row_not_found", "Import row was not found.", 404)
+    if is_blank(row) and not excluded:
+        raise ImportProblem("row_not_includable", "Blank rows cannot be included.", 409)
+    row.excluded = excluded
+    preview.revision += 1
+    repository.save(preview)
+    return row
+
+
+def confirmation_response(
+    record: ConfirmationRecord, portfolios: PortfolioRepository
+) -> ConfirmResponse:
+    return ConfirmResponse(
+        portfolio_version=portfolios.get(record.portfolio_version_id),
+        positions=list(portfolios.positions(record.portfolio_version_id)),
+        import_id=record.import_id,
+        excluded_rows=list(record.excluded_rows),
+    )
+
+
+def check_receipt(record: ConfirmationRecord, import_id: UUID, key: str, fingerprint: str) -> None:
+    if record.idempotency_key == key:
+        if record.import_id != import_id or record.request_fingerprint != fingerprint:
+            raise ImportProblem(
+                "idempotency_key_reused", "Key was already used for another request.", 422
+            )
+    else:
+        raise ImportProblem(
+            "import_already_confirmed",
+            "Import was already confirmed.",
+            409,
+            portfolio_version_id=str(record.portfolio_version_id),
+        )
+
+
+def confirm_import(
+    preview: ImportPreview,
+    revision: int,
+    key: str,
+    instruments: InstrumentRepository,
+    portfolios: PortfolioRepository,
+    clock: Callable[[], datetime],
+) -> tuple[ConfirmResponse, int]:
+    fingerprint = str(revision)
+    existing = portfolios.by_idempotency_key(key) or portfolios.by_import(preview.id)
+    if existing is not None:
+        check_receipt(existing, preview.id, key, fingerprint)
+        return confirmation_response(existing, portfolios), 200
+    if preview.revision != revision:
+        raise ImportProblem("preview_changed", "Preview changed; review the current revision.", 409)
+    preview = decorate_preview(preview, instruments, portfolios)
+    if not preview.readiness.confirmable:
+        raise ImportProblem(
+            "import_not_confirmable",
+            "Review blocking rows before confirming.",
+            409,
+            blockers=[b.model_dump() for b in preview.readiness.blockers],
+        )
+    previous = portfolios.latest(TENANT_ID)
+    version, positions = build_portfolio(
+        preview, uuid4(), clock(), previous.id if previous else None
+    )
+    record = ConfirmationRecord(
+        import_id=preview.id,
+        idempotency_key=key,
+        request_fingerprint=fingerprint,
+        portfolio_version_id=version.id,
+        excluded_rows=tuple(excluded_rows(preview.rows)),
+    )
+    stored = portfolios.confirm(record, version, positions)
+    check_receipt(stored, preview.id, key, fingerprint)
+    status = 201 if stored.portfolio_version_id == version.id else 200
+    return confirmation_response(stored, portfolios), status
