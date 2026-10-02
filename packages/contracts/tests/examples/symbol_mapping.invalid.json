@@ -18,6 +18,24 @@
     }
   },
   {
+    "why": "symbol with a trailing newline",
+    "doc": {
+      "symbol": "EXCO\n",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "valid_from": "2020-01-01",
+      "valid_to": "2026-06-30"
+    }
+  },
+  {
+    "why": "date with a trailing newline",
+    "doc": {
+      "symbol": "EXCO",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "valid_from": "2020-01-01\n",
+      "valid_to": "2026-06-30"
+    }
+  },
+  {
     "why": "impossible date",
     "doc": {
       "symbol": "EXCO",

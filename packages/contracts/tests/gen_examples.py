@@ -223,6 +223,9 @@ INVALID = {
         case("valuation", "money with one fractional digit",
              setk(["positions", 0, "market_value", "value"], "4050.0")),
         case("valuation", "weight with two fractional digits", setk(["positions", 0, "weight", "value"], "1.00")),
+        case("valuation", "money with a trailing newline",
+             setk(["positions", 0, "market_value", "value"], "4050.00\n")),
+        case("valuation", "weight with a trailing newline", setk(["positions", 0, "weight", "value"], "1.000000\n")),
         case("valuation", "money weight in a weight slot", setk(["positions", 0, "weight", "value"], "4050.00")),
         case("valuation", "float amount instead of decimal string",
              setk(["positions", 0, "market_value", "value"], 4050.0)),
@@ -259,6 +262,8 @@ INVALID = {
     "symbol_mapping": [
         case("symbol_mapping", "lowercase symbol", setk(["symbol"], "exco")),
         case("symbol_mapping", "untrimmed symbol", setk(["symbol"], " EXCO")),
+        case("symbol_mapping", "symbol with a trailing newline", setk(["symbol"], "EXCO\n")),
+        case("symbol_mapping", "date with a trailing newline", setk(["valid_from"], "2020-01-01\n")),
         case("symbol_mapping", "impossible date", setk(["valid_from"], "2026-02-30")),
         case("symbol_mapping", "timestamp instead of date", setk(["valid_from"], "2020-01-01T00:00:00Z")),
         case("symbol_mapping", "valid_to key missing (open-ended must be explicit null)", delk(["valid_to"])),
