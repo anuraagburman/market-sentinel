@@ -55,7 +55,6 @@ def build_portfolio(
     preview: ImportPreview,
     version_id: UUID,
     confirmed_at: datetime,
-    previous_version_id: UUID | None,
 ) -> tuple[PortfolioVersion, tuple[Position, ...]]:
     """Map a ready preview, retaining parsed strings and explicit unknown cost."""
     if confirmed_at.tzinfo is None or confirmed_at.utcoffset() is None:
@@ -70,7 +69,7 @@ def build_portfolio(
         source_hash="sha256:" + preview.file_sha256,
         status="confirmed",
         confirmed_at=confirmed_at.astimezone(UTC).isoformat().replace("+00:00", "Z"),
-        previous_version_id=previous_version_id,
+        previous_version_id=None,
     )
     positions = tuple(
         Position(

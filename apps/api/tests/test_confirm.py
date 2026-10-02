@@ -51,10 +51,10 @@ def test_errors_missing_instruments_duplicates_and_exclusions():
 
 def test_mapping_preserves_strings_null_and_currency():
     p = preview()
-    version_id, previous = uuid4(), uuid4()
-    version, positions = build_portfolio(p, version_id, NOW + timedelta(minutes=30), previous)
+    version_id = uuid4()
+    version, positions = build_portfolio(p, version_id, NOW + timedelta(minutes=30))
     assert version.id == version_id
-    assert version.previous_version_id == previous
+    assert version.previous_version_id is None
     assert version.imported_at == "2026-09-25T20:30:00Z"
     assert version.confirmed_at == "2026-09-25T21:00:00Z"
     assert version.source_hash == "sha256:" + p.file_sha256
@@ -72,4 +72,4 @@ def test_mapping_preserves_strings_null_and_currency():
 @pytest.mark.parametrize("instant", [NOW - timedelta(seconds=1), NOW.replace(tzinfo=None)])
 def test_invalid_clock_rejected(instant):
     with pytest.raises(ValueError):
-        build_portfolio(preview(), uuid4(), instant, None)
+        build_portfolio(preview(), uuid4(), instant)

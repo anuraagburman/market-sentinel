@@ -11,12 +11,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from starlette.exceptions import HTTPException
+from starlette.concurrency import run_in_threadpool
 
 from app.models.imports import ConfirmProblem, ImportPreview, ImportRow, Problem
 from app.models.confirm import ConfirmRequest, ConfirmResponse
 from app.models.instruments import InstrumentSelection
 from app.services.imports import (
-    IMPORT_LOCK,
     confirm_import,
     decorate_preview,
     ensure_editable,
@@ -149,19 +149,25 @@ async def upload_import(
             415,
         )
     content = await file.read(MAX_BYTES + 1)
-    with IMPORT_LOCK:
+
+    def store_upload():
         return decorate_preview(
             create_preview(content, repository, instruments, clock), instruments, portfolios
         )
 
+    return await run_in_threadpool(store_upload)
 
-def load_import(id: str, repository: PreviewRepository) -> ImportPreview:
-    """Retrieve a preview from this process; unknown identifiers return 404."""
+
+def parse_import_id(id: str) -> UUID:
     try:
         preview_id = UUID(id)
     except ValueError:
         raise ImportProblem("import_not_found", "Import preview was not found.", 404) from None
-    preview = repository.get(preview_id)
+    return preview_id
+
+
+def load_import(id: str, repository: PreviewRepository) -> ImportPreview:
+    preview = repository.get(parse_import_id(id))
     if preview is None:
         raise ImportProblem("import_not_found", "Import preview was not found.", 404)
     return preview
@@ -171,8 +177,7 @@ def load_import(id: str, repository: PreviewRepository) -> ImportPreview:
 def get_import(
     id: str, repository: Repository, instruments: Instruments, portfolios: Portfolios
 ) -> ImportPreview:
-    with IMPORT_LOCK:
-        return decorate_preview(load_import(id, repository), instruments, portfolios)
+    return decorate_preview(load_import(id, repository), instruments, portfolios)
 
 
 @router.put(
@@ -190,7 +195,8 @@ def select_resolution(
     portfolios: Portfolios,
 ) -> ImportRow:
     """Select a listed instrument explicitly, retaining automatic issues and candidates."""
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         preview = load_import(id, repository)
         ensure_editable(preview, portfolios)
         return set_resolution(
@@ -211,7 +217,8 @@ def clear_resolution(
     portfolios: Portfolios,
 ) -> ImportRow:
     """Restore automatic resolution on the preview's original date."""
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         preview = load_import(id, repository)
         ensure_editable(preview, portfolios)
         return set_resolution(preview, row_number, None, repository, instruments)
@@ -225,7 +232,8 @@ def clear_resolution(
 def exclude_row(
     id: str, row_number: int, repository: Repository, portfolios: Portfolios
 ) -> ImportRow:
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         preview = load_import(id, repository)
         ensure_editable(preview, portfolios)
         return set_exclusion(preview, row_number, True, repository)
@@ -239,7 +247,8 @@ def exclude_row(
 def include_row(
     id: str, row_number: int, repository: Repository, portfolios: Portfolios
 ) -> ImportRow:
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         preview = load_import(id, repository)
         ensure_editable(preview, portfolios)
         return set_exclusion(preview, row_number, False, repository)
@@ -275,7 +284,8 @@ def confirm(
     idempotency_key: Annotated[str, Header(min_length=1, max_length=200, pattern=r"^[ -~]+$")],
 ) -> ConfirmResponse:
     validate_key(idempotency_key)
-    with IMPORT_LOCK:
+    with repository.import_transaction(parse_import_id(id), portfolios) as tx:
+        repository, portfolios = tx, tx.portfolios
         result, status = confirm_import(
             load_import(id, repository),
             body.preview_revision,
