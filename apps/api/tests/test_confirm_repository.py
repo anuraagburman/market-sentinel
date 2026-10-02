@@ -9,9 +9,13 @@ from app.models.confirm import ConfirmationRecord
 from app.services.portfolios import FilePortfolioRepository, InMemoryPortfolioRepository
 
 
-@pytest.fixture(params=[InMemoryPortfolioRepository], ids=["memory"])
+@pytest.fixture(params=["memory", "postgres"])
 def repository(request):
-    return request.param()
+    if request.param == "memory":
+        return InMemoryPortfolioRepository()
+    from app.db.repositories import PostgresPortfolioRepository
+
+    return PostgresPortfolioRepository(request.getfixturevalue("clean_postgres"))
 
 
 def candidate(import_id=None, key=None):
