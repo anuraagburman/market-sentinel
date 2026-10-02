@@ -1,0 +1,46 @@
+[
+  {
+    "why": "lowercase symbol",
+    "doc": {
+      "symbol": "exco",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "valid_from": "2020-01-01",
+      "valid_to": "2026-06-30"
+    }
+  },
+  {
+    "why": "untrimmed symbol",
+    "doc": {
+      "symbol": " EXCO",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "valid_from": "2020-01-01",
+      "valid_to": "2026-06-30"
+    }
+  },
+  {
+    "why": "impossible date",
+    "doc": {
+      "symbol": "EXCO",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "valid_from": "2026-02-30",
+      "valid_to": "2026-06-30"
+    }
+  },
+  {
+    "why": "timestamp instead of date",
+    "doc": {
+      "symbol": "EXCO",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "valid_from": "2020-01-01T00:00:00Z",
+      "valid_to": "2026-06-30"
+    }
+  },
+  {
+    "why": "valid_to key missing (open-ended must be explicit null)",
+    "doc": {
+      "symbol": "EXCO",
+      "instrument_id": "00000000-0000-4000-8000-000000000010",
+      "valid_from": "2020-01-01"
+    }
+  }
+]

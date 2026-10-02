@@ -16,6 +16,27 @@ def U(n):
 
 H = "sha256:" + "a" * 64
 T = "2026-09-25T12:00:00Z"
+SHARE = "share of priced value (excludes cash and unpriced positions)"
+
+
+def calc(value, basis):
+    return {"kind": "calculation", "value": value, "basis": basis}
+
+
+def unavailable(reason):
+    return {"kind": "unavailable", "reason": reason}
+
+
+ISSUE = {
+    "id": U(80), "decision_id": U(40),
+    "holding": {"instrument_id": U(10), "symbol": "EXCO", "name": "ExampleCo"},
+    "observation": {"text": "ExampleCo lowered FY2026 revenue guidance.", "source": "ExampleCo company release",
+                    "observed_at": "2026-09-24T21:05:00Z"},
+    "interpretation": "The release supports the guidance change; the margin effect is unresolved.",
+    "evidence_status": "supported", "exposure": calc("0.488000", SHARE),
+    "next_question": "Does the lower outlook change the margin assumption in your thesis?",
+    "evidence_ids": ["ev-1", "ev-2"],
+}
 
 VALID = {
     "portfolio_version": {
@@ -77,6 +98,26 @@ VALID = {
         "invalidation": "Gross margin guidance cut for FY2027.", "paper_size": None,
         "revision": 1, "created_at": T,
     },
+    "valuation": {
+        "portfolio_version_id": U(1), "base_currency": "USD", "cutoff": T,
+        "positions": [
+            {"instrument_id": U(10), "display_symbol": "EXCO", "quantity": "40", "cost_basis": "3600.00",
+             "price": {"value": "101.25", "observation_id": U(20), "observed_at": "2026-09-24T20:00:00Z",
+                       "feed": "fixture"},
+             "market_value": calc("4050.00", "quantity × close"),
+             "unrealized_pl": calc("450.00", "market value − total cost basis"),
+             "weight": calc("1.000000", SHARE)},
+            {"instrument_id": U(11), "display_symbol": None, "quantity": "10", "cost_basis": None, "price": None,
+             "market_value": unavailable("no_price"), "unrealized_pl": unavailable("market_value_unavailable"),
+             "weight": unavailable("market_value_unavailable")},
+        ],
+        "totals": {"priced_value": calc("4050.00", "exact sum of available market values, rounded once"),
+                   "cash": calc("1500.00", "supplied USD cash"), "total_value": unavailable("positions_unpriced")},
+        "coverage": {"positions": 2, "priced": 1, "unpriced": 1, "by_reason": {"no_price": 1}},
+    },
+    "issue": ISSUE,
+    "instrument": {"id": U(10), "name": "ExampleCo", "asset_type": "common_stock", "currency": "USD"},
+    "symbol_mapping": {"symbol": "EXCO", "instrument_id": U(10), "valid_from": "2020-01-01", "valid_to": "2026-06-30"},
     "run": {
         "id": U(70), "stage": "publish", "idempotency_key": f"publish:{U(1)}:{T}:1.0", "attempts": 1,
         "state": "succeeded", "error_code": None, "cutoff": T, "created_at": T,
@@ -172,6 +213,55 @@ INVALID = {
         case("brief", "no_material_change with empty coverage",
              both(setk(["status"], "no_material_change"),
                   setk(["coverage"], {"checked_sources": [], "failed_sources": []}))),
+        case("brief", "pending sources on a ready brief", setk(["coverage", "pending_sources"], ["sec_edgar"])),
+        case("brief", "no_material_change carrying an issue",
+             both(setk(["status"], "no_material_change"), setk(["issues"], [ISSUE]))),
+        case("brief", "more than three issues", setk(["issues"], [ISSUE] * 4)),
+        case("brief", "issue that breaks the issue schema", setk(["issues"], [{**ISSUE, "evidence_ids": []}])),
+    ],
+    "valuation": [
+        case("valuation", "money with one fractional digit",
+             setk(["positions", 0, "market_value", "value"], "4050.0")),
+        case("valuation", "weight with two fractional digits", setk(["positions", 0, "weight", "value"], "1.00")),
+        case("valuation", "money weight in a weight slot", setk(["positions", 0, "weight", "value"], "4050.00")),
+        case("valuation", "float amount instead of decimal string",
+             setk(["positions", 0, "market_value", "value"], 4050.0)),
+        case("valuation", "calculation without basis", delk(["positions", 0, "market_value", "basis"])),
+        case("valuation", "unknown unavailable reason", setk(["positions", 1, "market_value", "reason"], "stale_price")),
+        case("valuation", "unavailable amount carrying a value (missing is not zero)",
+             setk(["positions", 1, "market_value", "value"], "0.00")),
+        case("valuation", "price without feed", delk(["positions", 0, "price", "feed"])),
+        case("valuation", "price key missing (unpriced must be explicit null)", delk(["positions", 1, "price"])),
+        case("valuation", "by_reason key outside market-value reasons",
+             setk(["coverage", "by_reason"], {"cost_basis_unknown": 1})),
+        case("valuation", "by_reason zero count", setk(["coverage", "by_reason"], {"no_price": 0})),
+        case("valuation", "negative coverage count", setk(["coverage", "unpriced"], -1)),
+        case("valuation", "non-USD base currency", setk(["base_currency"], "EUR")),
+        case("valuation", "offset cutoff", setk(["cutoff"], "2026-09-25T08:00:00-04:00")),
+    ],
+    "issue": [
+        case("issue", "issue with no evidence", setk(["evidence_ids"], [])),
+        case("issue", "display text instead of a weight string",
+             setk(["exposure", "value"], "48.8% of priced portfolio value")),
+        case("issue", "unavailable exposure without a reason code",
+             setk(["exposure"], {"kind": "unavailable", "reason": "No price observation at the cutoff."})),
+        case("issue", "evidence_status outside the enum", setk(["evidence_status"], "confirmed")),
+        case("issue", "non-UUID issue id", setk(["id"], "issue-exco-outlook")),
+        case("issue", "decision_id missing", delk(["decision_id"])),
+        case("issue", "confidence field smuggled in", setk(["confidence"], 0.8)),
+    ],
+    "instrument": [
+        case("instrument", "symbol used as identity", setk(["id"], "EXCO")),
+        case("instrument", "asset_type out of scope", setk(["asset_type"], "etf")),
+        case("instrument", "lowercase currency", setk(["currency"], "usd")),
+        case("instrument", "empty name", setk(["name"], "")),
+    ],
+    "symbol_mapping": [
+        case("symbol_mapping", "lowercase symbol", setk(["symbol"], "exco")),
+        case("symbol_mapping", "untrimmed symbol", setk(["symbol"], " EXCO")),
+        case("symbol_mapping", "impossible date", setk(["valid_from"], "2026-02-30")),
+        case("symbol_mapping", "timestamp instead of date", setk(["valid_from"], "2020-01-01T00:00:00Z")),
+        case("symbol_mapping", "valid_to key missing (open-ended must be explicit null)", delk(["valid_to"])),
     ],
     "plan": [
         case("plan", "model-supplied price level", setk(["conditions", 1, "price_reference", "source"], "model")),
@@ -198,6 +288,28 @@ EXTRA_VALID = {
     ],
     "brief": [
         case("brief", "clean day with checked coverage", setk(["status"], "no_material_change")),
+        case("brief", "running with pending sources",
+             both(setk(["status"], "running"), setk(["coverage", "pending_sources"], ["news_vendor"]))),
+        case("brief", "ready with an issue and empty pending", both(
+            setk(["issues"], [ISSUE]), setk(["coverage", "pending_sources"], []))),
+    ],
+    "valuation": [
+        case("valuation", "empty portfolio with unknown cash", both(
+            setk(["positions"], []),
+            setk(["totals"], {"priced_value": unavailable("no_priced_value"), "cash": unavailable("cash_unknown"),
+                              "total_value": unavailable("cash_unknown")}),
+            setk(["coverage"], {"positions": 0, "priced": 0, "unpriced": 0, "by_reason": {}}))),
+        case("valuation", "negative unrealized P/L and negative-zero rounding", both(
+            setk(["positions", 0, "unrealized_pl", "value"], "-125.50"),
+            setk(["totals", "cash", "value"], "-0.00"))),
+    ],
+    "issue": [
+        case("issue", "unavailable exposure and no display symbol", both(
+            setk(["exposure"], unavailable("no_priced_value")), setk(["holding", "symbol"], None))),
+    ],
+    "symbol_mapping": [
+        case("symbol_mapping", "open-ended mapping with a class-share symbol",
+             both(setk(["symbol"], "BRK.B"), setk(["valid_to"], None))),
     ],
 }
 

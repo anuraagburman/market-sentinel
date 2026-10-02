@@ -1,0 +1,201 @@
+[
+  {
+    "why": "issue with no evidence",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000080",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "holding": {
+        "instrument_id": "00000000-0000-4000-8000-000000000010",
+        "symbol": "EXCO",
+        "name": "ExampleCo"
+      },
+      "observation": {
+        "text": "ExampleCo lowered FY2026 revenue guidance.",
+        "source": "ExampleCo company release",
+        "observed_at": "2026-09-24T21:05:00Z"
+      },
+      "interpretation": "The release supports the guidance change; the margin effect is unresolved.",
+      "evidence_status": "supported",
+      "exposure": {
+        "kind": "calculation",
+        "value": "0.488000",
+        "basis": "share of priced value (excludes cash and unpriced positions)"
+      },
+      "next_question": "Does the lower outlook change the margin assumption in your thesis?",
+      "evidence_ids": []
+    }
+  },
+  {
+    "why": "display text instead of a weight string",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000080",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "holding": {
+        "instrument_id": "00000000-0000-4000-8000-000000000010",
+        "symbol": "EXCO",
+        "name": "ExampleCo"
+      },
+      "observation": {
+        "text": "ExampleCo lowered FY2026 revenue guidance.",
+        "source": "ExampleCo company release",
+        "observed_at": "2026-09-24T21:05:00Z"
+      },
+      "interpretation": "The release supports the guidance change; the margin effect is unresolved.",
+      "evidence_status": "supported",
+      "exposure": {
+        "kind": "calculation",
+        "value": "48.8% of priced portfolio value",
+        "basis": "share of priced value (excludes cash and unpriced positions)"
+      },
+      "next_question": "Does the lower outlook change the margin assumption in your thesis?",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ]
+    }
+  },
+  {
+    "why": "unavailable exposure without a reason code",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000080",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "holding": {
+        "instrument_id": "00000000-0000-4000-8000-000000000010",
+        "symbol": "EXCO",
+        "name": "ExampleCo"
+      },
+      "observation": {
+        "text": "ExampleCo lowered FY2026 revenue guidance.",
+        "source": "ExampleCo company release",
+        "observed_at": "2026-09-24T21:05:00Z"
+      },
+      "interpretation": "The release supports the guidance change; the margin effect is unresolved.",
+      "evidence_status": "supported",
+      "exposure": {
+        "kind": "unavailable",
+        "reason": "No price observation at the cutoff."
+      },
+      "next_question": "Does the lower outlook change the margin assumption in your thesis?",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ]
+    }
+  },
+  {
+    "why": "evidence_status outside the enum",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000080",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "holding": {
+        "instrument_id": "00000000-0000-4000-8000-000000000010",
+        "symbol": "EXCO",
+        "name": "ExampleCo"
+      },
+      "observation": {
+        "text": "ExampleCo lowered FY2026 revenue guidance.",
+        "source": "ExampleCo company release",
+        "observed_at": "2026-09-24T21:05:00Z"
+      },
+      "interpretation": "The release supports the guidance change; the margin effect is unresolved.",
+      "evidence_status": "confirmed",
+      "exposure": {
+        "kind": "calculation",
+        "value": "0.488000",
+        "basis": "share of priced value (excludes cash and unpriced positions)"
+      },
+      "next_question": "Does the lower outlook change the margin assumption in your thesis?",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ]
+    }
+  },
+  {
+    "why": "non-UUID issue id",
+    "doc": {
+      "id": "issue-exco-outlook",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "holding": {
+        "instrument_id": "00000000-0000-4000-8000-000000000010",
+        "symbol": "EXCO",
+        "name": "ExampleCo"
+      },
+      "observation": {
+        "text": "ExampleCo lowered FY2026 revenue guidance.",
+        "source": "ExampleCo company release",
+        "observed_at": "2026-09-24T21:05:00Z"
+      },
+      "interpretation": "The release supports the guidance change; the margin effect is unresolved.",
+      "evidence_status": "supported",
+      "exposure": {
+        "kind": "calculation",
+        "value": "0.488000",
+        "basis": "share of priced value (excludes cash and unpriced positions)"
+      },
+      "next_question": "Does the lower outlook change the margin assumption in your thesis?",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ]
+    }
+  },
+  {
+    "why": "decision_id missing",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000080",
+      "holding": {
+        "instrument_id": "00000000-0000-4000-8000-000000000010",
+        "symbol": "EXCO",
+        "name": "ExampleCo"
+      },
+      "observation": {
+        "text": "ExampleCo lowered FY2026 revenue guidance.",
+        "source": "ExampleCo company release",
+        "observed_at": "2026-09-24T21:05:00Z"
+      },
+      "interpretation": "The release supports the guidance change; the margin effect is unresolved.",
+      "evidence_status": "supported",
+      "exposure": {
+        "kind": "calculation",
+        "value": "0.488000",
+        "basis": "share of priced value (excludes cash and unpriced positions)"
+      },
+      "next_question": "Does the lower outlook change the margin assumption in your thesis?",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ]
+    }
+  },
+  {
+    "why": "confidence field smuggled in",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000080",
+      "decision_id": "00000000-0000-4000-8000-000000000040",
+      "holding": {
+        "instrument_id": "00000000-0000-4000-8000-000000000010",
+        "symbol": "EXCO",
+        "name": "ExampleCo"
+      },
+      "observation": {
+        "text": "ExampleCo lowered FY2026 revenue guidance.",
+        "source": "ExampleCo company release",
+        "observed_at": "2026-09-24T21:05:00Z"
+      },
+      "interpretation": "The release supports the guidance change; the margin effect is unresolved.",
+      "evidence_status": "supported",
+      "exposure": {
+        "kind": "calculation",
+        "value": "0.488000",
+        "basis": "share of priced value (excludes cash and unpriced positions)"
+      },
+      "next_question": "Does the lower outlook change the margin assumption in your thesis?",
+      "evidence_ids": [
+        "ev-1",
+        "ev-2"
+      ],
+      "confidence": 0.8
+    }
+  }
+]

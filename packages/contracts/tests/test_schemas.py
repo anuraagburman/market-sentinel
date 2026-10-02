@@ -1,4 +1,4 @@
-"""Contract v1 tests: schemas are valid, examples behave, taxonomy and envelope agree."""
+"""Contract v1.1 tests: schemas are valid, examples behave, taxonomy and envelope agree."""
 import json
 import pathlib
 
@@ -15,6 +15,7 @@ TAXONOMY = HERE.parents[2] / "decisions" / "taxonomy" / "v1.yaml"
 ENTITIES = [
     "portfolio_version", "position", "observation", "evidence", "claim",
     "event", "decision", "brief", "plan", "run",
+    "valuation", "issue", "instrument", "symbol_mapping",
 ]
 
 

@@ -1,0 +1,38 @@
+[
+  {
+    "why": "symbol used as identity",
+    "doc": {
+      "id": "EXCO",
+      "name": "ExampleCo",
+      "asset_type": "common_stock",
+      "currency": "USD"
+    }
+  },
+  {
+    "why": "asset_type out of scope",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000010",
+      "name": "ExampleCo",
+      "asset_type": "etf",
+      "currency": "USD"
+    }
+  },
+  {
+    "why": "lowercase currency",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000010",
+      "name": "ExampleCo",
+      "asset_type": "common_stock",
+      "currency": "usd"
+    }
+  },
+  {
+    "why": "empty name",
+    "doc": {
+      "id": "00000000-0000-4000-8000-000000000010",
+      "name": "",
+      "asset_type": "common_stock",
+      "currency": "USD"
+    }
+  }
+]
