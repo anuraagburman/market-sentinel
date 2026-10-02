@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://market-sentinel.local/schemas/common.schema.json",
   "title": "Common definitions",
-  "description": "Shared primitives and enums. Contract v1 (ADR-001).",
+  "description": "Shared primitives and enums. Contract v1.1 (ADR-001, ADR-004).",
   "$defs": {
     "uuid": {
       "type": "string",
@@ -22,6 +22,67 @@
     "positive_decimal_string": {
       "type": "string",
       "pattern": "^(0*[1-9]\\d*(\\.\\d+)?|0+\\.\\d*[1-9]\\d*)$"
+    },
+    "date": {
+      "description": "Calendar date, YYYY-MM-DD. v1.1. format rejects impossible dates such as 2026-02-30.",
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "money_string": {
+      "description": "Computed money, rounded half-even to cents at serialization only. v1.1.",
+      "type": "string",
+      "pattern": "^-?\\d+\\.\\d{2}$"
+    },
+    "weight_string": {
+      "description": "Computed share as a fraction (0.488000 is 48.8%), rounded half-even to six places at serialization only. v1.1.",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d{6}$"
+    },
+    "unavailable_reason": {
+      "description": "Why a computed value is missing. Missing is never zero. v1.1.",
+      "enum": [
+        "no_price", "conflicting_prices", "unit_mismatch", "currency_out_of_scope", "market_value_unavailable",
+        "cost_basis_unknown", "no_priced_value", "cash_unknown", "positions_unpriced"
+      ]
+    },
+    "unavailable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "reason"],
+      "properties": {"kind": {"const": "unavailable"}, "reason": {"$ref": "#/$defs/unavailable_reason"}}
+    },
+    "amount": {
+      "description": "A deterministic money calculation with its basis, or the reason it is unavailable. Never model output. v1.1.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value", "basis"],
+          "properties": {
+            "kind": {"const": "calculation"},
+            "value": {"$ref": "#/$defs/money_string"},
+            "basis": {"type": "string", "minLength": 1}
+          }
+        },
+        {"$ref": "#/$defs/unavailable"}
+      ]
+    },
+    "weight_amount": {
+      "description": "A deterministic share calculation with its basis, or the reason it is unavailable. Never model output. v1.1.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value", "basis"],
+          "properties": {
+            "kind": {"const": "calculation"},
+            "value": {"$ref": "#/$defs/weight_string"},
+            "basis": {"type": "string", "minLength": 1}
+          }
+        },
+        {"$ref": "#/$defs/unavailable"}
+      ]
     },
     "currency": {
       "description": "ISO 4217 code.",

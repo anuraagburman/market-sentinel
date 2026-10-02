@@ -20,8 +20,19 @@
       "properties": {
         "checked_sources": {"type": "array", "items": {"type": "string"}},
         "failed_sources": {"type": "array", "items": {"type": "string"}},
-        "unpriced_instrument_ids": {"type": "array", "items": {"$ref": "common.schema.json#/$defs/uuid"}}
+        "unpriced_instrument_ids": {"type": "array", "items": {"$ref": "common.schema.json#/$defs/uuid"}},
+        "pending_sources": {
+          "description": "Sources still being checked. v1.1; running only.",
+          "type": "array",
+          "items": {"type": "string"}
+        }
       }
+    },
+    "issues": {
+      "description": "At most three items, in display order. v1.1. Each decision_id must be in decision_ids (checked by the publish verifier).",
+      "type": "array",
+      "maxItems": 3,
+      "items": {"$ref": "issue.schema.json"}
     },
     "revision": {"type": "integer", "minimum": 1},
     "supersedes_brief_id": {"$ref": "common.schema.json#/$defs/uuid"},
@@ -41,6 +52,16 @@
       "$comment": "Empty coverage is not a clean day: no_material_change needs at least one checked source.",
       "if": {"properties": {"status": {"const": "no_material_change"}}},
       "then": {"properties": {"coverage": {"properties": {"checked_sources": {"minItems": 1}}}}}
+    },
+    {
+      "$comment": "A clean day carries no issues.",
+      "if": {"properties": {"status": {"const": "no_material_change"}}},
+      "then": {"properties": {"issues": {"maxItems": 0}}}
+    },
+    {
+      "$comment": "Pending sources mean the brief is still running. pending_sources is optional, so the if must require it.",
+      "if": {"properties": {"coverage": {"required": ["pending_sources"], "properties": {"pending_sources": {"minItems": 1}}}}},
+      "then": {"properties": {"status": {"const": "running"}}}
     }
   ]
 }

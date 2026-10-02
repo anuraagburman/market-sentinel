@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://market-sentinel.local/schemas/issue.schema.json",
+  "title": "Issue",
+  "description": "One brief item: what a source said, what it may mean for a holding, and the next research question. v1.1. Resolved evidence items and display text are API/web projections, not contract fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "decision_id", "holding", "observation", "interpretation", "evidence_status", "exposure", "next_question",
+    "evidence_ids"
+  ],
+  "properties": {
+    "id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "decision_id": {"$ref": "common.schema.json#/$defs/uuid"},
+    "holding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instrument_id", "symbol", "name"],
+      "properties": {
+        "instrument_id": {"$ref": "common.schema.json#/$defs/uuid"},
+        "symbol": {"description": "Label only; identity is instrument_id.", "oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]},
+        "name": {"type": "string", "minLength": 1}
+      }
+    },
+    "observation": {
+      "description": "A fact: what a source said, and when.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "source", "observed_at"],
+      "properties": {
+        "text": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "observed_at": {"$ref": "common.schema.json#/$defs/utc_timestamp"}
+      }
+    },
+    "interpretation": {"type": "string", "minLength": 1},
+    "evidence_status": {"enum": ["supported", "partial", "contested", "insufficient"]},
+    "exposure": {
+      "description": "The holding's share of priced value from the deterministic valuation, never a model.",
+      "$ref": "common.schema.json#/$defs/weight_amount"
+    },
+    "next_question": {"type": "string", "minLength": 1},
+    "evidence_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}
