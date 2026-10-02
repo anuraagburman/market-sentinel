@@ -1,54 +1,34 @@
-# Handoff — T-012 Postgres store checkpoint
+# Handoff — T-012 review blockers fixed
 
-- **Updated:** 2026-10-02 10:04 Asia/Singapore by Codex
+- **Updated:** 2026-10-02 by Codex
 - **Branch / worktree:** task/T-012-postgres-store @ ~/code/ms-wt/api
 - **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-Claude Code: from your own worktree, review `task/T-012-postgres-store` against
-`docs/tasks/T-012-postgres-store.md`. Focus on preview → tenant-head lock order,
-collision rollback, complete-operation retries, migration constraints, and lossless
-document reconstruction. After approval, merge with `--no-ff` and push main.
+Claude Code: re-review commits ee75abb and effdd5a against the two T-012 blockers; then approve for merge if clean. T-013 remains on its separate branch, ready for review per its prior handoff.
 
 ## Done this session
-- Checked the active task, template, ledger, branch, and working tree at the user's checkpoint request.
-- Working tree was clean at `c4e96ea`; no implementation work was pending.
-- Overwrote this handoff from the template and updated the T-012 ledger checkpoint note.
-- T-012 implementation and its prior validation remain ready for review; this session did not merge.
+- Blocker 1 (`ee75abb`): Alembic prefers an explicit config URL. Empty ini URL preserves DATABASE_URL fallback for CLI usage. Test collection refuses a non-_test DATABASE_URL as well as a non-_test TEST_DATABASE_URL.
+- Migration regression failed first by attempting the conflicting environment endpoint; passed after the fix. Upgrade/downgrade/check lifecycle also passes.
+- Blocker 2 (`effdd5a`): parser rejects NUL anywhere in decoded CSV before storage with 422 invalid_csv and message "CSV must not contain NUL bytes." Both stores return identical Problems for NUL in symbol, unknown cell, and header.
+- Ten blocker-2 regression cases failed first, then passed. IntegrityError/DataError propagate as server errors rather than suggesting retry later. 503 is limited to OperationalError, InterfaceError and pool TimeoutError; transaction retry policy remains unchanged.
+- Optional changes deferred; no schema migration added.
 
 ## Tests run
-- `git status --short --branch` → clean working tree on the expected task branch before checkpoint edits.
-- No code tests rerun: this checkpoint changes handoff and ledger documentation only.
-- Prior implementation-session results retained below:
-- Planned red repository step: four memory cases passed; four Postgres cases failed because the
-  repository module did not exist. Implementation subsequently passed all eight unchanged cases.
-- `docker compose up -d --wait postgres` → local Postgres healthy.
-- `TEST_DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test make test`
-  → **369 Python tests and 64 web tests passed**, no Postgres skips.
-- `make lint` → Ruff checks/format, ESLint, Next type generation and TypeScript passed.
-- `make contracts && git diff --exit-code packages/contracts` → passed, generated contract stable.
-- `cd apps/api && DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test uv run alembic check`
-  → no new upgrade operations detected.
-- Repository + API + cross-worker/durability suites repeated **8 times** → **41 passed per run,
-  328 total**. Both-store forced edit/confirm race passed in each run.
-- Migration test includes upgrade, downgrade to base (no application tables), upgrade again and check.
-- `rg IMPORT_LOCK apps/api` → no matches.
-- Existing Starlette/AnyIO deprecation warning remains. No live model or data provider calls.
-- GitHub CI is configured but has not been observed running in this local session.
-
+- `TEST_DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test make test` → 380 pytest passed (Postgres included), 64 Vitest passed.
+- `make lint` → passed.
+- `make contracts` and `git diff --exit-code packages/contracts` → passed, no diff.
+- `cd apps/api && DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test uv run --locked alembic check` → no new upgrade operations.
+- Repository/API/worker/operations suites 8× → 65 passed each run, 520 total; includes forced edit-vs-confirm on both stores, worker races and transaction retries.
+- Non-_test DATABASE_URL collection check → refused with UsageError (expected exit 4), before database access.
+- Targeted migration suite → 2 passed; targeted API/operations → 54 passed.
+- Existing Starlette/AnyIO deprecation warning only.
 
 ## Contract changes proposed (not applied)
-- T-013 retains ownership of JSON schema v1.1 additions (valuation, issue, instrument,
-  symbol_mapping, brief.coverage.pending_sources). T-012 changed generated OpenAPI responses only.
+- NUL uploads now return existing Problem shape/code `422 invalid_csv` rather than a preview. This is a T-011 behavior tightening, flagged for reviewer approval; no schema or OpenAPI change is needed because 422 Problem already exists.
 
 ## Unresolved / assumptions
-- Placeholder fixture tenant remains until auth. Idempotency keys are globally unique; auth must
-  migrate them to per-tenant uniqueness and add authorization boundaries.
-- Managed-Postgres deployment/pooler settings and observation persistence remain later tasks.
-  Observation and instrument repositories still use synthetic files. Memory mode remains temporary.
-- Original model documents are stored with relational values to preserve wire fidelity; future
-  migrations must maintain both representations. Confirmed records are immutable at the DB layer.
-- Local Docker Postgres remains running for reviewer validation.
-- Carried forward: request-size limit before exposing uploads; provider non-positive close rejection
-  (T-008); JEV pricing outside the $25 model cap; T-009 injection variant on usable data; date-time
-  format checking by consumers; UTC Z-only timestamp parsing; import blocker grouping in web lane.
+- Follow-ups requested by review: UNIQUE on import_confirmations.portfolio_version_id; composite (tenant_id, previous_version_id) FK; seed_fixture refusal when a tenant head already exists; prune InMemoryPreviewRepository._locks.
+- Alembic CLI now requires DATABASE_URL or an explicit configured URL (no implicit dev database default).
+- Integrity/Data errors indicate an unexpected invariant or validation bug and surface as 500; they must not advertise transient availability/retry.
+- Carried forward: per-tenant idempotency keys at auth time, managed-Postgres settings, observation persistence; upload request-size limit and web grouping of row_has_errors/row_unresolved remain separate work.
