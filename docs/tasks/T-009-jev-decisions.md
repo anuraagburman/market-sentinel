@@ -28,7 +28,7 @@ live JEV when Anuraag approves the spend.
 ## Owned paths (edit only these)
 - `apps/api/app/judgment/` (new): `questions.py`, `state.py`, `client.py`, `stages.py`
 - `apps/api/tests/test_judgment_*.py` (new)
-- `evals/fixtures/jev/` (new: recorded request/response pairs, one file per packet × stage)
+- `evals/recordings/jev/` (new: recorded request/response pairs, one file per packet × stage)
 - `scripts/record_jev.py` (new, manual live recorder; never imported by tests)
 - `decisions/taxonomy/v1.yaml`: **only** the `research_relevance` rubric levels 2 and 4 (draft wording,
   provisional per ADR-005). No change to any `outputs` list.

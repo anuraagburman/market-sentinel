@@ -16,7 +16,7 @@ from app.judgment.stages import run_staged
 
 ROOT = Path(__file__).resolve().parents[3]
 PACKETS = ROOT / "evals/fixtures/packets"
-RECORDINGS = ROOT / "evals/fixtures/jev"
+RECORDINGS = ROOT / "evals/recordings/jev"
 SCHEMAS = [json.loads(p.read_text()) for p in (ROOT / "packages/contracts/schemas").glob("*.json")]
 REGISTRY = Registry().with_resources((s["$id"], Resource.from_contents(s)) for s in SCHEMAS)
 JUDGMENTS = Draft202012Validator(

@@ -4,7 +4,7 @@
     uv run --project apps/api python scripts/record_jev.py --live      # spends credit; needs approval
 
 `--live` reads TYPESAFE_API_KEY from the environment and writes one file per packet and stage to
-evals/fixtures/jev/<packet>/stage-<n>.json. Packets are synthetic; nothing else is sent. Never
+evals/recordings/jev/<packet>/stage-<n>.json. Packets are synthetic; nothing else is sent. Never
 imported by tests.
 """
 
@@ -31,7 +31,7 @@ from app.judgment.stages import run_staged  # noqa: E402
 from app.judgment.state import build_state  # noqa: E402
 
 PACKETS = ROOT / "evals/fixtures/packets"
-OUT = ROOT / "evals/fixtures/jev"
+OUT = ROOT / "evals/recordings/jev"
 
 
 class StageFiles:
