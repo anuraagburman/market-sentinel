@@ -48,5 +48,12 @@ The pilot is a single-user research tool, so cost should stay minimal. The swing
   fixtures. Tests and eval re-runs never spend credit. T-010 plans its labeled-set size from the
   measured cost per call on a small pilot batch, not an estimate.
 
+## Measured JEV cost (T-009, 2026-10-02)
+Pinned model `jev-1.13.0` at $0.042 per million input tokens; output tokens are free. The first live
+batch was 10 synthetic packets in 24 staged calls: 39,773 input tokens, **$0.00167 in total**. That's
+about 1,660 tokens per call, or **$0.00007 per call** (about $0.00017 per packet for all three stages).
+At this rate the $5 credit covers roughly 70,000 calls. JEV cost is negligible inside the $25 cap; the
+budget-skipped path remains for when credit actually runs out.
+
 ## Open
-Per-call JEV price: measure it from the first recorded calls in T-009 and add it here.
+- Re-measure when packets carry real evidence: longer excerpts mean more input tokens per call.
