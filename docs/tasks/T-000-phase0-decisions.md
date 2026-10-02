@@ -7,10 +7,13 @@ Phase 0 exits when one packet can traverse the contracts and every critical unkn
 
 ## Access (blocking)
 - [x] (2026-09-27; key in `~/.config/market-sentinel/.env`, pricing still open) JEV / TypeSafe account and API access confirmed → unblocks T-009
-- [ ] Alpaca market-data account; feed chosen and stored explicitly (IEX vs SIP) → T-008
-- [ ] SEC EDGAR: User-Agent contact string per SEC access guidance → T-008
+- [x] (2026-10-02; free Basic plan, `ALPACA_DATA_FEED=sip`, SIP daily bars verified) Alpaca market-data account; feed chosen and stored explicitly (IEX vs SIP) → T-008
+- [x] (2026-10-02; `SEC_USER_AGENT`, submissions endpoint verified) SEC EDGAR: User-Agent contact string per SEC access guidance → T-008
 - [ ] Fundamentals/calendar provider (e.g. Financial Modeling Prep) plan + endpoints checked
-- [ ] FRED API key
+- [x] (2026-10-02; `FRED_API_KEY`, DGS10 verified) FRED API key
+
+Keys live in `~/.config/market-sentinel/.env` (outside Git) as `ALPACA_API_KEY_ID`, `ALPACA_API_SECRET_KEY`,
+`ALPACA_DATA_FEED`, `SEC_USER_AGENT`, `FRED_API_KEY`. All three providers are on free tiers.
 - [ ] News provider: deferred until coverage, timeliness, model-processing and retention rights are confirmed
 
 ## Decisions (record each as an ADR in `docs/decisions/`)
