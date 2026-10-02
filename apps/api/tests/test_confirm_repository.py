@@ -20,9 +20,10 @@ def repository(request):
 
 def candidate(import_id=None, key=None):
     source = FilePortfolioRepository()
-    version = source._version.model_copy(update={"id": uuid4()})
+    version = source.version.model_copy(update={"id": uuid4()})
     positions = tuple(
-        p.model_copy(update={"portfolio_version_id": version.id}) for p in source._positions
+        p.model_copy(update={"portfolio_version_id": version.id})
+        for p in source.positions(source.version.id)
     )
     record = ConfirmationRecord(
         import_id=import_id or uuid4(),

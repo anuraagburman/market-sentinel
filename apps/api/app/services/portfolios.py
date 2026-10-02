@@ -59,6 +59,10 @@ class FilePortfolioRepository:
         self._version = version
         self._positions = positions
 
+    @property
+    def version(self) -> PortfolioVersion:
+        return self._version.model_copy(deep=True)
+
     def get(self, version_id: UUID) -> PortfolioVersion | None:
         return self._version if version_id == self._version.id else None
 
@@ -82,7 +86,7 @@ class InMemoryPortfolioRepository:
         self._keys = {}
         self._latest = {}
         if seed is not None:
-            version = seed._version.model_copy(deep=True)
+            version = seed.version
             self._versions[version.id] = version
             self._positions[version.id] = tuple(
                 p.model_copy(deep=True) for p in seed.positions(version.id)
