@@ -2,7 +2,7 @@
 
 import os
 
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import InterfaceError, OperationalError, TimeoutError
 from app.db.errors import retry_transaction
 
 from typing import Annotated
@@ -57,7 +57,7 @@ class ImportRoute(APIRoute):
                             415,
                         )
                 return await handler(request)
-            except SQLAlchemyError:
+            except (InterfaceError, OperationalError, TimeoutError):
                 return JSONResponse(
                     status_code=503,
                     content={

@@ -304,3 +304,32 @@ def test_edit_cannot_cross_confirmation_transaction(client):
         assert confirmation.result().status_code == 201
         assert editing.result().json()["code"] == "import_confirmed"
     assert client.get(f"/imports/{p['id']}").json()["revision"] == 0
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        b"symbol,quantity,currency\nSYN\x0001,10,USD\n",
+        b"symbol,quantity,currency,unknown\nSYN01,10,USD,\x00\n",
+        b"symbol,quantity,currency,\x00\nSYN01,10,USD,x\n",
+    ],
+)
+def test_upload_rejects_nul_on_every_store(client, content):
+    response = client.post("/imports", files={"file": ("holdings.csv", content, "text/csv")})
+    assert response.status_code == 422
+    assert response.json() == {"code": "invalid_csv", "message": "CSV must not contain NUL bytes."}
+
+
+@pytest.mark.parametrize("error_name", ["IntegrityError", "DataError"])
+def test_data_errors_are_not_retry_later(client, monkeypatch, error_name):
+    from sqlalchemy import exc
+
+    repository = app.dependency_overrides[get_repository]()
+    error = getattr(exc, error_name)("insert", {}, ValueError("invalid stored data"))
+
+    def fail(preview):
+        raise error
+
+    monkeypatch.setattr(repository, "save", fail)
+    with pytest.raises(type(error)):
+        client.post("/imports", files={"file": ("holdings.csv", SIMPLE, "text/csv")})

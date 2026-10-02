@@ -62,6 +62,8 @@ def parse_csv(content: bytes) -> dict:
         text = content.decode("utf-8-sig")
     except UnicodeDecodeError as exc:
         raise ImportProblem("invalid_encoding", "CSV must be UTF-8 encoded.") from exc
+    if "\x00" in text:
+        raise ImportProblem("invalid_csv", "CSV must not contain NUL bytes.")
     reader = csv.reader(io.StringIO(text, newline=""), strict=True)
     try:
         headers = next(reader, [])

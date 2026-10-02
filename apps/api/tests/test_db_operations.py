@@ -111,7 +111,7 @@ def test_startup_checks_head_and_reachability(clean_postgres, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "sqlstate,failures,expected", [("40001", 2, 201), ("40P01", 3, 503), ("22012", 1, 503)]
+    "sqlstate,failures,expected", [("40001", 2, 201), ("40P01", 3, 503), ("08006", 1, 503)]
 )
 def test_transaction_failure_retries_and_rolls_back(
     clean_postgres, monkeypatch, sqlstate, failures, expected
