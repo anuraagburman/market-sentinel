@@ -20,4 +20,4 @@ Write a full task file only when a task moves to `ready` — specs written too e
 | T-012 | Postgres portfolio + preview store (SQLAlchemy Core, first Alembic migration, per-import transactions, CI Postgres service) | 1 | Codex | Claude Code | task/T-012-postgres-store | T-011 | ready |
 | T-013 | Contracts v1.1 bump (valuation, issue, instrument, symbol_mapping, brief.coverage.pending_sources) | 1 | Claude Code | Codex | — | T-005, T-006, T-007 | backlog |
 
-**Parallel lanes right now:** Codex → T-012 Postgres store (spec ready) · Claude Code → T-013 contracts v1.1 (no path overlap with T-012) · Anuraag → remaining T-000 (Alpaca/SEC/FRED signups, retention, label reviewer).
+**Parallel lanes right now:** Codex → T-012 Postgres store (spec ready) · Claude Code → T-013 contracts v1.1 (no path overlap with T-012) · Anuraag → remaining T-000 (pre-release review question, investor interviews; FMP and news optional). T-000 no longer blocks T-008 (keys verified 2026-10-02) or T-009 (ADR-005: provisional labels).

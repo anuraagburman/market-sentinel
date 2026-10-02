@@ -20,10 +20,10 @@ Keys live in `~/.config/market-sentinel/.env` (outside Git) as `ALPACA_API_KEY_I
 - [x] (ADR-002) Supported universe and horizons; explicit exclusions (default: liquid US common equities +
       benchmark ETFs; swing/multiweek)
 - [x] (ADR-003; multi-user review still open) Data rights: private use, model processing, public screenshots, later multi-user delivery
-- [ ] Who reviews taxonomy labels (qualified practitioner?) — else labels are "provisional"
+- [x] (ADR-005; practitioner still open) Who reviews taxonomy labels (qualified practitioner?) — else labels are "provisional"
 - [x] (ADR-003; JEV cost still open) Monthly spend ceiling (data + model) and which enrichments are optional
 - [x] (ADR-002) Briefing time and timezone policy (you're outside US market hours)
-- [ ] Retention: holdings, evidence, journals, raw model outputs
+- [x] (ADR-005) Retention: holdings, evidence, journals, raw model outputs
 - [ ] What needs product/jurisdictional review before any public release
 
 ## Also this phase
