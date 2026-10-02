@@ -1,56 +1,72 @@
-# Handoff — T-012 spec ready; Codex implements T-012, Claude Code starts T-013
+# Handoff — T-012 Postgres store ready for review
 
-- **Updated:** 2026-10-02 by Claude Code
-- **Branch / worktree:** main (spec written from ~/code/ms-wt/web, detached at origin/main)
-- **Status:** T-012 `ready` (spec `c44c2b0`); T-013 `backlog`
+- **Updated:** 2026-10-02 by Codex
+- **Branch / worktree:** task/T-012-postgres-store @ ~/code/ms-wt/api
+- **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-- **Codex** (`~/code/ms-wt/api`): `git fetch && git switch -c task/T-012-postgres-store origin/main`,
-  read `docs/tasks/T-012-postgres-store.md`, and implement it in its planned commit order. CI must run the
-  Postgres tests (not skip them).
-- **Claude Code** (`~/code/ms-wt/web`): write the T-013 spec (contracts v1.1) and implement it on
-  `task/T-013-contracts-v1-1`. It has no path overlap with T-012. T-012 changes no JSON schemas.
+- **Claude Code:** review `task/T-012-postgres-store` against `docs/tasks/T-012-postgres-store.md`
+  from your own worktree. Focus on preview → tenant-head lock order, collision rollback,
+  complete-operation retries, migration constraints, and lossless document reconstruction.
+  After approval, merge with `--no-ff` and push main. This session did not merge.
+- The web lane can continue T-013 independently; T-012 changes only generated OpenAPI, not JSON schemas.
 
 ## Done this session
-- Wrote `docs/tasks/T-012-postgres-store.md`. It covers every T-012 requirement from the T-011 handoff:
-  - The repository contract runs on memory and Postgres.
-  - Unique `import_id` and `idempotency_key`.
-  - Version, positions, receipt and predecessor go in one transaction behind a tenant-head row lock, with
-    UNIQUE (`tenant_id`, `previous_version_id`) NULLS NOT DISTINCT as a backstop.
-  - A collision returns the existing receipt, and a validation failure writes nothing.
-  - Previews are persisted. A per-import unit of work (`SELECT … FOR UPDATE` on the preview row) replaces
-    `IMPORT_LOCK`, with lock order preview → tenant head.
-  - Postgres is never seeded; `seed_fixture` is explicit and limited to dev/test.
-  - All four T-011 review nits are folded in. Row-blocker grouping goes to the web lane.
-- Added requirements the handoff didn't list:
-  - Round-trip fidelity (decimal and timestamp text, absent vs null `cash`).
-  - Database-level immutability triggers.
-  - Startup fails rather than falling back to memory.
-  - `503 store_unavailable`.
-  - A `_test`-suffix guard on the test database. With `CI=true`, a missing `TEST_DATABASE_URL` fails.
-  - Cross-worker and durability tests.
-  - Alembic up/down/check.
-- Ledger: T-012 → `ready`.
+- Fetched origin and created the requested task branch from origin/main.
+- Implemented the planned eight code/test commits, followed by this handoff commit.
+- Added lazy SQLAlchemy Core engine, READ COMMITTED isolation, a 16-connection pool,
+  startup connectivity/head checks, lifespan disposal, and guarded test database provisioning.
+- Added the first reversible Alembic migration: previews, tenant heads, versions, positions,
+  and receipts; unique import/key constraints; NULLS NOT DISTINCT linear-chain backstop;
+  database UPDATE/DELETE immutability triggers.
+- Persisted original JSON documents alongside typed timestamps and unrestricted numeric columns,
+  preserving decimal/timestamp text, row order, explicit nulls and absent fields exactly.
+- Added portfolio and preview repositories. Head selection and portfolio/position/receipt writes
+  share a transaction. Receipt collisions roll back the entire attempt, including a newly created
+  tenant head, and return the winner. Only receipt uniqueness violations are recovered.
+- Replaced the process-wide import lock with per-import transactions: memory per-import locks;
+  Postgres preview FOR UPDATE then tenant-head lock on one connection. CSV parsing/storage runs
+  off the event loop. The store alone selects the predecessor; fixture version has a public accessor.
+- Added retries for whole operations on serialization failure/deadlock (at most three attempts),
+  store failures return 503 store_unavailable, and generated the affected OpenAPI responses.
+- Wired DATABASE_URL with explicit logged memory mode when unset; configured databases never
+  silently fall back. Fresh Postgres is empty. Added explicit idempotent dev/test fixture seed,
+  make seed-dev, and migrations before make dev starts the API.
+- Configured CI Postgres 17.4 and TEST_DATABASE_URL. CI collection fails without that URL;
+  local tests skip visibly when it is absent. Test database names must end in _test.
+- Added both-store API/repository contracts, forced races, independent-worker coordination,
+  restart durability, fidelity, migrations, immutability, startup, seeding, injected rollback/retry,
+  and forced global-key collision tests. Updated developer instructions in README.
 
 ## Tests run
-- None. This was a docs-only change, with no code touched.
+- Planned red repository step: four memory cases passed; four Postgres cases failed because the
+  repository module did not exist. Implementation subsequently passed all eight unchanged cases.
+- `docker compose up -d --wait postgres` → local Postgres healthy.
+- `TEST_DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test make test`
+  → **369 Python tests and 64 web tests passed**, no Postgres skips.
+- `make lint` → Ruff checks/format, ESLint, Next type generation and TypeScript passed.
+- `make contracts && git diff --exit-code packages/contracts` → passed, generated contract stable.
+- `cd apps/api && DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test uv run alembic check`
+  → no new upgrade operations detected.
+- Repository + API + cross-worker/durability suites repeated **8 times** → **41 passed per run,
+  328 total**. Both-store forced edit/confirm race passed in each run.
+- Migration test includes upgrade, downgrade to base (no application tables), upgrade again and check.
+- `rg IMPORT_LOCK apps/api` → no matches.
+- Existing Starlette/AnyIO deprecation warning remains. No live model or data provider calls.
+- GitHub CI is configured but has not been observed running in this local session.
 
 ## Contract changes proposed (not applied)
-- Still T-013: `valuation.schema.json` (T-006 `cc8f1f5`), `issue.schema.json` +
-  `brief.coverage.pending_sources` (T-007 `3e744e2`), `instrument.schema.json` /
-  `symbol_mapping.schema.json` (T-005 `f0caae1`). Consider whether confirm/readiness shapes need schemas too.
-- T-012 adds `503 store_unavailable` to OpenAPI responses only, through `make contracts`.
+- T-013 retains ownership of JSON schema v1.1 additions (valuation, issue, instrument,
+  symbol_mapping, brief.coverage.pending_sources). T-012 changed generated OpenAPI responses only.
 
 ## Unresolved / assumptions
-- The spec chooses SQLAlchemy Core (not the ORM) and READ COMMITTED isolation with explicit row locks.
-  Codex may challenge either choice in its handoff if the implementation shows a problem.
-- Idempotency keys stay globally unique until auth exists. Making them per-tenant is a later migration.
-- Web lane (later): group `row_has_errors` + `row_unresolved` per row in the import UI.
-- Carried over:
-  - Provider adapters should reject non-positive closes (T-008).
-  - T-005 nits: `domain/instruments.py` imports from `services/`; a bare `assert`; a local `UTC` import.
-  - Add an upload request-size limit before exposing `/imports`.
-  - JEV pricing sits outside the $25 model cap (ADR-003 Open).
-  - T-009 injection variant on usable data.
-  - Consumers must enable date-time format checking (ADR-001 §3).
-  - Today parses only UTC `Z` timestamps.
+- Placeholder fixture tenant remains until auth. Idempotency keys are globally unique; auth must
+  migrate them to per-tenant uniqueness and add authorization boundaries.
+- Managed-Postgres deployment/pooler settings and observation persistence remain later tasks.
+  Observation and instrument repositories still use synthetic files. Memory mode remains temporary.
+- Original model documents are stored with relational values to preserve wire fidelity; future
+  migrations must maintain both representations. Confirmed records are immutable at the DB layer.
+- Local Docker Postgres remains running for reviewer validation.
+- Carried forward: request-size limit before exposing uploads; provider non-positive close rejection
+  (T-008); JEV pricing outside the $25 model cap; T-009 injection variant on usable data; date-time
+  format checking by consumers; UTC Z-only timestamp parsing; import blocker grouping in web lane.
