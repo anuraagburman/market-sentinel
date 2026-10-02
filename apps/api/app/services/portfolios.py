@@ -1,6 +1,7 @@
 """Atomic temporary portfolio storage and validated synthetic observations."""
 
 import json
+import os
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -165,8 +166,17 @@ class FileObservationRepository:
 
 
 @lru_cache(maxsize=1)
-def get_portfolio_repository() -> PortfolioRepository:
+def memory_portfolio_repository():
     return InMemoryPortfolioRepository(FilePortfolioRepository())
+
+
+def get_portfolio_repository() -> PortfolioRepository:
+    if os.environ.get("DATABASE_URL"):
+        from app.db.engine import get_engine
+        from app.db.repositories import PostgresPortfolioRepository
+
+        return PostgresPortfolioRepository(get_engine())
+    return memory_portfolio_repository()
 
 
 @lru_cache(maxsize=1)

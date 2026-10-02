@@ -9,7 +9,7 @@ from app.models.confirm import ConfirmationRecord
 from app.services.portfolios import FilePortfolioRepository, InMemoryPortfolioRepository
 
 
-@pytest.fixture(params=["memory", "postgres"])
+@pytest.fixture(params=["memory", pytest.param("postgres", marks=pytest.mark.postgres)])
 def repository(request):
     if request.param == "memory":
         return InMemoryPortfolioRepository()

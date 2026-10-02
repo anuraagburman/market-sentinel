@@ -1,5 +1,10 @@
 """CSV preview decisions and atomic process-local portfolio confirmation."""
 
+import os
+
+from sqlalchemy.exc import SQLAlchemyError
+from app.db.errors import retry_transaction
+
 from typing import Annotated
 from collections.abc import Callable
 from contextlib import asynccontextmanager
@@ -52,6 +57,14 @@ class ImportRoute(APIRoute):
                             415,
                         )
                 return await handler(request)
+            except SQLAlchemyError:
+                return JSONResponse(
+                    status_code=503,
+                    content={
+                        "code": "store_unavailable",
+                        "message": "Portfolio store is unavailable; retry later.",
+                    },
+                )
             except ImportProblem as exc:
                 return JSONResponse(
                     status_code=exc.status_code,
@@ -97,6 +110,11 @@ _repository = InMemoryPreviewRepository()
 
 
 def get_repository() -> PreviewRepository:
+    if os.environ.get("DATABASE_URL"):
+        from app.db.engine import get_engine
+        from app.db.repositories import PostgresPreviewRepository
+
+        return PostgresPreviewRepository(get_engine())
     return _repository
 
 
@@ -118,7 +136,7 @@ Clock = Annotated[Callable[[], datetime], Depends(get_clock)]
     "",
     status_code=201,
     response_model=ImportPreview,
-    responses={code: {"model": Problem} for code in (400, 413, 415, 422)},
+    responses={code: {"model": Problem} for code in (400, 413, 415, 422, 503)},
 )
 async def upload_import(
     repository: Repository,
@@ -133,7 +151,7 @@ async def upload_import(
     text/plain, and application/octet-stream when the filename ends in .csv.
 
     Symbols resolve against synthetic reference data as of the upload's UTC date.
-    Previews are process-local and disappear on restart.
+    Previews persist when DATABASE_URL is configured.
     """
     content_type = (file.content_type or "").split(";", 1)[0].strip().lower()
     csv_filename = (file.filename or "").lower().endswith(".csv")
@@ -173,7 +191,11 @@ def load_import(id: str, repository: PreviewRepository) -> ImportPreview:
     return preview
 
 
-@router.get("/{id}", response_model=ImportPreview, responses={404: {"model": Problem}})
+@router.get(
+    "/{id}",
+    response_model=ImportPreview,
+    responses={code: {"model": Problem} for code in (404, 503)},
+)
 def get_import(
     id: str, repository: Repository, instruments: Instruments, portfolios: Portfolios
 ) -> ImportPreview:
@@ -183,8 +205,9 @@ def get_import(
 @router.put(
     "/{id}/rows/{row_number}/resolution",
     response_model=ImportRow,
-    responses={code: {"model": Problem} for code in (404, 409, 422)},
+    responses={code: {"model": Problem} for code in (404, 409, 422, 503)},
 )
+@retry_transaction
 def select_resolution(
     id: str,
     row_number: int,
@@ -207,8 +230,9 @@ def select_resolution(
 @router.delete(
     "/{id}/rows/{row_number}/resolution",
     response_model=ImportRow,
-    responses={code: {"model": Problem} for code in (404, 409, 422)},
+    responses={code: {"model": Problem} for code in (404, 409, 422, 503)},
 )
+@retry_transaction
 def clear_resolution(
     id: str,
     row_number: int,
@@ -227,8 +251,9 @@ def clear_resolution(
 @router.put(
     "/{id}/rows/{row_number}/exclusion",
     response_model=ImportRow,
-    responses={code: {"model": Problem} for code in (404, 409, 422)},
+    responses={code: {"model": Problem} for code in (404, 409, 422, 503)},
 )
+@retry_transaction
 def exclude_row(
     id: str, row_number: int, repository: Repository, portfolios: Portfolios
 ) -> ImportRow:
@@ -242,8 +267,9 @@ def exclude_row(
 @router.delete(
     "/{id}/rows/{row_number}/exclusion",
     response_model=ImportRow,
-    responses={code: {"model": Problem} for code in (404, 409, 422)},
+    responses={code: {"model": Problem} for code in (404, 409, 422, 503)},
 )
+@retry_transaction
 def include_row(
     id: str, row_number: int, repository: Repository, portfolios: Portfolios
 ) -> ImportRow:
@@ -270,9 +296,10 @@ def validate_key(key: str | None) -> None:
     response_model_exclude_unset=True,
     responses={
         200: {"model": ConfirmResponse},
-        **{code: {"model": ConfirmProblem} for code in (400, 404, 409, 422)},
+        **{code: {"model": ConfirmProblem} for code in (400, 404, 409, 422, 503)},
     },
 )
+@retry_transaction
 def confirm(
     id: str,
     body: ConfirmRequest,

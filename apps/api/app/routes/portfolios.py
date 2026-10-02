@@ -39,7 +39,7 @@ Observations = Annotated[ObservationRepository, Depends(get_observation_reposito
 @router.get(
     "/{id}/valuation",
     response_model=Valuation,
-    responses={code: {"model": Problem} for code in (404, 409, 422)},
+    responses={code: {"model": Problem} for code in (404, 409, 422, 503)},
 )
 def get_valuation(
     id: str,
@@ -83,7 +83,7 @@ def get_valuation(
     "/{id}",
     response_model=PortfolioResponse,
     response_model_exclude_unset=True,
-    responses={404: {"model": Problem}},
+    responses={code: {"model": Problem} for code in (404, 503)},
 )
 def get_portfolio(id: str, portfolios: Portfolios) -> PortfolioResponse:
     try:

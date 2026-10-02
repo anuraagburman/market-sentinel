@@ -8,6 +8,7 @@ from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 
+from app.db.errors import retry_transaction
 from app.db.tables import confirmations, heads, positions as position_table, versions
 from app.models.confirm import ConfirmationRecord
 from app.models.valuation import PortfolioVersion, Position
@@ -126,16 +127,17 @@ class PostgresPortfolioRepository:
     def confirm_in_transaction(self, record, version, positions):
         record, version, positions = validate_confirmation(record, version, positions)
         connection = self.connection
-        previous = self.lock_head(connection, version.tenant_id)
-        existing = self.by_idempotency_key(record.idempotency_key) or self.by_import(
-            record.import_id
-        )
-        if existing:
-            return existing
-        # A savepoint allows a globally shared key collision to leave the surrounding
-        # preview transaction usable. The losing portfolio/head writes roll back too.
+        # Include head creation in the savepoint: a losing global-key collision
+        # leaves no empty tenant head or partial portfolio in the outer transaction.
         try:
-            with connection.begin_nested():
+            with connection.begin_nested() as attempt:
+                previous = self.lock_head(connection, version.tenant_id)
+                existing = self.by_idempotency_key(record.idempotency_key) or self.by_import(
+                    record.import_id
+                )
+                if existing:
+                    attempt.rollback()
+                    return existing
                 self.insert_version(connection, version, positions, previous)
                 connection.execute(
                     insert(confirmations).values(
@@ -163,6 +165,10 @@ class PostgresPortfolioRepository:
     def confirm(self, record, version, positions):
         if self.connection is not None:
             return self.confirm_in_transaction(record, version, positions)
+        return self.confirm_standalone(record, version, positions)
+
+    @retry_transaction
+    def confirm_standalone(self, record, version, positions):
         validate_confirmation(record, version, positions)
         with self.engine.begin() as connection:
             return type(self)(self.engine, connection).confirm_in_transaction(

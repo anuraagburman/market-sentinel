@@ -7,7 +7,7 @@ import pytest
 from app.services.imports import InMemoryPreviewRepository, create_preview
 
 
-@pytest.fixture(params=["memory", "postgres"])
+@pytest.fixture(params=["memory", pytest.param("postgres", marks=pytest.mark.postgres)])
 def previews(request):
     if request.param == "memory":
         return InMemoryPreviewRepository()
