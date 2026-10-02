@@ -19,10 +19,17 @@ CONFIRM = datetime(2026, 9, 25, 21, tzinfo=UTC)
 SIMPLE = b"symbol,quantity,cost_basis,currency\nSYN01,10,,USD\n"
 
 
-@pytest.fixture
-def client():
-    previews = InMemoryPreviewRepository()
-    portfolios = InMemoryPortfolioRepository()
+@pytest.fixture(params=["memory", pytest.param("postgres", marks=pytest.mark.postgres)])
+def client(request):
+    if request.param == "memory":
+        previews = InMemoryPreviewRepository()
+        portfolios = InMemoryPortfolioRepository()
+    else:
+        from app.db.repositories import PostgresPortfolioRepository, PostgresPreviewRepository
+
+        engine = request.getfixturevalue("clean_postgres")
+        previews = PostgresPreviewRepository(engine)
+        portfolios = PostgresPortfolioRepository(engine)
     app.dependency_overrides[get_repository] = lambda: previews
     app.dependency_overrides[get_portfolio_repository] = lambda: portfolios
     app.dependency_overrides[get_clock] = lambda: lambda: UPLOAD
@@ -261,30 +268,68 @@ def test_same_key_concurrent_retries(client):
 def test_edit_cannot_cross_confirmation_transaction(client):
     from threading import Event
 
-    entered, release, edit_started = Event(), Event(), Event()
-    store = app.dependency_overrides[get_portfolio_repository]()
-    original = store.confirm
+    entered, release, edit_started, edit_finished = Event(), Event(), Event(), Event()
+    p = upload(client)
 
-    def paused_confirm(*args):
+    def paused_clock():
         entered.set()
         assert release.wait(5)
-        return original(*args)
+        return CONFIRM
 
-    store.confirm = paused_confirm
-    p = upload(client)
+    app.dependency_overrides[get_clock] = lambda: paused_clock
+
+    def confirming():
+        return client.post(
+            f"/imports/{p['id']}/confirm",
+            headers={"Idempotency-Key": "race"},
+            json={"preview_revision": 0},
+        )
 
     def edit():
         edit_started.set()
-        return client.put(f"/imports/{p['id']}/rows/1/exclusion")
+        result = client.put(f"/imports/{p['id']}/rows/1/exclusion")
+        edit_finished.set()
+        return result
 
     with ThreadPoolExecutor(max_workers=2) as pool:
-        confirmation = pool.submit(confirm, client, p)
+        confirmation = pool.submit(confirming)
         try:
             assert entered.wait(5)
             editing = pool.submit(edit)
             assert edit_started.wait(5)
+            assert not editing.done()
+            assert not edit_finished.wait(0.1)
         finally:
             release.set()
         assert confirmation.result().status_code == 201
         assert editing.result().json()["code"] == "import_confirmed"
     assert client.get(f"/imports/{p['id']}").json()["revision"] == 0
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        b"symbol,quantity,currency\nSYN\x0001,10,USD\n",
+        b"symbol,quantity,currency,unknown\nSYN01,10,USD,\x00\n",
+        b"symbol,quantity,currency,\x00\nSYN01,10,USD,x\n",
+    ],
+)
+def test_upload_rejects_nul_on_every_store(client, content):
+    response = client.post("/imports", files={"file": ("holdings.csv", content, "text/csv")})
+    assert response.status_code == 422
+    assert response.json() == {"code": "invalid_csv", "message": "CSV must not contain NUL bytes."}
+
+
+@pytest.mark.parametrize("error_name", ["IntegrityError", "DataError"])
+def test_data_errors_are_not_retry_later(client, monkeypatch, error_name):
+    from sqlalchemy import exc
+
+    repository = app.dependency_overrides[get_repository]()
+    error = getattr(exc, error_name)("insert", {}, ValueError("invalid stored data"))
+
+    def fail(preview):
+        raise error
+
+    monkeypatch.setattr(repository, "save", fail)
+    with pytest.raises(type(error)):
+        client.post("/imports", files={"file": ("holdings.csv", SIMPLE, "text/csv")})

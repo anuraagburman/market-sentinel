@@ -1457,7 +1457,7 @@
     },
     "/imports": {
       "post": {
-        "description": "Preview a UTF-8 CSV, up to 1 MiB and 1,000 rows.\n\nAccept text/csv or application/csv; also accept application/vnd.ms-excel,\ntext/plain, and application/octet-stream when the filename ends in .csv.\n\nSymbols resolve against synthetic reference data as of the upload's UTC date.\nPreviews are process-local and disappear on restart.",
+        "description": "Preview a UTF-8 CSV, up to 1 MiB and 1,000 rows.\n\nAccept text/csv or application/csv; also accept application/vnd.ms-excel,\ntext/plain, and application/octet-stream when the filename ends in .csv.\n\nSymbols resolve against synthetic reference data as of the upload's UTC date.\nPreviews persist when DATABASE_URL is configured.",
         "operationId": "upload_import_imports_post",
         "requestBody": {
           "content": {
@@ -1519,6 +1519,16 @@
               }
             },
             "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "summary": "Upload Import",
@@ -1571,6 +1581,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "summary": "Get Import",
@@ -1675,6 +1695,16 @@
               }
             },
             "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmProblem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "summary": "Confirm",
@@ -1746,6 +1776,16 @@
               }
             },
             "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "summary": "Include Row",
@@ -1815,6 +1855,16 @@
               }
             },
             "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "summary": "Exclude Row",
@@ -1887,6 +1937,16 @@
               }
             },
             "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "summary": "Clear Resolution",
@@ -1967,6 +2027,16 @@
               }
             },
             "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "summary": "Select Resolution",
@@ -2084,6 +2154,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "summary": "Get Portfolio",
@@ -2157,6 +2237,16 @@
               }
             },
             "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "summary": "Get Valuation",

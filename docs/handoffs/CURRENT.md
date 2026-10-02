@@ -1,56 +1,34 @@
-# Handoff — T-012 spec ready; Codex implements T-012, Claude Code starts T-013
+# Handoff — T-012 review blockers fixed
 
-- **Updated:** 2026-10-02 by Claude Code
-- **Branch / worktree:** main (spec written from ~/code/ms-wt/web, detached at origin/main)
-- **Status:** T-012 `ready` (spec `c44c2b0`); T-013 `backlog`
+- **Updated:** 2026-10-02 by Codex
+- **Branch / worktree:** task/T-012-postgres-store @ ~/code/ms-wt/api
+- **Status:** ready_for_review
 
 ## Next step (exact — the next agent starts here)
-- **Codex** (`~/code/ms-wt/api`): `git fetch && git switch -c task/T-012-postgres-store origin/main`,
-  read `docs/tasks/T-012-postgres-store.md`, and implement it in its planned commit order. CI must run the
-  Postgres tests (not skip them).
-- **Claude Code** (`~/code/ms-wt/web`): write the T-013 spec (contracts v1.1) and implement it on
-  `task/T-013-contracts-v1-1`. It has no path overlap with T-012. T-012 changes no JSON schemas.
+Claude Code: re-review commits ee75abb and effdd5a against the two T-012 blockers; then approve for merge if clean. T-013 remains on its separate branch, ready for review per its prior handoff.
 
 ## Done this session
-- Wrote `docs/tasks/T-012-postgres-store.md`. It covers every T-012 requirement from the T-011 handoff:
-  - The repository contract runs on memory and Postgres.
-  - Unique `import_id` and `idempotency_key`.
-  - Version, positions, receipt and predecessor go in one transaction behind a tenant-head row lock, with
-    UNIQUE (`tenant_id`, `previous_version_id`) NULLS NOT DISTINCT as a backstop.
-  - A collision returns the existing receipt, and a validation failure writes nothing.
-  - Previews are persisted. A per-import unit of work (`SELECT … FOR UPDATE` on the preview row) replaces
-    `IMPORT_LOCK`, with lock order preview → tenant head.
-  - Postgres is never seeded; `seed_fixture` is explicit and limited to dev/test.
-  - All four T-011 review nits are folded in. Row-blocker grouping goes to the web lane.
-- Added requirements the handoff didn't list:
-  - Round-trip fidelity (decimal and timestamp text, absent vs null `cash`).
-  - Database-level immutability triggers.
-  - Startup fails rather than falling back to memory.
-  - `503 store_unavailable`.
-  - A `_test`-suffix guard on the test database. With `CI=true`, a missing `TEST_DATABASE_URL` fails.
-  - Cross-worker and durability tests.
-  - Alembic up/down/check.
-- Ledger: T-012 → `ready`.
+- Blocker 1 (`ee75abb`): Alembic prefers an explicit config URL. Empty ini URL preserves DATABASE_URL fallback for CLI usage. Test collection refuses a non-_test DATABASE_URL as well as a non-_test TEST_DATABASE_URL.
+- Migration regression failed first by attempting the conflicting environment endpoint; passed after the fix. Upgrade/downgrade/check lifecycle also passes.
+- Blocker 2 (`effdd5a`): parser rejects NUL anywhere in decoded CSV before storage with 422 invalid_csv and message "CSV must not contain NUL bytes." Both stores return identical Problems for NUL in symbol, unknown cell, and header.
+- Ten blocker-2 regression cases failed first, then passed. IntegrityError/DataError propagate as server errors rather than suggesting retry later. 503 is limited to OperationalError, InterfaceError and pool TimeoutError; transaction retry policy remains unchanged.
+- Optional changes deferred; no schema migration added.
 
 ## Tests run
-- None. This was a docs-only change, with no code touched.
+- `TEST_DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test make test` → 380 pytest passed (Postgres included), 64 Vitest passed.
+- `make lint` → passed.
+- `make contracts` and `git diff --exit-code packages/contracts` → passed, no diff.
+- `cd apps/api && DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test uv run --locked alembic check` → no new upgrade operations.
+- Repository/API/worker/operations suites 8× → 65 passed each run, 520 total; includes forced edit-vs-confirm on both stores, worker races and transaction retries.
+- Non-_test DATABASE_URL collection check → refused with UsageError (expected exit 4), before database access.
+- Targeted migration suite → 2 passed; targeted API/operations → 54 passed.
+- Existing Starlette/AnyIO deprecation warning only.
 
 ## Contract changes proposed (not applied)
-- Still T-013: `valuation.schema.json` (T-006 `cc8f1f5`), `issue.schema.json` +
-  `brief.coverage.pending_sources` (T-007 `3e744e2`), `instrument.schema.json` /
-  `symbol_mapping.schema.json` (T-005 `f0caae1`). Consider whether confirm/readiness shapes need schemas too.
-- T-012 adds `503 store_unavailable` to OpenAPI responses only, through `make contracts`.
+- NUL uploads now return existing Problem shape/code `422 invalid_csv` rather than a preview. This is a T-011 behavior tightening, flagged for reviewer approval; no schema or OpenAPI change is needed because 422 Problem already exists.
 
 ## Unresolved / assumptions
-- The spec chooses SQLAlchemy Core (not the ORM) and READ COMMITTED isolation with explicit row locks.
-  Codex may challenge either choice in its handoff if the implementation shows a problem.
-- Idempotency keys stay globally unique until auth exists. Making them per-tenant is a later migration.
-- Web lane (later): group `row_has_errors` + `row_unresolved` per row in the import UI.
-- Carried over:
-  - Provider adapters should reject non-positive closes (T-008).
-  - T-005 nits: `domain/instruments.py` imports from `services/`; a bare `assert`; a local `UTC` import.
-  - Add an upload request-size limit before exposing `/imports`.
-  - JEV pricing sits outside the $25 model cap (ADR-003 Open).
-  - T-009 injection variant on usable data.
-  - Consumers must enable date-time format checking (ADR-001 §3).
-  - Today parses only UTC `Z` timestamps.
+- Follow-ups requested by review: UNIQUE on import_confirmations.portfolio_version_id; composite (tenant_id, previous_version_id) FK; seed_fixture refusal when a tenant head already exists; prune InMemoryPreviewRepository._locks.
+- Alembic CLI now requires DATABASE_URL or an explicit configured URL (no implicit dev database default).
+- Integrity/Data errors indicate an unexpected invariant or validation bug and surface as 500; they must not advertise transient availability/retry.
+- Carried forward: per-tenant idempotency keys at auth time, managed-Postgres settings, observation persistence; upload request-size limit and web grouping of row_has_errors/row_unresolved remain separate work.
