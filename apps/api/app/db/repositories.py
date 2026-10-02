@@ -178,3 +178,55 @@ class PostgresPortfolioRepository:
             ).scalar():
                 return
             self.insert_version(connection, version, positions, previous)
+
+
+class PostgresPreviewRepository:
+    def __init__(self, engine, connection=None):
+        self.engine = engine
+        self.connection = connection
+
+    def get(self, preview_id):
+        from app.db.tables import previews
+        from app.models.imports import ImportPreview
+
+        with PostgresPortfolioRepository(self.engine, self.connection).read() as connection:
+            data = connection.execute(
+                select(previews.c.document).where(previews.c.id == preview_id)
+            ).scalar_one_or_none()
+            return ImportPreview.model_validate(data) if data is not None else None
+
+    def write(self, connection, preview):
+        from app.db.tables import previews
+        from app.domain.confirm import TENANT_ID
+
+        values = dict(
+            id=preview.id,
+            tenant_id=TENANT_ID,
+            revision=preview.revision,
+            received_at=preview.received_at,
+            document=preview.model_dump(mode="json", exclude={"readiness", "confirmation"}),
+        )
+        if self.connection is None:
+            connection.execute(insert(previews).values(**values))
+        else:
+            connection.execute(update(previews).where(previews.c.id == preview.id).values(**values))
+
+    def save(self, preview):
+        if self.connection is not None:
+            self.write(self.connection, preview)
+        else:
+            with self.engine.begin() as connection:
+                self.write(connection, preview)
+
+    @contextmanager
+    def import_transaction(self, import_id, portfolios):
+        from app.db.tables import previews
+
+        with self.engine.begin() as connection:
+            # First statement: serialize edits and confirmation across workers.
+            connection.execute(
+                select(previews.c.id).where(previews.c.id == import_id).with_for_update()
+            ).first()
+            tx = type(self)(self.engine, connection)
+            tx.portfolios = PostgresPortfolioRepository(self.engine, connection)
+            yield tx
