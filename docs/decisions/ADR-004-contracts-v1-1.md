@@ -50,7 +50,9 @@ to one bump, so each producer could drift from what the other lane expects.
   matches before a final newline. The lookahead makes Python and ECMA-262 (Ajv) agree that `"EXCO\n"`
   is invalid. The v1 patterns keep plain `$`, so this bump doesn't narrow them.
 - `price.value` must be positive. A zero or negative close from a provider now violates the contract, which
-  matches the T-008 note that adapters reject non-positive closes.
+  matches the T-008 note that adapters reject non-positive closes. The current API producer doesn't
+  enforce this yet: it returns 200 with such a price. A strict xfail in `test_contracts_v1_1.py` tracks
+  that gap, and it fails once the producer treats non-positive closes as unavailable.
 
 ## Deferred
 - Today fixtures carrying `brief.issues`. This needs a weight→text formatter and belongs with the /briefs web

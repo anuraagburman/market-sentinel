@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema import Draft202012Validator, FormatChecker, ValidationError
 from referencing import Registry, Resource
 
 from app.main import app
@@ -55,6 +55,18 @@ def test_empty_portfolio_with_unknown_cash_conforms():
     body = valuation(version, [], observations)
     assert body["totals"]["cash"] == {"kind": "unavailable", "reason": "cash_unknown"}
     validator("valuation").validate(body)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    raises=ValidationError,
+    reason="Producer still prices non-positive closes (T-008 carry-forward); ADR-004 requires price > 0",
+)
+@pytest.mark.parametrize("close", ["0", "-1"])
+def test_non_positive_close_conforms(close):
+    version, positions, observations = records()
+    observations = [{**o, "value": close} if o["metric"] == "close" else o for o in observations]
+    validator("valuation").validate(valuation(version, positions, observations))
 
 
 def test_instrument_master_conforms():
