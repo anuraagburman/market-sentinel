@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from jsonschema import Draft202012Validator, FormatChecker, ValidationError
+from jsonschema import Draft202012Validator, FormatChecker
 from referencing import Registry, Resource
 
 from app.main import app
@@ -57,16 +57,33 @@ def test_empty_portfolio_with_unknown_cash_conforms():
     validator("valuation").validate(body)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=ValidationError,
-    reason="Producer still prices non-positive closes (T-008 carry-forward); ADR-004 requires price > 0",
-)
-@pytest.mark.parametrize("close", ["0", "-1"])
-def test_non_positive_close_conforms(close):
+@pytest.mark.parametrize("close", ["0", "-1", "-0.00"])
+@pytest.mark.parametrize("companions", ["none", "older", "simultaneous", "both"])
+def test_non_positive_producer_returns_unavailable_and_conforms(close, companions):
     version, positions, observations = records()
-    observations = [{**o, "value": close} if o["metric"] == "close" else o for o in observations]
-    validator("valuation").validate(valuation(version, positions, observations))
+    candidates = [dict(observations[0], value=close)]
+    if companions in ("older", "both"):
+        candidates.append(
+            dict(observations[0], id=observations[2]["id"], observed_at="2026-09-24T20:00:00Z")
+        )
+    if companions in ("simultaneous", "both"):
+        candidates.append(dict(observations[0], id=observations[3]["id"]))
+    body = valuation(version, positions[:2], [*candidates, observations[1]])
+    row, priced = body["positions"]
+    assert row["price"] is None
+    assert row["market_value"] == {"kind": "unavailable", "reason": "no_price"}
+    for field in ("unrealized_pl", "weight"):
+        assert row[field] == {"kind": "unavailable", "reason": "market_value_unavailable"}
+    assert priced["weight"]["value"] == "1.000000"
+    assert body["coverage"] == {
+        "positions": 2,
+        "priced": 1,
+        "unpriced": 1,
+        "by_reason": {"no_price": 1},
+    }
+    assert body["totals"]["priced_value"]["value"] == "125.00"
+    assert body["totals"]["total_value"] == {"kind": "unavailable", "reason": "positions_unpriced"}
+    validator("valuation").validate(body)
 
 
 def test_instrument_master_conforms():

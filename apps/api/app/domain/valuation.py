@@ -37,6 +37,8 @@ def select_price(position: Position, observations: Sequence[Observation], cutoff
         return None, Unavailable(reason="no_price")
     latest = max(datetime.fromisoformat(o.observed_at) for o in eligible)
     candidates = [o for o in eligible if datetime.fromisoformat(o.observed_at) == latest]
+    if any(Decimal(o.value) <= 0 for o in candidates):
+        return None, Unavailable(reason="no_price")
     if len({Decimal(o.value) for o in candidates}) > 1:
         return None, Unavailable(reason="conflicting_prices")
     selected = min(candidates, key=lambda o: o.id)

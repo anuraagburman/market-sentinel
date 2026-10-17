@@ -162,16 +162,12 @@ def test_cash_and_total_precedence(cash, reason):
     assert calculate(v, p, o).totals.total_value.reason == "positions_unpriced"
 
 
-def test_all_missing_and_zero_priced_denominator():
+def test_all_missing():
     v, p, o = records()
     result = calculate(v, p, [])
     assert result.totals.priced_value.reason == "no_priced_value"
     assert result.coverage.unpriced == 19
     assert all(row.weight.reason == "market_value_unavailable" for row in result.positions)
-    zero = calculate(v, p[:1], [dict(o[0], value="0")])
-    assert zero.positions[0].market_value.value == Decimal(0)
-    assert zero.positions[0].weight.reason == "no_priced_value"
-    assert zero.coverage.priced == 1
 
 
 def test_permutations_scaling_and_exact_sum():
@@ -238,3 +234,39 @@ def test_weight_half_even_ties():
         observations = [dict(o[0], value=first), dict(o[1], value=second)]
         response = calculate(v, positions, observations).model_dump(mode="json")
         assert response["positions"][0]["weight"]["value"] == expected
+
+
+@pytest.mark.parametrize("close", ["0", "-1", "-0.00"])
+@pytest.mark.parametrize("companions", ["none", "older", "simultaneous", "both"])
+def test_latest_non_positive_close_is_unavailable(close, companions):
+    v, p, o = records()
+    candidates = [dict(o[0], value=close)]
+    if companions in ("older", "both"):
+        candidates.append(dict(o[0], id=o[2]["id"], observed_at="2026-09-24T20:00:00Z"))
+    if companions in ("simultaneous", "both"):
+        candidates.append(dict(o[0], id=o[3]["id"]))
+    for ordering in permutations(candidates):
+        result = calculate(v, p[:2], [*ordering, o[1]]).model_dump(mode="json")
+        row, priced = result["positions"]
+        assert row["price"] is None
+        assert row["market_value"] == unavailable("no_price")
+        for field in ("unrealized_pl", "weight"):
+            assert row[field] == unavailable("market_value_unavailable")
+        assert priced["weight"]["value"] == "1.000000"
+        assert result["coverage"] == {
+            "positions": 2,
+            "priced": 1,
+            "unpriced": 1,
+            "by_reason": {"no_price": 1},
+        }
+        assert result["totals"]["priced_value"]["value"] == "125.00"
+        assert result["totals"]["total_value"] == unavailable("positions_unpriced")
+
+
+def test_positive_price_preserves_negative_pl_and_zero_cash():
+    v, p, o = records()
+    v["cash"] = {"amount": "0", "currency": "USD"}
+    result = calculate(v, p[:1], [dict(o[0], value="1")])
+    assert result.positions[0].unrealized_pl.value == Decimal("-5790")
+    assert result.totals.cash.value == 0
+    assert result.totals.total_value.value == 10
