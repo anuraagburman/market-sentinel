@@ -102,7 +102,7 @@ START, END = date(2026, 3, 6), date(2026, 3, 9)
 
 
 def fixture(name):
-    return (FIXTURES / f"{name}.json").read_text()
+    return (FIXTURES / f"{name}.payload").read_text()
 
 
 def alpaca(*responses, symbols=None, feed="sip", key="synthetic"):
