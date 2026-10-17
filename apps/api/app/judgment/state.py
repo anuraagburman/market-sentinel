@@ -2,6 +2,7 @@
 
 Deterministic exclusions run here, before anything reaches a model: evidence and observations first
 known after the cutoff (lookahead), and originals superseded by a correction known at the cutoff.
+A claim citing any excluded evidence is dropped whole: its text may restate the excluded content.
 Excluded ids are returned for the audit record. Nothing missing is filled in.
 """
 
@@ -53,11 +54,11 @@ def build_state(packet_dir: Path) -> BuiltState:
     sent_observations = [o for o in observations if _at(o["received_at"]) <= cutoff]
     late_observations = [o["id"] for o in observations if _at(o["received_at"]) > cutoff]
 
-    sent_claims = []
-    for claim in claims:
-        cited = [ev for ev in claim["evidence_ids"] if ev in kept_ids]
-        if cited:
-            sent_claims.append({**claim, "evidence_ids": cited})
+    sent_claims = [
+        claim
+        for claim in claims
+        if claim["evidence_ids"] and all(ev in kept_ids for ev in claim["evidence_ids"])
+    ]
 
     packet = {
         "cutoff": event["cutoff"],

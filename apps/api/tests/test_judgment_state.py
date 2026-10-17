@@ -57,3 +57,20 @@ def test_observation_received_after_cutoff_is_excluded(tmp_path):
     built = build_state(packet)
     assert built.excluded_observation_ids == ["late-obs"]
     assert [o["id"] for o in built.state["packet"]["observations"]] == [observations[0]["id"]]
+
+
+@pytest.mark.parametrize(
+    ("name", "excluded_text"),
+    [
+        ("08-lookahead", "final revenue was 11.00"),
+        ("09-correction", "initially reported revenue of 10.00"),
+    ],
+)
+def test_claim_with_any_excluded_citation_is_dropped_whole(tmp_path, name, excluded_text):
+    packet = tmp_path / name
+    shutil.copytree(PACKETS / name, packet)
+    claims = json.loads((packet / "claims.json").read_text())
+    for claim in claims:
+        claim["evidence_ids"] = ["ev-1", "ev-2"]
+    (packet / "claims.json").write_text(json.dumps(claims))
+    assert excluded_text not in json.dumps(build_state(packet).state)
