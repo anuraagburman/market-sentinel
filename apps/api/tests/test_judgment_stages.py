@@ -165,5 +165,38 @@ def test_score_maps_to_most_probable_level_with_ties_rounding_down(probabilities
         {"type": "choice", "choice": "a"},
     ],
 )
-def test_malformed_score_is_rejected(answer):
+def test_malformed_score_shape_is_rejected(answer):
     assert score_level(answer, levels=5) is None
+
+
+BAD_VALUES = ["0.9", None, True, -0.1, float("nan"), float("inf"), 1.5]
+
+
+@pytest.mark.parametrize("bad", BAD_VALUES, ids=repr)
+def test_non_probability_score_value_is_rejected(bad):
+    probabilities = {"0": bad, "1": 0.1, "2": 0.1, "3": 0.1, "4": 0.1}
+    assert score_level(score(probabilities), levels=5) is None
+
+
+@pytest.mark.parametrize("bad", BAD_VALUES, ids=repr)
+def test_non_probability_relevance_is_omitted_and_other_judgments_survive(bad):
+    relevance = score({"0": bad, "1": 0.2, "2": 0.6, "3": 0.1, "4": 0.0})
+    result, _ = run(
+        {"data_usability": choice("usable"), **STAGE_2, **STAGE_3, "research_relevance": relevance}
+    )
+    assert "research_relevance" not in result.judgments
+    assert "invalid_model_output" in result.abstention_reasons
+    assert result.judgments["interpretation_conflict"] == "no"
+    assert result.judgments["event_family"] == "earnings"
+
+
+@pytest.mark.parametrize(
+    "body",
+    [None, [], {"answers": {}, "usage": None}, {"answers": {}, "usage": []}],
+    ids=["null", "list", "null-usage", "list-usage"],
+)
+def test_malformed_stage_two_response_keeps_stage_one(body):
+    transport = ScriptedTransport({"data_usability": choice("usable")}, {"event_family": (200, body)})
+    result = run_staged(PACKET, JevClient(transport, sleep=lambda _: None, max_attempts=1))
+    assert result.judgments == {"data_usability": "usable"}
+    assert result.abstention_reasons == ["classification_unavailable"]

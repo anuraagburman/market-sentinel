@@ -5,6 +5,7 @@ only on validated earlier answers. Raw answers (probabilities, confidence) are k
 never enter `judgments`: the decision envelope has no confidence field until calibration is validated.
 """
 
+import math
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
@@ -29,10 +30,21 @@ class StagedResult:
             self.abstention_reasons.append(reason)
 
 
+def _is_probability(value) -> bool:
+    return (
+        isinstance(value, int | float)
+        and not isinstance(value, bool)
+        and math.isfinite(value)
+        and 0 <= value <= 1
+    )
+
+
 def score_level(answer: dict, levels: int) -> int | None:
     """Most probable rubric level (1-based); ties go to the lower level. None when malformed."""
     probabilities = answer.get("probabilities") if answer.get("type") == "score" else None
     if not isinstance(probabilities, dict) or set(probabilities) != {str(i) for i in range(levels)}:
+        return None
+    if not all(_is_probability(p) for p in probabilities.values()):
         return None
     best = max(range(levels), key=lambda i: (probabilities[str(i)], -i))
     return best + 1
