@@ -196,7 +196,9 @@ def test_non_probability_relevance_is_omitted_and_other_judgments_survive(bad):
     ids=["null", "list", "null-usage", "list-usage"],
 )
 def test_malformed_stage_two_response_keeps_stage_one(body):
-    transport = ScriptedTransport({"data_usability": choice("usable")}, {"event_family": (200, body)})
+    transport = ScriptedTransport(
+        {"data_usability": choice("usable")}, {"event_family": (200, body)}
+    )
     result = run_staged(PACKET, JevClient(transport, sleep=lambda _: None, max_attempts=1))
     assert result.judgments == {"data_usability": "usable"}
     assert result.abstention_reasons == ["classification_unavailable"]

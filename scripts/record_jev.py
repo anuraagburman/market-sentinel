@@ -4,8 +4,8 @@
     uv run --project apps/api python scripts/record_jev.py --live      # spends credit; needs approval
 
 `--live` reads TYPESAFE_API_KEY from the environment and writes one file per packet and stage to
-evals/recordings/jev/<packet>/stage-<n>.json. Packets are synthetic; nothing else is sent. Never
-imported by tests.
+evals/recordings/jev/<packet>/stage-<n>.json. Packets are synthetic; nothing else is sent. Tests
+import only `StageFiles`, with a fake transport; they never construct LiveTransport.
 """
 
 import argparse
@@ -35,25 +35,37 @@ OUT = ROOT / "evals/recordings/jev"
 
 
 class StageFiles:
-    """Names each successive call of one packet run stage-1.json, stage-2.json, ..."""
+    """Names each stage of one packet run stage-1.json, stage-2.json, ...
+
+    The client retries by re-sending the identical body, so a retry overwrites its stage's file and
+    the earlier statuses are kept in `retried_statuses`; a new body starts the next stage.
+    """
 
     def __init__(self, live, packet: str):
         self.live = live
         self.packet = packet
         self.stage = 0
+        self.last_body = None
+        self.retried_statuses = []
 
     def send(self, body):
-        self.stage += 1
+        if body != self.last_body:
+            self.stage += 1
+            self.last_body = body
+            self.retried_statuses = []
         meta = {
             "packet": self.packet,
             "stage": self.stage,
+            "retried_statuses": list(self.retried_statuses),
             "model_requested": MODEL,
             "questions_version": QUESTIONS_VERSION,
             "questions_hash": questions_hash(),
             "recorded_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
         path = OUT / self.packet / f"stage-{self.stage}.json"
-        return RecordingTransport(self.live, path, meta).send(body)
+        status, response = RecordingTransport(self.live, path, meta).send(body)
+        self.retried_statuses.append(status)
+        return status, response
 
 
 def dry_run(packets):
