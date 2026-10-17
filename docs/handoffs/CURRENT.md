@@ -1,78 +1,79 @@
-# Handoff — T-009 staged JEV decisions: ready for Codex review
+# Handoff — T-009 Codex review: changes requested
 
-- **Updated:** 2026-10-02 by Claude Code
-- **Branch / worktree:** task/T-009-jev-decisions @ ~/code/ms-wt/web
-- **Status:** ready_for_review. Codex reviews when T-008 allows; there's no rush, because nothing depends
-  on this until T-010.
+- **Updated:** 2026-10-17 by Codex
+- **Branch / worktree:** review/T-009-jev-decisions @ ~/code/ms-wt/api
+- **Status:** changes_requested
 
 ## Next step (exact — the next agent starts here)
-**Codex, as a fresh session on this branch:** review against `docs/tasks/T-009-jev-decisions.md`.
-Read only `git diff origin/main...task/T-009-jev-decisions`. Focus on:
-- `app/judgment/client.py`: the error mapping, and the guard that stops replay from ever going live.
-- `app/judgment/stages.py`: the gating, and how Score answers map to levels.
-- `app/judgment/state.py`: the cutoff and correction exclusions.
-- The strict xfails in `tests/test_judgment_replay.py`.
-
-Report findings with file:line and a test that would catch each one.
+Claude Code: address the findings below on task/T-009-jev-decisions, starting with the
+mixed-citation cutoff leak. The review commit can be cherry-picked from the review branch.
+Review scope was `git diff origin/main...origin/task/T-009-jev-decisions` (tip 397efe7).
+No implementation or recording was changed and no live API was called.
 
 ## Done this session
-- `8f87748` Spec.
-- `eace03c` Taxonomy → JEV questions, with provisional rubric levels 2 and 4.
-- `aab9414` Packet state with deterministic exclusions.
-- `6f2b767` Client pinned to `jev-1.13.0`, with record/replay and error mapping.
-- `b53c327` Gated three-stage runner.
-- `8e42914` Recorder script.
-- `7dda088` Anuraag's live recording: 10 packets, 24 calls. The replay test snapshots every judgment.
-- `b768da2` ADR-003 measured cost: **$0.00007 per call**, $0.00167 for the batch.
-- `8577ade` Recordings moved to `evals/recordings/jev/`.
-  `evals/tests/test_fixtures.py` schema-checks every JSON under `evals/fixtures/`, and recordings aren't
-  contract entities. ADR-005's "under `evals/fixtures/`" wording means the same intent: they are test
-  data and not purged. T-008's `evals/fixtures/providers/` will hit the same test.
+Reviewed the task brief, changed implementation/tests/recorder, taxonomy, evidence policy,
+and packet 08/09 cutoff/correction behavior. Findings:
 
-## JEV vs expected.json (tracked as strict xfails; not tuned)
-| Packet | Expected | JEV (stage-1 probability) | Reading |
-|---|---|---|---|
-| 02 split | `unusable` | `partial` (0.67; unusable 0.25) | The taxonomy says a split move is a normalization suspect. That belongs in a deterministic integrity gate, not the model. Add it to the policy/envelope task. |
-| 03 syndicated | no abstention | `unusable` (0.74) | The packet has no observations. Is an evidence-only packet unusable? That is a fixture/taxonomy question for Anuraag. |
-| 10 failed coverage | no abstention (partial brief) | `unusable` (0.59) | Same cause (no observations). Low confidence. |
+1. **[P1] Mixed citations retain excluded information in claim text —
+   `apps/api/app/judgment/state.py:58-60`.** Filtering only the citation ids preserves the entire
+   statement whenever any citation survives. A claim based partly on evidence first known after
+   cutoff (or on a superseded original) therefore reaches JEV with its excluded content intact,
+   now attributed only to the surviving source. Reproduced with packet 08: give claim-2 citations
+   `[ev-1, ev-2]`; ev-2 is excluded, but “final revenue was 11.00 million USD” remains, linked to
+   ev-1's preliminary 10.00 report. Drop claims with excluded dependencies unless their remaining
+   support is independently validated; trimming ids is insufficient.
+   **Regression test:** perturb packet 08 with those mixed citations and assert the final-revenue
+   claim text never enters the state. Repeat with a superseded original in packet 09.
 
-Agreements: 05 `partial`, 07 `unusable`, 08 and 09 exclusions, and `event_family` matches `event_type`
-on all 7 packets that reached stage 2.
+2. **[P2] Score validation checks keys but not probability values —
+   `apps/api/app/judgment/stages.py:35-37`.** A five-key distribution containing strings is accepted
+   and ranked lexicographically; mixing `None` with numbers raises `TypeError` and aborts the run.
+   Negative, nonfinite and out-of-range values also pass. This violates the invalid-output path:
+   malformed judgments should be omitted with `invalid_model_output`, not become ordinal levels
+   or crash. Reproduced both string acceptance and the `None` crash offline.
+   **Regression test:** parameterize stage-3 answers with strings, null, booleans, negative,
+   nonfinite and out-of-range probabilities; assert relevance is omitted, the abstention is
+   present, and other valid judgments survive. Preserve the existing numeric tie-down test.
 
-Caveats:
-- **07 is not evidence of injection resistance.** The fixture README says 07 also lacks its required
-  observations, so "unusable" is justified without the injection. An injection probe on an otherwise
-  usable packet would test resistance properly (a T-010 robustness case).
-- **`research_relevance` is ungrounded.** It came back 4 for 8 of the 9 packets that reached stage 3, but
-  the state carries no portfolio exposure, which the taxonomy requires. Relevance should abstain, or be
-  given exposure, once the envelope task builds packets from portfolios.
-- `primary_context` is `unknown` on 8 of 9: no packet carries benchmark or sector moves. That fits the
-  ambiguity policy.
+3. **[P2] Malformed successful response containers bypass typed failure handling —
+   `apps/api/app/judgment/client.py:181-185`.** HTTP 200 with `usage: null` raises `AttributeError`
+   before the malformed-response guard. A top-level JSON list/null has the same problem. These
+   are valid JSON, so LiveTransport's JSON error handling will not catch them; `_ask` only catches
+   JevError, and the whole pipeline crashes instead of returning `classification_unavailable`.
+   **Regression test:** fake 200 responses with top-level null/list and null/list usage; assert
+   JevUnavailable from the client and classification_unavailable from run_staged, preserving
+   completed stages. Validate the container types before calling `.get`.
 
-## Tests run (branch tip `8577ade`)
-- `pytest apps/api/tests packages/contracts/tests evals/tests` → 462 passed, 6 xfailed (2 from the T-008
-  producer gap, 4 tracked JEV disagreements), 50 skipped (Postgres: no `TEST_DATABASE_URL` in this shell;
-  T-009 doesn't touch the DB).
-- Vitest → 64 passed.
-- `make lint` → exit 0.
+4. **[P2] Recorder counts HTTP attempts as taxonomy stages —
+   `scripts/record_jev.py:45-55`.** JevClient retries by invoking send again, so a stage-1
+   429 followed by success creates stage-1.json and stage-2.json, both for data_usability.
+   Subsequent actual stage-2/3 calls are labeled 3/4. This breaks the promised packet × stage
+   recording format and corrupts metadata used to interpret recordings; the current tests cover
+   retrying and recording separately and miss their composition. Replay's hash map also collapses
+   duplicate requests, so it cannot reproduce the retry sequence.
+   **Regression test:** run StageFiles with a fake 429 → 529 → success followed by stages 2/3,
+   then assert semantic stage numbers stay 1/2/3 and the attempt history has an explicit,
+   deterministic representation. No LiveTransport construction is needed.
+
+## Tests run
+- Targeted five `apps/api/tests/test_judgment_*.py` modules via `uv run --project apps/api pytest`
+  → **77 passed, 4 xfailed**.
+- `/tmp/t009_review_probe.py` with the existing API venv → reproduced all four findings using
+  temporary packet copies and fake transports; no repository fixtures modified.
+- Full suite/lint not rerun: review changes only handoff and ledger documentation.
+- `git diff --check` → passed.
 
 ## Contract changes proposed (not applied)
-- Optional taxonomy v1.1: make `interpretation_conflict` a Noul (TypeSafe's yes/no primitive), with its
-  threshold in `decisions/policies/`.
+- None. Retain implementer's optional future proposal to change interpretation_conflict to Noul
+  only with a versioned policy threshold.
 
 ## Unresolved / assumptions
-- The docs give no HTTP status for running out of credit. The client treats 402, or a non-retryable error
-  mentioning credit, billing, balance, payment or quota, as `budget_skipped`. Confirm this when credit
-  first runs out.
-- `questions.py` imports `pyyaml`, which is only a dev dependency. Promote it when the API runs the
-  pipeline.
-- If stage 1 fails, `judgments` is empty. The envelope requires `data_usability`, so it needs a
-  "classification unavailable" path.
-- Next task in this lane (no spec yet): policy engine plus decision envelope. It covers the deterministic
-  split and freshness gates, exposure in the state, `research_action`, and the unavailable path.
-- Carried forward:
-  - T-012 follow-ups: UNIQUE on `import_confirmations.portfolio_version_id`, the composite tenant FK,
-    the `seed_fixture` head guard, pruning preview locks, an explicit preview upsert, and the
-    `.env.example` `MS_ENV` default.
-  - T-008: the non-positive close gap.
-  - Upload size limit, per-tenant keys, observation persistence, and the /briefs projection formatter.
+- Existing strict xfails are explicit model/fixture disagreements, not new review findings:
+  packet 02 split gate; packets 03/10 evidence-only usability. Do not tune expectations to the model.
+- Preserve implementer's follow-ups: deterministic split/freshness/identity policy and decision
+  envelope, missing exposure for research_relevance, stage-1-unavailable envelope path, runtime
+  PyYAML promotion, and a usable-packet injection probe. These remain outside this review's fixes.
+- Provider billing status remains unverified; the client currently recognizes 402 and billing
+  words on non-retryable errors. No live recording refresh was authorized or attempted.
+- Review branch is isolated because task/T-009-jev-decisions is checked out in the web worktree.
+  This session did not edit that worktree or merge either branch.
