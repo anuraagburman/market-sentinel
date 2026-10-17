@@ -4,6 +4,10 @@ import json
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
+from pathlib import Path
+
+from app.providers.alpaca import Alpaca, Symbol
+from test_contracts_v1_1 import validator
 
 import pytest
 
@@ -91,11 +95,6 @@ def test_invalid_payload_never_retried(body):
         c.get("https://example.test", {}, {}, c.budget())
     assert len(http.calls) == 1
 
-
-from pathlib import Path
-
-from app.providers.alpaca import Alpaca, Symbol
-from test_contracts_v1_1 import validator
 
 FIXTURES = Path(__file__).resolve().parents[3] / "evals/fixtures/providers"
 ID = UUID(int=1)
@@ -220,3 +219,112 @@ def test_alpaca_effective_dated_symbols_and_unresolved_identity():
         assert a.fetch(identifier, START, START).complete
     a, _, _ = alpaca(calendar(), symbols=mappings)
     assert a.fetch(identities[-1], START, END).errors[0].kind == "unresolved_identity"
+
+
+def sec(*responses, contact="Synthetic research research@example.test", mappings=None):
+    from app.providers.sec import SEC
+    from app.providers.transport import Limiter
+
+    c, http, clock = client(*responses)
+    c.limiter = Limiter()
+    return SEC(c, contact, {ID: "1"} if mappings is None else mappings), http, clock
+
+
+def submissions():
+    return Response(200, fixture("submissions"), {})
+
+
+def history():
+    return Response(200, fixture("history"), {})
+
+
+def test_sec_history_provenance_hash_and_schema():
+    a, http, clock = sec(submissions(), history())
+    result = a.fetch(ID, date(2026, 1, 1), date(2026, 9, 30), clock.now)
+    # The historical page was retrieved after this cutoff due to the SEC limiter.
+    assert len(result.records) == 1 and len(result.excluded) == 1
+    assert not result.complete
+    a, http, clock = sec(submissions(), history())
+    result = a.fetch(ID, date(2026, 1, 1), date(2026, 9, 30))
+    assert result.complete and len(result.records) == 2
+    record = result.records[1]
+    assert record.cik == "0000000001"
+    assert record.accession == "0000000001-26-000001"
+    assert record.filing_date == date(2026, 3, 6)
+    assert record.accepted_at == "2026-03-05T23:10:00Z"
+    assert record.evidence.published_at == record.accepted_at
+    assert record.evidence.known_at == "2026-10-01T00:00:00.200000Z"
+    assert (
+        record.evidence.url
+        == "https://www.sec.gov/Archives/edgar/data/1/000000000126000001/synthetic-quarter.htm"
+    )
+    assert record.evidence.source_id == "sec:0000000001:0000000001-26-000001"
+    for record in result.records:
+        validator("evidence").validate(record.evidence.model_dump(mode="json"))
+    replay, _, _ = sec(submissions(), history())
+    assert replay.fetch(ID, date(2026, 1, 1), date(2026, 9, 30)).records == result.records
+    assert clock.sleeps == [0.2]
+    assert all(call[2]["User-Agent"].startswith("Synthetic") for call in http.calls)
+
+
+def test_sec_empty_range_and_later_page_failure():
+    a, http, _ = sec(submissions())
+    result = a.fetch(ID, date(2026, 9, 1), date(2026, 9, 29))
+    assert result.complete and not result.records and len(http.calls) == 1
+    a, _, _ = sec(submissions(), response({}, 403))
+    result = a.fetch(ID, date(2026, 1, 1), date(2026, 9, 30))
+    assert not result.complete and len(result.records) == 1
+    assert result.errors[0].kind == "authentication"
+
+
+@pytest.mark.parametrize(
+    "change",
+    ["missing_acceptance", "bad_time", "parallel_arrays", "unsafe_document", "unsafe_history"],
+)
+def test_sec_malformed_metadata_visible(change):
+    payload = json.loads(fixture("submissions"))
+    recent = payload["filings"]["recent"]
+    if change == "missing_acceptance":
+        recent["acceptanceDateTime"] = [None]
+    elif change == "bad_time":
+        recent["acceptanceDateTime"] = ["2026-09-30"]
+    elif change == "parallel_arrays":
+        recent["form"] = []
+    elif change == "unsafe_document":
+        recent["primaryDocument"] = ["../../secret"]
+    else:
+        payload["filings"]["files"][0]["name"] = "https://other.test/secret"
+    a, _, _ = sec(response(payload), history())
+    result = a.fetch(ID, date(2026, 1, 1), date(2026, 9, 30))
+    assert not result.complete and result.errors[0].kind == "invalid_payload"
+
+
+def test_sec_corrections_content_and_accession_change_identity():
+    original = json.loads(fixture("submissions"))
+
+    def fetch(payload):
+        a, _, _ = sec(response(payload))
+        return a.fetch(ID, date(2026, 9, 1), date(2026, 9, 30)).records[0].evidence
+
+    baseline = fetch(original)
+    original["filings"]["recent"]["form"] = ["8-K/A"]
+    revised = fetch(original)
+    assert baseline.hash != revised.hash and baseline.id != revised.id
+    assert baseline.source_id == revised.source_id
+    original["filings"]["recent"]["accessionNumber"] = ["0000000001-26-000003"]
+    assert fetch(original).source_id != revised.source_id
+
+
+@pytest.mark.parametrize(
+    "contact,mappings,kind",
+    [
+        ("", {ID: "1"}, "configuration"),
+        ("missing-contact", {ID: "1"}, "configuration"),
+        ("Research test@example.test", {}, "unresolved_identity"),
+        ("Research test@example.test", {ID: "../1"}, "unresolved_identity"),
+    ],
+)
+def test_sec_configuration_and_mapping_no_requests(contact, mappings, kind):
+    a, http, _ = sec(contact=contact, mappings=mappings)
+    assert a.fetch(ID, START, END).errors[0].kind == kind
+    assert not http.calls
