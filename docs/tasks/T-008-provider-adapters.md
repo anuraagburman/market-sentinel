@@ -137,7 +137,7 @@ use the existing dedicated test database configuration for the full suite. No T-
 5. `docs:` final handoff and ledger after full validation.
 
 ## Handoff checklist
-- [ ] Targeted tests, make test, make lint and unchanged contracts pass
-- [ ] No non-positive close xfails or original test_non_positive_close_conforms remain
-- [ ] Provider docs checked; timestamp, identity and hash mappings recorded
-- [ ] CURRENT.md and LEDGER updated; branch committed and pushed
+- [x] Targeted tests, make test, make lint and unchanged contracts pass (50 Postgres tests skipped; TEST_DATABASE_URL unset)
+- [x] No non-positive close xfails or original test_non_positive_close_conforms remain
+- [x] Provider docs checked; timestamp, identity and hash mappings recorded in CURRENT.md
+- [x] CURRENT.md and LEDGER updated; branch committed and pushed at session end
