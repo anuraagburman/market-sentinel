@@ -9,6 +9,7 @@ from referencing import Registry, Resource
 from app.judgment.client import JevClient
 from app.judgment.stages import run_staged, score_level
 from app.policy.exposure import Exposure
+from app.policy.gates import GateResult
 
 ROOT = Path(__file__).resolve().parents[3]
 PACKET = ROOT / "evals/fixtures/packets/01-earnings-no-expectations"
@@ -67,10 +68,11 @@ class ScriptedTransport:
 HELD = Exposure(weight=Decimal("0.04123"), held=True)
 
 
-def run(answers, thesis="Margins expand through 2027", failures=None, exposure=HELD):
+def run(answers, thesis="Margins expand through 2027", failures=None, exposure=HELD, gates=None):
     transport = ScriptedTransport(answers, failures)
     client = JevClient(transport, sleep=lambda _: None, max_attempts=1)
-    return run_staged(PACKET, client, thesis=thesis, exposure=exposure), transport
+    result = run_staged(PACKET, client, thesis=thesis, exposure=exposure, gates=gates)
+    return result, transport
 
 
 def test_full_run_produces_schema_valid_judgments_across_three_calls():
@@ -232,3 +234,20 @@ def test_malformed_stage_two_response_keeps_stage_one(body):
     result = run_staged(PACKET, JevClient(transport, sleep=lambda _: None, max_attempts=1))
     assert result.judgments == {"data_usability": "usable"}
     assert result.abstention_reasons == ["classification_unavailable"]
+
+
+def test_no_observations_gate_keeps_jev_unusable_at_partial_and_continues():
+    gates = GateResult("partial", ("no_observations",))
+    result, transport = run(
+        {"data_usability": choice("unusable"), **STAGE_2, **STAGE_3}, gates=gates
+    )
+    assert result.judgments["data_usability"] == "partial"
+    assert result.raw["stage_1"]["data_usability"]["choice"] == "unusable"
+    assert "unusable_input" not in result.abstention_reasons
+    assert len(transport.calls) == 3
+
+
+def test_gate_cap_lowers_jev_usable():
+    gates = GateResult("partial", effects=("disable_time_sensitive_readiness",))
+    result, _ = run({"data_usability": choice("usable"), **STAGE_2, **STAGE_3}, gates=gates)
+    assert result.judgments["data_usability"] == "partial"

@@ -92,3 +92,17 @@ def run_gates(packet: dict, expected_session_close: str) -> GateResult:
             stale(packet, expected_session_close),
         ]
     )
+
+
+def final_usability(gates: GateResult, jev: str) -> str:
+    """JEV can lower usability below the gate cap, never raise it.
+
+    One exception (Anuraag, 2026-10-17): evidence without observations is partial, not unusable.
+    """
+    if (
+        jev == "unusable"
+        and gates.usability_cap == "partial"
+        and "no_observations" in gates.reasons
+    ):
+        return "partial"
+    return min(gates.usability_cap, jev, key=USABILITY.index)

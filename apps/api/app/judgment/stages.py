@@ -14,6 +14,7 @@ from app.judgment.client import JevClient, JevConfigError, JevError
 from app.judgment.questions import load_taxonomy, render_stage
 from app.judgment.state import build_state
 from app.policy.exposure import Exposure
+from app.policy.gates import GateResult, final_usability
 
 
 @dataclass
@@ -90,13 +91,17 @@ def run_staged(
     client: JevClient,
     thesis: str | None = None,
     exposure: Exposure | None = None,
+    gates: GateResult | None = None,
 ) -> StagedResult:
-    """`exposure` is computed by policy code; None means unavailable, never zero."""
+    """`exposure` and `gates` come from policy code. None exposure means unavailable, never zero."""
     built = build_state(packet_dir)
     result = StagedResult(excluded_evidence_ids=built.excluded_evidence_ids)
 
     if not _ask(client, result, 1, built.state, render_stage(1)):
         return result
+    if gates is not None:
+        usability = final_usability(gates, result.judgments["data_usability"])
+        result.judgments["data_usability"] = usability
     if result.judgments["data_usability"] == "unusable":
         result.abstain("unusable_input")
         return result

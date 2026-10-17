@@ -7,6 +7,7 @@ from app.judgment.state import build_state
 from app.policy.gates import (
     GateResult,
     combine,
+    final_usability,
     run_gates,
     sources_missing,
     split_unadjusted,
@@ -151,3 +152,24 @@ def test_combine_takes_the_strictest_cap_and_unions_reasons_and_effects():
 )
 def test_gate_caps_per_packet(name, cap):
     assert run_gates(packet(name), SESSION_CLOSE).usability_cap == cap
+
+
+NO_OBSERVATIONS = GateResult("partial", ("no_observations",))
+STALE = GateResult("partial", effects=("disable_time_sensitive_readiness",))
+
+
+@pytest.mark.parametrize(
+    ("gates", "jev", "final"),
+    [
+        (GateResult(), "usable", "usable"),
+        (GateResult(), "partial", "partial"),
+        (GateResult(), "unusable", "unusable"),
+        (STALE, "usable", "partial"),
+        (STALE, "unusable", "unusable"),
+        (NO_OBSERVATIONS, "usable", "partial"),
+        (NO_OBSERVATIONS, "unusable", "partial"),
+        (GateResult("unusable", ("unusable_input",)), "usable", "unusable"),
+    ],
+)
+def test_jev_can_lower_but_never_raise_usability_except_no_observations(gates, jev, final):
+    assert final_usability(gates, jev) == final
