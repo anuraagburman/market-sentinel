@@ -178,10 +178,12 @@ class JevClient:
                 self.sleep(self.backoff * 2 ** (attempt - 1) * (1 + random.random()))
         raise JevUnavailable(f"retries exhausted (last status {status})")
 
-    def _parse(self, body: bytes, response: dict) -> JevResponse:
-        answers = response.get("answers")
-        tokens = response.get("usage", {}).get("input_tokens")
-        if not isinstance(answers, dict) or not isinstance(tokens, int):
+    def _parse(self, body: bytes, response) -> JevResponse:
+        # Valid JSON is not a valid reply: any top-level value or `usage` shape can arrive.
+        usage = response.get("usage") if isinstance(response, dict) else None
+        answers = response.get("answers") if isinstance(response, dict) else None
+        tokens = usage.get("input_tokens") if isinstance(usage, dict) else None
+        if not isinstance(answers, dict) or type(tokens) is not int:
             raise JevUnavailable("malformed provider response")
         return JevResponse(
             model=response.get("model") or self.model,

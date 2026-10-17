@@ -91,9 +91,21 @@ def test_configuration_errors_are_not_retried(status):
         client((status, {"error": {"message": "nope"}})).ask(STATE, QUESTIONS)
 
 
-def test_malformed_success_body_is_unavailable():
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"model": "jev-1.13.0"},
+        None,
+        [],
+        {**OK, "usage": None},
+        {**OK, "usage": []},
+        {**OK, "usage": {"input_tokens": True}},
+    ],
+    ids=["no-answers", "null", "list", "null-usage", "list-usage", "bool-tokens"],
+)
+def test_malformed_success_body_is_unavailable(body):
     with pytest.raises(JevUnavailable):
-        client((200, {"model": "jev-1.13.0"})).ask(STATE, QUESTIONS)
+        client((200, body)).ask(STATE, QUESTIONS)
 
 
 def test_recording_then_replay_round_trips(tmp_path):
