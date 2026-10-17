@@ -175,6 +175,6 @@ in chat. It is about 9 calls × 2k tokens ≈ $0.001.
 - Making `interpretation_conflict` a Noul (taxonomy v1.1 proposal from T-009).
 
 ## Handoff checklist
-- [ ] Tests above pass
-- [ ] `docs/handoffs/CURRENT.md` updated
-- [ ] LEDGER row updated
+- [x] Tests above pass (stage-3 re-recording pending approval)
+- [x] `docs/handoffs/CURRENT.md` updated
+- [x] LEDGER row updated
