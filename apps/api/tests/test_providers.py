@@ -328,3 +328,168 @@ def test_sec_configuration_and_mapping_no_requests(contact, mappings, kind):
     a, http, _ = sec(contact=contact, mappings=mappings)
     assert a.fetch(ID, START, END).errors[0].kind == kind
     assert not http.calls
+
+
+def test_transport_timeout_exhaustion_and_http_date_retry_after():
+    c, http, clock = client(*(TimeoutError("credentials") for _ in range(3)))
+    with pytest.raises(Failure, match="timeout"):
+        c.get("https://example.test", {}, {}, c.budget())
+    assert len(http.calls) == 3 and clock.sleeps == [1, 2]
+    c, http, clock = client(
+        response({}, 429, {"Retry-After": "Thu, 01 Oct 2026 00:00:03 GMT"}), response({})
+    )
+    c.get("https://example.test", {}, {}, c.budget())
+    assert clock.sleeps == [3]
+
+
+def test_transport_deadline_spans_pages_and_limits_timeout():
+    c, http, clock = client(response({}), response({}))
+    budget = c.budget()
+    clock.sleep(55)
+    c.get("https://example.test", {}, {}, budget)
+    assert http.calls[-1][-1] == 5
+    clock.sleep(5)
+    with pytest.raises(Failure, match="timeout"):
+        c.get("https://example.test", {}, {}, budget)
+    assert len(http.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "change",
+    [{"v": None}, {"v": -1}, {"v": "Infinity"}, {"t": "yesterday"}, {"t": "2026-03-06T05:00:00"}],
+)
+def test_alpaca_invalid_volume_and_timestamp(change):
+    bar = {"t": "2026-03-06T05:00:00Z", "c": 10, "v": 0, **change}
+    a, _, _ = alpaca(calendar(), response({"bars": {"SYN01": [bar]}, "next_page_token": None}))
+    result = a.fetch(ID, START, END)
+    assert not result.records and not result.complete
+    assert result.errors[0].kind == "invalid_payload"
+
+
+@pytest.mark.parametrize(
+    "metadata", [{"feed": "iex"}, {"feed": "unknown"}, {"adjustment": "split"}]
+)
+def test_alpaca_rejects_wrong_series(metadata):
+    payload = json.loads(fixture("bars"))
+    a, _, _ = alpaca(calendar(), response({**payload, **metadata}))
+    result = a.fetch(ID, START, END)
+    assert not result.complete and not result.records
+    assert result.errors[0].kind == "invalid_payload"
+
+
+def test_alpaca_missing_session_closed_day_and_pagination_success():
+    page = {
+        "bars": {"SYN01": [{"t": "2026-03-06T05:00:00Z", "c": 10, "v": 0}]},
+        "next_page_token": None,
+    }
+    a, _, _ = alpaca(calendar(), response(page))
+    result = a.fetch(ID, START, END)
+    assert result.covered == ("2026-03-06",)
+    assert not result.complete
+    a, http, _ = alpaca(calendar())
+    result = a.fetch(ID, date(2026, 3, 7), date(2026, 3, 8))
+    assert result.complete and result.requested == () and len(http.calls) == 1
+    a, http, _ = alpaca(response([]))
+    assert a.fetch(ID, date(2026, 12, 25), date(2026, 12, 25)).complete
+    page["next_page_token"] = "second"
+    a, _, _ = alpaca(
+        calendar(),
+        response(page),
+        response(
+            {
+                "bars": {"SYN01": [{"t": "2026-03-09T04:00:00Z", "c": 5, "v": 0}]},
+                "next_page_token": None,
+            }
+        ),
+    )
+    result = a.fetch(ID, START, END)
+    assert result.complete and len(result.records) == 4
+
+
+def test_alpaca_page_cap_and_content_identity():
+    payload = json.loads(fixture("bars"))
+    a, http, _ = alpaca(
+        calendar(), *(response({**payload, "next_page_token": str(i)}) for i in range(100))
+    )
+    result = a.fetch(ID, START, END)
+    assert not result.complete and len(http.calls) == 100
+    assert result.errors[-1].kind == "invalid_payload"
+    first, _, _ = alpaca(calendar(), bars())
+    baseline = first.fetch(ID, START, END).records[0]
+    payload["bars"]["SYN01"][0]["c"] = "123.12345678901234567890"
+    same, _, _ = alpaca(calendar(), response(payload))
+    assert same.fetch(ID, START, END).records[0].id == baseline.id
+    payload["bars"]["SYN01"][0]["c"] = "123.2"
+    changed, _, _ = alpaca(calendar(), response(payload))
+    assert changed.fetch(ID, START, END).records[0].id != baseline.id
+
+
+def test_sec_duplicate_replay_repeated_page_and_ten_ciks():
+    payload = json.loads(fixture("submissions"))
+    recent = payload["filings"]["recent"]
+    a, _, _ = sec(response(payload), response(recent))
+    result = a.fetch(ID, date(2026, 1, 1), date(2026, 9, 30))
+    assert result.complete and len(result.records) == 1
+    payload["filings"]["files"] *= 2
+    a, _, _ = sec(response(payload), history())
+    result = a.fetch(ID, date(2026, 1, 1), date(2026, 9, 30))
+    assert not result.complete and result.errors[-1].kind == "invalid_payload"
+    mappings = {UUID(int=i): str(i) for i in range(1, 10)}
+    for identifier, cik in mappings.items():
+        payload = json.loads(fixture("submissions"))
+        payload["cik"] = cik
+        a, _, _ = sec(response(payload), mappings=mappings)
+        assert a.fetch(identifier, date(2026, 9, 1), date(2026, 9, 30)).complete
+    a, _, _ = sec(mappings=mappings)
+    assert a.fetch(UUID(int=10), START, END).errors[0].kind == "unresolved_identity"
+
+
+def test_sec_limiter_shared_across_clients_and_historical_page_cap():
+    from app.providers.transport import Limiter
+
+    limiter = Limiter()
+    c, http, clock = client(response({}), response({}))
+    c.limiter = limiter
+    c.get("https://data.sec.gov", {}, {}, c.budget(), sec=True)
+    other = Client(http, clock, clock.sleep, lambda: 0, limiter)
+    other.get("https://data.sec.gov", {}, {}, other.budget(), sec=True)
+    assert clock.sleeps == [0.2]
+    payload = json.loads(fixture("submissions"))
+    payload["filings"]["files"] = [
+        {
+            "name": f"CIK0000000001-submissions-{i:03}.json",
+            "filingFrom": "2026-01-01",
+            "filingTo": "2026-08-31",
+        }
+        for i in range(100)
+    ]
+    a, http, _ = sec(response(payload), *(history() for _ in range(100)))
+    result = a.fetch(ID, date(2026, 1, 1), date(2026, 9, 30))
+    assert not result.complete and len(http.calls) == 100
+    assert result.errors[-1].kind == "invalid_payload"
+
+
+def test_standard_library_socket_timeout_remains_retryable(monkeypatch):
+    import app.providers.transport as transport
+
+    class Opener:
+        def open(self, request, timeout):
+            raise TimeoutError("private URL and credentials")
+
+    monkeypatch.setattr(transport, "build_opener", lambda *_: Opener())
+    with pytest.raises(TimeoutError):
+        transport.request("https://example.test", {}, {}, 10)
+
+
+@pytest.mark.parametrize("payload", [{"filings": None}, {"cik": "1", "filings": {"recent": {}}}])
+def test_sec_malformed_envelope_returns_typed_failure(payload):
+    a, _, _ = sec(response(payload))
+    result = a.fetch(ID, START, END)
+    assert not result.complete and result.errors[0].kind == "invalid_payload"
+
+
+@pytest.mark.parametrize("payload", [{}, {"bars": None}, {"bars": {"SYN01": None}}])
+def test_alpaca_malformed_envelope_returns_typed_failure(payload):
+    a, _, _ = alpaca(calendar(), response(payload))
+    result = a.fetch(ID, START, END)
+    assert not result.complete and result.errors[0].kind == "invalid_payload"

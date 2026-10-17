@@ -56,6 +56,8 @@ def request(url, params, headers, timeout):
         if isinstance(error.reason, TimeoutError):
             raise TimeoutError from None
         raise Failure("upstream") from None
+    except TimeoutError:
+        raise TimeoutError from None
     except (OSError, UnicodeError):
         raise Failure("upstream") from None
 
