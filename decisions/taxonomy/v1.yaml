@@ -142,9 +142,9 @@ decisions:
     required: [materiality, exposure, horizon]
     rubric:
       1: No demonstrated connection to the selected portfolio or research intent.
-      2: TODO(label) worked example needed.
+      2: An indirect or minor connection, such as a peer or supplier event, with no evidence it changes a holding's situation. # provisional (ADR-005)
       3: Plausible connection requiring more evidence.
-      4: TODO(label) worked example needed.
+      4: A verified event that directly involves a holding or stated objective, but its materiality or exposure size is not yet confirmed. # provisional (ADR-005)
       5: Verified material event directly affecting a holding or a clearly stated research objective.
     rules:
       - An ordinal score is not a probability or an expected return.
