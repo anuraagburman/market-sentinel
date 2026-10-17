@@ -1,5 +1,6 @@
 {
   "abstention_reasons": [],
   "excluded_evidence_ids": [],
-  "why": "Ten syndicated URLs represent one independent originator."
+  "why": "Ten syndicated URLs represent one independent originator.",
+  "data_usability": "partial"
 }

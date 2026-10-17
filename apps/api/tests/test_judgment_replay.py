@@ -1,7 +1,9 @@
 """Replay the recorded jev-1.13.0 responses over the adversarial packets, offline.
 
-Disagreements with expected.json are tracked as strict xfails, not tuned away: comparing the model to
-the provisional labels is T-010's job. A strict xfail starts failing once the behaviour changes.
+Raw JEV (no gates) is compared with expected.json here. Packets whose expectation is owned by a
+deterministic gate (T-014) are asserted on the envelope in test_policy_envelope.py instead: JEV said
+partial for 02's split and unusable for the evidence-only 03 and 10. Comparing the model to the
+provisional labels is T-010's job; nothing is tuned away.
 
 Stage-3 recordings predate exposure grounding (T-014), so their request bodies no longer match. Until
 they are re-recorded, a stage-3 miss replays as unavailable and only stages 1-2 are snapshotted;
@@ -45,11 +47,8 @@ SNAPSHOT = {
 KEYS = ("data_usability", *STAGE_2)
 STALE_STAGE_3 = {"classification_unavailable", "exposure_unavailable", "no_recorded_thesis"}
 
-DISAGREES = {
-    "02-split-normalization": "JEV says partial (0.67); the split rule needs a deterministic gate",
-    "03-syndicated-single-source": "JEV says unusable (0.74) for a packet with no observations",
-    "10-failed-coverage": "JEV says unusable (0.59); expected a partial brief, not abstention",
-}
+GATE_OWNED = {"02-split-normalization", "03-syndicated-single-source", "10-failed-coverage"}
+MODEL_OWNED = sorted(set(SNAPSHOT) - GATE_OWNED)
 
 
 class StagesOneAndTwo(ReplayTransport):
@@ -71,15 +70,6 @@ def expected(name):
     return json.loads((PACKETS / name / "expected.json").read_text())
 
 
-def tracked(names):
-    return [
-        pytest.param(n, marks=pytest.mark.xfail(strict=True, reason=DISAGREES[n]))
-        if n in DISAGREES
-        else n
-        for n in names
-    ]
-
-
 @pytest.mark.parametrize("name", sorted(SNAPSHOT))
 def test_replay_is_offline_schema_valid_and_matches_snapshot(name):
     result = replay(name)
@@ -89,15 +79,13 @@ def test_replay_is_offline_schema_valid_and_matches_snapshot(name):
     assert result.excluded_evidence_ids == expected(name)["excluded_evidence_ids"]
 
 
-@pytest.mark.parametrize("name", tracked(sorted(SNAPSHOT)))
+@pytest.mark.parametrize("name", MODEL_OWNED)
 def test_abstention_matches_expected(name):
     reasons = [r for r in replay(name).abstention_reasons if r not in STALE_STAGE_3]
     assert reasons == expected(name)["abstention_reasons"]
 
 
-@pytest.mark.parametrize(
-    "name", tracked(sorted(n for n in SNAPSHOT if "data_usability" in expected(n)))
-)
+@pytest.mark.parametrize("name", [n for n in MODEL_OWNED if "data_usability" in expected(n)])
 def test_data_usability_matches_expected(name):
     assert replay(name).judgments["data_usability"] == expected(name)["data_usability"]
 
