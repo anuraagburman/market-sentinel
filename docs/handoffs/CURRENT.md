@@ -1,43 +1,39 @@
-# Handoff — T-013 merged; producer close gap goes to T-008
+# Handoff — T-014 policy engine v1 + decision envelope: spec ready
 
-- **Updated:** 2026-10-02 by Claude Code
-- **Branch / worktree:** main (T-013 merged with `--no-ff` from ~/code/ms-wt/web, detached on origin/main)
-- **Status:** T-013 `merged`
+- **Updated:** 2026-10-17 by Claude Code
+- **Branch / worktree:** task/T-014-policy-envelope (spec only, branched from main `9a9eb1c`)
+- **Status:** ready. Implementation is blocked on the T-009 merge, because it builds on `app/judgment/`.
 
 ## Next step (exact — the next agent starts here)
-Codex (`~/code/ms-wt/api`): `git switch --detach origin/main`, then spec T-008 (provider adapters). The spec must
-include the valuation producer treating a non-positive close as unavailable, and removing the strict xfail
-`test_non_positive_close_conforms` in `apps/api/tests/test_contracts_v1_1.py`.
+1. **Codex** (when T-008 reaches a stopping point): review T-009 with
+   `git diff origin/main...origin/task/T-009-jev-decisions`. The brief is in that branch's
+   `docs/handoffs/CURRENT.md`.
+2. **Claude Code:** fix any T-009 findings, then merge T-009 with `--no-ff`. Then, in `~/code/ms-wt/web`:
+   `git switch task/T-014-policy-envelope && git merge origin/main`, and start T-014 with a failing
+   test for the `split_unadjusted` gate (packet 02).
 
 ## Done this session
-- Fixed both Codex T-013 findings (`c5eacd0`, `519d67f`, `aca653d`). Codex re-reviewed (`4613e88`): the newline
-  fix is resolved, and the producer close gap remains by design.
-- Anuraag explicitly accepted merging with that gap tracked by the strict xfail (the strict schema is kept).
-- Merged `task/T-013-contracts-v1-1` into main with `--no-ff`, with no conflicts. The merge tree is identical to
-  the reviewed tip `4613e88`.
+- Anuraag decided (2026-10-17) that evidence-only packets with no observations (03, 10) are **partial,
+  not unusable**. The spec encodes this as a deterministic `no_observations` → `partial` cap.
+- Wrote `docs/tasks/T-014-policy-envelope.md`, including:
+  - Gates: split, no-observations, critical-source-missing, stale, timestamp order.
+  - Exposure, grounded in stage 3.
+  - A deterministic action table, with provisional priority weights.
+  - Envelope assembly with an idempotent `decision_id`.
+- Found while writing the spec: packet 07 is unusable only because of its declared coverage gap. No
+  current code reads `coverage_gaps`, so T-014 adds the `critical_source_missing` gate.
 
-## Tests run (merge result, local Postgres `sentinel_test`)
-- `make test` → 435 pytest passed, 2 xfailed (the tracked producer gap), 0 skipped; 64 Vitest passed.
-- `make lint` → exit 0.
-- `gen_examples.py` + `make contracts` → no diff.
+## Tests run
+- None. This is a docs-only change.
 
 ## Contract changes proposed (not applied)
-- Optional v1.2: anchor the v1 patterns (`uuid`, `utc_timestamp`, `decimal_string`,
-  `positive_decimal_string`, `currency`, `sha256`, feed version) with `$(?!\n)` as v1.1 does. Under ECMA-262
-  this narrows nothing; it only makes Python agree.
+- v1.2: typed coverage-gap codes, for example `{code: "required_observations_missing", detail}`, instead of
+  free text, so the critical-gap gate stops treating every gap as critical.
 
 ## Unresolved / assumptions
-- T-008 must close the non-positive close gap (see Next step). This is the T-008 carry-forward "provider
-  non-positive close rejection".
-- T-012 follow-ups (no task yet; fold them into the next api-lane store task):
-  - UNIQUE on `import_confirmations.portfolio_version_id`.
-  - Composite (`tenant_id`, `previous_version_id`) FK.
-  - `seed_fixture` refuses when a tenant head already exists. Today it chains the fixture on top of real data.
-  - Prune `InMemoryPreviewRepository._locks`.
-  - `PostgresPreviewRepository.write` picks insert or update implicitly and doesn't check that the update hit a
-    row. Use an explicit upsert or assert `rowcount == 1`.
-  - `.env.example` defaults `MS_ENV=dev`, which weakens the seed guard if the file is copied as-is.
-- Running tests with a dev `DATABASE_URL` exported in your shell fails by design. Unset it or point it at a
-  `_test` database. Codex's review run skipped the 50 Postgres tests because no `TEST_DATABASE_URL` was set.
-- Carry forward: /briefs projection formatter (Today fixtures with `brief.issues`), codegen, upload size limit,
-  per-tenant keys, observation persistence, web grouping of `row_has_errors` + `row_unresolved`.
+- The priority weights and thresholds will be provisional placeholders until T-010 fits them.
+- `expected_session_close` is a caller parameter until T-008 lands an exchange calendar.
+- The stage-3 re-recording (adding exposure to the state) needs Anuraag's approval for about $0.001 of
+  live JEV.
+- The carry-forwards from the main handoff (the T-012 store follow-ups, T-008's non-positive close)
+  are unchanged.
