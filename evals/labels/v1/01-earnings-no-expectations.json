@@ -1,0 +1,46 @@
+{
+  "packet": "01-earnings-no-expectations",
+  "packet_hash": "sha256:81a2de201644c7d4d5ff680adb93e3a7f4232070d80f5a28911a9df82e09e207",
+  "taxonomy_version": "1.0",
+  "status": "provisional",
+  "labeler": "anuraag",
+  "labeled_at": "2026-10-18",
+  "labels": {
+    "data_usability": {
+      "value": "partial",
+      "why": "coverage_gaps: comparable expectations unavailable, and only one close so no move can be computed."
+    },
+    "event_family": {
+      "value": "earnings",
+      "why": "event.event_type is earnings; ev-1 reports EPS."
+    },
+    "primary_context": {
+      "value": "unknown",
+      "why": "No benchmark_moves in packet; a price move alone does not establish cause."
+    },
+    "novelty": {
+      "value": "unclear",
+      "why": "Packet has no previous_events, so novelty relative to prior knowledge is unresolved."
+    },
+    "evidence_sufficiency": {
+      "value": "insufficient",
+      "why": "claim-1 'miss' has no consensus figure; EPS below prior period is not a negative surprise."
+    },
+    "thesis_impact": {
+      "abstain": "no_recorded_thesis",
+      "why": "Packet records no thesis claim or thesis_horizon."
+    },
+    "research_relevance": {
+      "value": 4,
+      "why": "Verified earnings release (ev-1) on a holding; materiality unconfirmed without expectations."
+    },
+    "interpretation_conflict": {
+      "abstain": "counterevidence_search_incomplete",
+      "why": "Packet records no counterevidence search status, so 'no' cannot be labeled."
+    }
+  },
+  "research_action": {
+    "value": "insufficient_evidence",
+    "why": "Hard gate: evidence_sufficiency insufficient forces insufficient_evidence."
+  }
+}

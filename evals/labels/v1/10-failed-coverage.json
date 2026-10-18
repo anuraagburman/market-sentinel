@@ -1,0 +1,42 @@
+{
+  "packet": "10-failed-coverage",
+  "packet_hash": "sha256:d3638befcf474ee87f65f8c21acaee8554b7b4d6659d4f74b74691b7a78f605b",
+  "taxonomy_version": "1.0",
+  "status": "provisional",
+  "labeler": "anuraag",
+  "labeled_at": "2026-10-18",
+  "labels": {
+    "data_usability": {
+      "value": "partial",
+      "why": "observations.json is empty and brief.coverage lists failed source synthetic-news."
+    },
+    "event_family": {
+      "value": "other",
+      "why": "event.event_type is other; ev-1 describes a coverage check, not an event."
+    },
+    "primary_context": {
+      "value": "unknown",
+      "why": "No benchmark_moves in packet and no observations; a price move alone does not establish cause."
+    },
+    "novelty": {
+      "value": "unclear",
+      "why": "Packet has no previous_events, so novelty relative to prior knowledge is unresolved."
+    },
+    "evidence_sufficiency": {
+      "abstain": "critical_source_missing",
+      "why": "The news source failed (brief.coverage.failed_sources), so no catalyst evidence could be gathered."
+    },
+    "thesis_impact": {
+      "abstain": "no_recorded_thesis",
+      "why": "Packet records no thesis claim or thesis_horizon."
+    },
+    "research_relevance": {
+      "value": 2,
+      "why": "A holding with no reported event; only a coverage failure (ev-1)."
+    },
+    "interpretation_conflict": {
+      "abstain": "counterevidence_search_incomplete",
+      "why": "Packet records no counterevidence search status, so 'no' cannot be labeled."
+    }
+  }
+}

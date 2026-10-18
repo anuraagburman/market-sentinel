@@ -1,0 +1,42 @@
+{
+  "packet": "03-syndicated-single-source",
+  "packet_hash": "sha256:8bcfaecc818e4ecaea036b8c03e70d7b7f25ea39b38370c10cbdb0d81867ac17",
+  "taxonomy_version": "1.0",
+  "status": "provisional",
+  "labeler": "anuraag",
+  "labeled_at": "2026-10-18",
+  "labels": {
+    "data_usability": {
+      "value": "partial",
+      "why": "observations.json is empty; ten URLs share one originator and canonical_story_id."
+    },
+    "event_family": {
+      "value": "other",
+      "why": "event.event_type is other; a lab announcement fits no specific family."
+    },
+    "primary_context": {
+      "value": "unknown",
+      "why": "No benchmark_moves in packet and no observations; a price move alone does not establish cause."
+    },
+    "novelty": {
+      "value": "repeated",
+      "why": "ev-1..ev-10 are syndicated copies of one synthetic-wire story; one independent originator."
+    },
+    "evidence_sufficiency": {
+      "value": "partial",
+      "why": "One originator supports the announcement; copies are not corroboration and counterevidence search is unrecorded."
+    },
+    "thesis_impact": {
+      "abstain": "no_recorded_thesis",
+      "why": "Packet records no thesis claim or thesis_horizon."
+    },
+    "research_relevance": {
+      "value": 3,
+      "why": "Plausible connection to a holding; single-originator event with no price data needs more evidence."
+    },
+    "interpretation_conflict": {
+      "abstain": "counterevidence_search_incomplete",
+      "why": "Packet records no counterevidence search status, so 'no' cannot be labeled."
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "packet": "06-contradictory-sources",
+  "packet_hash": "sha256:75a93bd2d78a1af489af5792319b47dca972b63922882b1438c6c6daed86eac2",
+  "taxonomy_version": "1.0",
+  "status": "provisional",
+  "labeler": "anuraag",
+  "labeled_at": "2026-10-18",
+  "labels": {
+    "data_usability": {
+      "value": "partial",
+      "why": "One close only, so no move can be computed for downstream attribution."
+    },
+    "event_family": {
+      "value": "guidance",
+      "why": "event.event_type is guidance; ev-1 and ev-2 concern the launch schedule."
+    },
+    "primary_context": {
+      "value": "unknown",
+      "why": "No benchmark_moves in packet; a price move alone does not establish cause."
+    },
+    "novelty": {
+      "value": "unclear",
+      "why": "Packet has no previous_events, so novelty relative to prior knowledge is unresolved."
+    },
+    "evidence_sufficiency": {
+      "value": "partial",
+      "why": "claim-1 (company release) supports October; claim-2 (supplier notice) contradicts it."
+    },
+    "thesis_impact": {
+      "abstain": "no_recorded_thesis",
+      "why": "Packet records no thesis claim or thesis_horizon."
+    },
+    "research_relevance": {
+      "value": 3,
+      "why": "Launch timing for a holding is contested between ev-1 and ev-2; needs more evidence."
+    },
+    "interpretation_conflict": {
+      "value": "yes",
+      "why": "ev-1 (October) and ev-2 (December) are independent originators each supporting a different launch date."
+    }
+  }
+}

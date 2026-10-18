@@ -1,0 +1,46 @@
+{
+  "packet": "02-split-normalization",
+  "packet_hash": "sha256:9874571d91b86b9d27d73220588904b1b51fc3681cebf3a24b14526492ef9d35",
+  "taxonomy_version": "1.0",
+  "status": "provisional",
+  "labeler": "anuraag",
+  "labeled_at": "2026-10-18",
+  "labels": {
+    "data_usability": {
+      "value": "unusable",
+      "why": "Observations are unadjusted (adjustment none) across the 2-for-1 split in ev-1; the 100.00 to 50.00 drop is a normalization artifact."
+    },
+    "event_family": {
+      "abstain": "unusable_input",
+      "why": "Stage 1 is unusable, so stages 2-3 never run."
+    },
+    "primary_context": {
+      "abstain": "unusable_input",
+      "why": "Stage 1 is unusable, so stages 2-3 never run."
+    },
+    "novelty": {
+      "abstain": "unusable_input",
+      "why": "Stage 1 is unusable, so stages 2-3 never run."
+    },
+    "evidence_sufficiency": {
+      "abstain": "unusable_input",
+      "why": "Stage 1 is unusable, so stages 2-3 never run."
+    },
+    "thesis_impact": {
+      "abstain": "unusable_input",
+      "why": "Stage 1 is unusable, so stages 2-3 never run."
+    },
+    "research_relevance": {
+      "abstain": "unusable_input",
+      "why": "Stage 1 is unusable, so stages 2-3 never run."
+    },
+    "interpretation_conflict": {
+      "abstain": "unusable_input",
+      "why": "Stage 1 is unusable, so stages 2-3 never run."
+    }
+  },
+  "research_action": {
+    "value": "insufficient_evidence",
+    "why": "Hard gate: data_usability unusable forces insufficient_evidence (reason unusable_input)."
+  }
+}

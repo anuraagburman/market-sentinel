@@ -1,0 +1,42 @@
+{
+  "packet": "09-correction",
+  "packet_hash": "sha256:572eda48ff39a958d29b25ab4010ed018e74262ae9a2f01e71cbc09546a69848",
+  "taxonomy_version": "1.0",
+  "status": "provisional",
+  "labeler": "anuraag",
+  "labeled_at": "2026-10-18",
+  "labels": {
+    "data_usability": {
+      "value": "partial",
+      "why": "One close only, so no move can be computed; ev-1 is superseded by ev-2."
+    },
+    "event_family": {
+      "value": "earnings",
+      "why": "event.event_type is earnings; ev-2 reports corrected revenue."
+    },
+    "primary_context": {
+      "value": "unknown",
+      "why": "No benchmark_moves in packet; a price move alone does not establish cause."
+    },
+    "novelty": {
+      "value": "update",
+      "why": "ev-2 is a correction_of an earlier item, revising revenue to 12.00 million USD."
+    },
+    "evidence_sufficiency": {
+      "value": "partial",
+      "why": "claim-2 supports corrected revenue from one originator; counterevidence search is unrecorded."
+    },
+    "thesis_impact": {
+      "abstain": "no_recorded_thesis",
+      "why": "Packet records no thesis claim or thesis_horizon."
+    },
+    "research_relevance": {
+      "value": 4,
+      "why": "Verified corrected revenue (ev-2) on a holding; materiality unconfirmed without expectations."
+    },
+    "interpretation_conflict": {
+      "abstain": "counterevidence_search_incomplete",
+      "why": "Packet records no counterevidence search status, so 'no' cannot be labeled."
+    }
+  }
+}
