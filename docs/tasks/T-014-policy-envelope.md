@@ -44,9 +44,11 @@ offline, and get one schema-valid decision envelope per packet with `research_ac
 - `evals/fixtures/packets/{03,10}/expected.json`: add `"data_usability": "partial"` (Anuraag's decision).
   This is the only fixture edit. Packet hashes don't cover `expected.json`.
 - `docs/tasks/T-014-policy-envelope.md`, `docs/tasks/LEDGER.md`, `docs/handoffs/CURRENT.md`
+- `scripts/record_jev.py` and `evals/recordings/jev/`: added 2026-10-18 for the approved stage-3 re-recording
+  (Anuraag approved ≈ $0.001). The recorder runs `decide()` and only sends requests not already recorded.
 
 Not owned: `apps/api/app/providers/` (T-008), `packages/contracts/`, `decisions/taxonomy/v1.yaml`,
-`apps/api/app/judgment/questions.py`, `evals/recordings/jev/`.
+`apps/api/app/judgment/questions.py`.
 
 ## Design
 Order is fixed: **gates → JEV (only if the gates allow it) → gate override → action → envelope.**
