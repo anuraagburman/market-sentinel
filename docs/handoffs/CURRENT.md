@@ -1,34 +1,50 @@
-# Handoff — T-010 first eval report: ready (spec written)
+# Handoff — T-010 first eval report: awaiting live-run approval
 
-- **Updated:** 2026-10-18 by Claude Code
-- **Branch / worktree:** main (spec only); implementation goes on `task/T-010-first-eval-report` in `~/code/ms-wt/api`
-- **Status:** ready
+- **Updated:** 2026-10-18 by Codex
+- **Branch / worktree:** task/T-010-first-eval-report @ ~/code/ms-wt/api
+- **Status:** in_progress
 
 ## Next step (exact — the next agent starts here)
-Codex, fresh session in `~/code/ms-wt/api`: create `task/T-010-first-eval-report` from `main` and follow
-`docs/tasks/T-010-first-eval-report.md`. Write `evals/tests/test_eval_harness.py` first with a fake persona
-transport. Run `scripts/record_persona.py --dry-run` and **stop for Anuraag's approval** before `--live`.
+Obtain Anuraag's explicit chat approval for the persona live run (dry-run estimate ~$0.16,
+24 reachable calls). Do not run --live until approved. After approval, run
+`uv run --project apps/api python scripts/record_persona.py --live` with ANTHROPIC_API_KEY in the
+environment; record approval date and actual usage cost here. Generate the report with
+`PYTHONPATH=apps/api:. uv run --project apps/api --locked python -m evals.harness.evaluate`, then
+run `make eval-smoke`, `make test`, `make lint`, inspect findings and commit recordings/report.
 
 ## Done this session
-- T-015 merged to main (`8a1dfb5`, `--no-ff`) after Codex's approval (`7c37d32`), plus one review fix
-  (`56c79e4`): `test_labels.py` now rejects values of the wrong type (`true` for 1, `4.0` for 4).
-- T-010 spec written. Persona model corrected to `claude-haiku-4-5` ($1/$5 per million tokens). The
-  earlier `claude-haiku-5-5` doesn't exist. Persona runs through `decide()`, so all three arms share
-  the gates and staging. Denominators come from the label files, not the README table (review finding 2).
+- Created the task branch from main. Added offline evaluation/scoring/report generation and the
+  plain persona transport, recorder, structured-output enum schema and Anthropic SDK dependency.
+- Persona uses decide() and the existing staged interface without application-code changes.
+  Live client construction is restricted to --live; fake transports cover offline tests.
+- Recorder preserves raw persona responses, replays existing stage files, and rejects changed
+  request hashes or persona prompts/schemas. Report replay fails with packet/stage on missing records.
+- Added 11 deterministic harness tests: scoring/confusion/±1, label-derived denominators,
+  abstentions, fake persona staging, policy bypass detection, malformed-response outage,
+  deterministic report, recording/replay and prompt-change rejection.
+- make eval-smoke now checks the generated report; it intentionally fails until persona recordings
+  and the final report exist. No persona calls made; no generated report committed yet.
+- Dry run: 24 reachable calls, 129992 request bytes, ~32498 input tokens; estimated $0.155378
+  including max 1024 output tokens per call. Bytes/4 is approximate; answers affect stage count.
+  02 and 07 skip the model. Estimate differs from the spec's earlier ~28 calls / ~$0.10.
 
 ## Tests run
-- `make test` on merged main → 608 Python passed, 50 skipped, 2 xfailed; 64 Vitest passed. `make lint` passed.
-- The main checkout first failed Vitest/lint because its `node_modules` was missing `ajv`. `npm ci` fixed it;
-  the code was unaffected. Note: main was pushed before this re-run (a pipeline only checked `tail`'s exit code).
+- `uv run --project apps/api python scripts/record_persona.py --dry-run` → passed, no live calls.
+- `make test` → 618 Python passed, 50 skipped, 2 xfailed; 64 Vitest passed.
+- `make lint` → passed.
+- After replay-integrity fix, targeted suite → 11 passed; Ruff check/format on new Python files passed.
+- `make eval-smoke` → expected failure: missing persona/01-earnings-no-expectations stage-1 recording.
 
 ## Contract changes proposed (not applied)
-- None. Carry forward typed coverage-gap codes (v1.2) and the optional interpretation_conflict Noul proposal.
-- T-015's proposed `TODO(label)` example text for `decisions/taxonomy/v1.yaml` is listed in commit `cf1eb26`'s handoff.
+- None. Existing interface supports the persona adapter; no app/ hook needed.
+- Carry forward typed coverage-gap codes (v1.2) and optional interpretation_conflict Noul proposal.
 
 ## Unresolved / assumptions
-- The persona estimate (about 28 calls, about $0.10) is based on recorded JEV request sizes; the dry run gives the real number.
-- The persona transport has to map Claude's structured output into JEV's response shape. If that needs a
-  hook in `apps/api/app/`, Codex proposes it in the handoff (not owned by T-010).
-- Carry forward from T-014: runtime dependency promotion (pyyaml, jsonschema/referencing), raw-output storage,
-  excluded-claim audit ids, billing-status verification, usable-packet injection probe, T-012 follow-ups,
-  T-008 non-positive close and exchange calendar.
+- Live run has NOT been approved or performed. Actual cost and three-arm report findings pending.
+- SDK pinned to anthropic 1.15.0, verified locally to accept output_config. Actual provider acceptance
+  of the structured schema remains a live-run check. Provider exceptions stop execution; completed
+  stage files are retained. Null decision answers abstain through existing invalid-output handling;
+  malformed/refused provider content degrades to gate-only through classification_unavailable.
+- Carry forward runtime dependency promotion (pyyaml, jsonschema/referencing), raw-output storage,
+  excluded-claim audit ids, billing-status verification, usable-packet injection probe, T-012
+  follow-ups, T-008 non-positive close and exchange calendar.

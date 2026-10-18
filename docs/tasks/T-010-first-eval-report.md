@@ -107,3 +107,8 @@ actual cost in the handoff.
 - [ ] Report findings summarized in the handoff (bypasses first, then per-decision gaps)
 - [ ] `docs/handoffs/CURRENT.md` updated
 - [ ] LEDGER row updated
+
+## Implementation status — 2026-10-18
+- Offline harness, persona recorder and 11 fake/replay acceptance tests implemented.
+- Dry run: 24 reachable calls; estimated $0.155378 including maximum output allowance.
+- Awaiting Anuraag’s explicit chat approval before --live; report and eval-smoke acceptance pending.
