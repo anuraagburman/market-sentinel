@@ -57,7 +57,11 @@ def test_label_file(folder):
         assert label["why"].strip() and "\n" not in label["why"], decision_id
         if "value" in label:
             assert not (unusable and decision_id in LATER_STAGES), decision_id
-            assert label["value"] in decision["outputs"], decision_id
+            # Type check too: True == 1 and 4.0 == 4 would otherwise pass.
+            assert any(
+                label["value"] == o and type(label["value"]) is type(o)
+                for o in decision["outputs"]
+            ), decision_id
         else:
             allowed = set(decision["abstain_when"])
             if unusable and decision_id in LATER_STAGES:
