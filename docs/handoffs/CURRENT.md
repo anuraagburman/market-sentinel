@@ -1,42 +1,36 @@
-# Handoff — T-014 policy engine v1 + decision envelope: merged
+# Handoff — T-015 provisional labels: ready (spec written)
 
 - **Updated:** 2026-10-18 by Claude Code
-- **Branch / worktree:** main @ `265eef7` (`--no-ff` merge of task/T-014-policy-envelope, which includes Codex's approval `8a7714f`)
-- **Status:** merged
+- **Branch / worktree:** main (spec only); implementation goes on `task/T-015-provisional-labels` in `~/code/ms-wt/web`
+- **Status:** ready
 
 ## Next step (exact — the next agent starts here)
-No task is `ready`. Anuraag picks the next one. T-014 unblocks T-010 (eval report: rules-only vs
-persona vs JEV, owner Codex), which still needs a spec. The integration checkout
-`~/code/market-sentinel` needs a `git pull` on `main`.
+Claude Code, fresh session in `~/code/ms-wt/web`: create branch `task/T-015-provisional-labels` from
+`main` and follow `docs/tasks/T-015-provisional-labels.md`. Write `test_labels.py` first, then draft
+labels packet by packet **without reading `evals/recordings/`**, and get Anuraag's approval on each
+label in chat.
 
-## Merge (Claude Code, 2026-10-18)
-- The merge was built here on a detached HEAD because `main` is checked out in `~/code/market-sentinel`,
-  and pushed to `origin/main`. Merged tree: `make test` 597 Python passed, 50 skipped, 2 xfailed;
-  64 Vitest passed. `make lint` passed.
-
-## Review session (Codex)
-- Re-reviewed `git diff 7bcbdab..c3b22b4`, including both regression tests and surrounding gate,
-  envelope, action-table and staged-failure handling. No remaining findings in this fix scope.
-- `0fff4cc`: an outage at any stage discards partial model judgments from the envelope, retains
-  gate-only usability and reports model unavailable with insufficient_evidence.
-- `6c78572`: split detection counts distinct sessions per event instrument, so separate instruments
-  with one close each cannot combine into a false split gate.
-- Used an isolated review branch because the implementation branch is checked out in the web
-  worktree. No live provider calls, recordings or implementation changes.
+## Why T-015 before T-010 (Anuraag's decisions, 2026-10-18)
+- `expected.json` labels only data_usability (5), research_action (2), exclusions (2) and freshness (1).
+  Six of the eight taxonomy decisions have no labels, so T-010 has almost nothing to score. Labels
+  are split into their own task, so the harness author isn't the one labeling the data it is scored on.
+- **Persona baseline for T-010:** Claude Haiku (`claude-haiku-5-5`). One plain experienced-trader prompt
+  over the same packets and questions, recorded once and then replayed offline like the JEV recordings.
+  About 30 calls, under $0.10. Needs an Anthropic API key, and Anuraag approves the live run.
+- **T-010 report scope:** preliminary and descriptive. Covers per-decision agreement, confusion tables,
+  abstention coverage and policy-bypass checks, with n=10 and every metric marked provisional. No Brier,
+  log-loss or calibration claims.
+- Write the T-010 spec once T-015 is merged.
 
 ## Tests run
-- `make test` → 597 Python passed, 50 skipped, 2 xfailed; 64 Vitest passed.
-- `make lint` → passed (Ruff, formatting, ESLint, Next type generation, TypeScript).
-- `git diff 7bcbdab..HEAD --check` → passed.
-- Initial sandbox runs could not access the uv cache; approved reruns completed successfully.
+- None. This change is docs only.
 
 ## Contract changes proposed (not applied)
-- None in this review. Carry forward typed coverage-gap codes (v1.2) and optional
-  interpretation_conflict Noul proposal.
+- None. Carry forward typed coverage-gap codes (v1.2) and the optional interpretation_conflict Noul proposal.
 
 ## Unresolved / assumptions
-- Approval covers the two requested fixes against the existing T-014 review baseline.
-- 50 database tests require Postgres/TEST_DATABASE_URL; two existing T-008 xfails remain.
-- Carry forward runtime dependency promotion (pyyaml, jsonschema/referencing), raw-output storage,
-  excluded-claim audit ids, billing-status verification, usable-packet injection probe, T-010
-  relevance calibration, T-012 follow-ups, T-008 non-positive close and exchange calendar.
+- No fixture packet has a recorded thesis, so `thesis_impact` is expected to abstain (`no_recorded_thesis`)
+  on all 10. T-010 therefore has no thesis_impact signal. A thesis packet would be a separate task.
+- Carry forward from T-014: runtime dependency promotion (pyyaml, jsonschema/referencing), raw-output storage,
+  excluded-claim audit ids, billing-status verification, usable-packet injection probe, T-010 relevance
+  calibration, T-012 follow-ups, T-008 non-positive close and exchange calendar.
