@@ -4,8 +4,6 @@ Evidence-first equity research for active US investors. Market Sentinel tells yo
 portfolio overnight, why it may matter, what is still unknown, and what would change the assessment.
 It produces research and paper decisions only. It never places orders.
 
-> Status: Phase 2 of 5, single-user pilot, running on synthetic fixtures. See [Status](#status).
-
 ## Contents
 
 - [Problem](#problem)
@@ -20,12 +18,10 @@ It produces research and paper decisions only. It never places orders.
 - [Security and data rights](#security-and-data-rights)
 - [Cost](#cost)
 - [Measuring success](#measuring-success)
-- [Status](#status)
 - [Risks and open questions](#risks-and-open-questions)
 - [Repository layout](#repository-layout)
-- [Setup](#setup)
-- [Checks](#checks)
-- [Working on this repo](#working-on-this-repo)
+- [Engineering practices](#engineering-practices)
+- [Running locally](#running-locally)
 
 ## Problem
 
@@ -49,7 +45,7 @@ Existing tools fail this user in three specific ways:
 | Not evidence-aware | Headlines and AI summaries state causes without sources or counterevidence | Confident narratives built on one source or on price alone |
 | Not honest about gaps | Missing data shows as zero, stale prices look current, a failed feed looks like a quiet day | Decisions made on data the user believes is complete |
 
-Generic chat assistants make the third problem worse. Asked to "act like an expert trader", a
+Generic chat assistants make the second and third gaps worse. Asked to "act like an expert trader", a
 language model produces fluent conclusions whether or not the evidence supports them, and does
 arithmetic it should not be trusted with.
 
@@ -212,7 +208,7 @@ contracts. Microservices wait until evidence justifies them.
 flowchart TB
     USER(["Investor"])
 
-    subgraph WEB["apps/web : Next.js, React, TypeScript"]
+    subgraph WEB["Web app (Next.js, React, TypeScript)"]
         direction LR
         TODAY["Today<br/>brief, evidence states"]
         INV["Investigate<br/>evidence trail"]
@@ -220,7 +216,7 @@ flowchart TB
         DISC["Discover and Plans"]
     end
 
-    subgraph API["apps/api : FastAPI, Pydantic"]
+    subgraph API["API (FastAPI, Pydantic)"]
         direction LR
         ROUTES["Routes<br/>/imports /instruments<br/>/portfolio-versions /health"]
         IMPORT["Import service<br/>CSV parsed as data,<br/>row issues, formula guard"]
@@ -229,7 +225,7 @@ flowchart TB
         READ["Brief, decision and<br/>plan read models"]
     end
 
-    subgraph EXT["External sources : untrusted data"]
+    subgraph EXT["External sources (untrusted)"]
         direction LR
         ALP["Alpaca<br/>daily bars, SIP"]
         SEC["SEC EDGAR<br/>filings, XBRL"]
@@ -237,7 +233,7 @@ flowchart TB
         FMP["FMP<br/>fundamentals, calendar"]
     end
 
-    subgraph PIPE["Brief pipeline : workers, Celery + calendar-aware scheduler"]
+    subgraph PIPE["Brief pipeline (workers, Celery, scheduler)"]
         direction LR
         SCHED["Scheduler<br/>07:00 user tz,<br/>NYSE calendar,<br/>freeze cutoff"]
         INGEST["Ingestion adapters<br/>normalize, record<br/>feed and known_at"]
@@ -246,7 +242,7 @@ flowchart TB
         SCHED --> INGEST --> CAND --> PACKET
     end
 
-    subgraph DEC["Decision core : apps/api/app/judgment, policy"]
+    subgraph DEC["Decision core"]
         direction LR
         JEV["JEV adapter<br/>3 staged calls,<br/>typed judgments"]
         POLICY["Policy engine v1<br/>hard gates, priority<br/>index, research action"]
@@ -287,16 +283,11 @@ flowchart TB
 
     GOV -. "governs" .-> DEC
 
-    classDef built fill:#e8f1e8,stroke:#3b6e3b,color:#1a1a1a
-    classDef partial fill:#fdf4dc,stroke:#9a7b1c,color:#1a1a1a
-    classDef planned fill:#f2f2f2,stroke:#8a8a8a,stroke-dasharray:4 3,color:#555
-    class ROUTES,IMPORT,RESOLVE,VALUE,JEV,POLICY,PG,CONTRACTS,DECFILES,EVALS built
-    class TODAY,INV,PORT,REDIS partial
-    class ALP,SEC,FRED,FMP,SCHED,INGEST,CAND,PACKET,EXPLAIN,VERIFY,PUBLISH,READ,DISC,OBJ planned
+    classDef untrusted fill:#fff,stroke:#8a8a8a,stroke-dasharray:4 3
+    class ALP,SEC,FRED,FMP untrusted
 ```
 
-Legend: green is built and tested, amber is built against fixtures or partly wired, gray dashed is
-specified but not built yet.
+Dashed boxes are external sources. Everything they return is treated as untrusted data.
 
 ### Stack
 
@@ -312,22 +303,6 @@ specified but not built yet.
 | Tests | pytest, Vitest, Playwright | Logic, UI and end-to-end, all deterministic |
 | Ops | Docker Compose, GitHub Actions, structured logs | Reproducible local setup and CI |
 
-### Runtime components
-
-Each "agent" is a bounded component with typed input and output, a request budget, a timeout and a
-stop condition.
-
-| Component | Does | Must not |
-|---|---|---|
-| Catalyst researcher | Primary event evidence and chronology | Invent a cause from a price move |
-| Market-context researcher | Benchmarks, peers, regime | Treat correlation as proof |
-| Fundamentals researcher | Normalize reported values and expectations | Mix fiscal periods or currencies |
-| Counterevidence researcher | Seek evidence against the hypothesis | Manufacture symmetric arguments |
-| JEV classifier | Answer versioned bounded questions | Do portfolio arithmetic |
-| Policy engine | Integrity gates and priorities | Let narrative override a hard gate |
-| Explanation writer | Summarize approved facts | Add claims or price targets |
-| Verifier | Check references, numbers, schema, coverage | Assume another model is ground truth |
-
 ### Key engineering decisions
 
 | Decision | Alternative rejected | Reason |
@@ -342,7 +317,7 @@ stop condition.
 
 ## Data flow
 
-### 1. Import and valuation (built)
+### 1. Import and valuation
 
 ```mermaid
 sequenceDiagram
@@ -372,7 +347,7 @@ sequenceDiagram
 Missing cost basis stays unknown. Non-USD positions are listed but excluded from totals. A repeated
 confirm with the same key returns the same version.
 
-### 2. Morning brief (judgment and policy built; scheduling and ingestion planned)
+### 2. Morning brief
 
 ```mermaid
 sequenceDiagram
@@ -396,8 +371,8 @@ sequenceDiagram
     P->>P: Collect claims, counterclaims, dedup syndication, list gaps
     P->>J: Stage 1: data_usability
     J-->>Y: unusable? abstain
-    P->>J: Stage 2: event, context, novelty, sufficiency, conflict
-    P->>J: Stage 3: thesis impact, research relevance
+    P->>J: Stage 2: event, context, novelty, sufficiency
+    P->>J: Stage 3: thesis impact, relevance, conflict
     J-->>Y: Typed judgments + model version
     Y->>Y: Hard gates, exposure (from valuation), priority index
     Y-->>E: Decision envelope + approved claim ids
@@ -406,7 +381,7 @@ sequenceDiagram
     W->>DB: Read latest published brief
 ```
 
-### 3. Outcome review (planned)
+### 3. Outcome review
 
 A separate pipeline evaluates archived decisions after their horizon matures. It never mutates the
 as-of packet. Decision quality and market outcome are reviewed separately.
@@ -484,11 +459,10 @@ explicit currency.
 | Market and reference data | $0 / month | Free tiers: Alpaca (daily SIP bars), SEC EDGAR, FRED, optional FMP |
 | Model calls | $25 / month hard cap, alert at 80% | When reached, model stages stop and briefs publish as visible partials |
 | JEV credit | $5 prepaid, inside the $25 cap | Top-ups are manual, never automatic |
-| Hosting (pilot) | Not yet measured | Managed Postgres + object storage; to be recorded in shadow mode |
 
 ### Measured unit cost
 
-From the first live batch (T-009, 2026-10-02): 10 synthetic packets, 24 staged calls,
+From the first live batch of judgment calls: 10 synthetic packets, 24 staged calls,
 39,773 input tokens.
 
 | Metric | Value |
@@ -498,28 +472,24 @@ From the first live batch (T-009, 2026-10-02): 10 synthetic packets, 24 staged c
 | Cost per packet (all three stages) | about $0.00017 |
 | Calls covered by $5 credit | about 70,000 |
 
-Packets with real evidence excerpts will be longer. Cost will be re-measured then.
-
-Planned, not yet run: the persona baseline for evaluation (Claude Haiku, about 30 calls, recorded
-once and replayed), estimated under $0.10 in total.
+Packets with real evidence excerpts will be longer, so cost is re-measured as evidence grows.
 
 ### Estimated cost per brief
 
 Assumes 20 holdings, of which 3 to 5 trigger a candidate issue on a typical day (only triggered
-holdings reach a model, per ADR-003).
+holdings reach a model).
 
 | Stage | Cost per brief (estimate) |
 |---|---|
 | Data ingestion | $0 (free tiers) |
 | Valuation, candidate detection, policy | $0 (deterministic code) |
 | JEV judgments, 5 packets | about $0.001 |
-| Explanation drafting, 3 issues | under $0.01 with a small model (not yet measured) |
+| Explanation drafting, 3 issues | under $0.01 with a small model |
 | **Total model cost** | **about $0.01 per brief, roughly $0.25 per month over 21 sessions** |
 
 ### Comparison with alternatives
 
-Prices for third-party products are approximate public list prices and change often. Check current
-pricing before quoting them.
+Third-party prices are approximate public list prices.
 
 | Option | Approximate cost | Portfolio-aware | Evidence linked to each claim | Shows gaps and stale data | Fits this user |
 |---|---|---|---|---|---|
@@ -527,7 +497,7 @@ pricing before quoting them.
 | Retail research and screening subscriptions | about $20 to $100 per month | Watchlist alerts only | Rarely | Rarely | Partly |
 | Free broker apps and news sites | $0 | Holdings list, generic news | No | No | Partly, high time cost |
 | General chat assistant with a persona prompt | $0 to $20 per month subscription, or per-token API | Only if pasted in | No; can state causes without sources | No | No: fluent, unchecked conclusions |
-| **Market Sentinel pilot** | **$0 data + under $1 per month estimated model spend, capped at $25** | **Yes** | **Yes, every material claim** | **Yes, by design** | **Yes** |
+| **Market Sentinel** | **$0 data + under $1 per month estimated model spend, capped at $25** | **Yes** | **Yes, every material claim** | **Yes, by design** | **Yes** |
 
 The engineering cost choice that matters most: using a typed judgment model for classification and
 deterministic code for everything else keeps model spend near zero, so the budget goes to evidence
@@ -566,45 +536,31 @@ Evaluation compares three systems on the same packets: rules only, a generic exp
 and the engineered JEV pipeline. All labels are provisional until a second independent labeler and
 adjudication exist.
 
-## Status
-
-| Phase | Scope | State |
-|---|---|---|
-| 0. Contracts and access | Decisions, schemas, 10 adversarial fixture packets | Mostly done (pre-release review, interviews open) |
-| 1. Morning slice | CSV import, instrument resolution, valuation, Postgres store, Today page on fixtures | Done except provider adapters (T-008) |
-| 2. Judgment | Staged JEV adapter, taxonomy v1, policy engine v1, decision envelope | In progress: labels (T-015), then first eval report (T-010) |
-| 3. Discovery and volatile-day | Filters, ranking, plans, thesis versioning | Not started |
-| 4. Shadow pilot | Scheduled briefs, 2 to 4 weeks of observation | Not started |
-| 5. Extend and case study | Analogues, paper simulation, write-up | Not started |
-
-Task-level detail: [docs/tasks/LEDGER.md](docs/tasks/LEDGER.md). Current handoff:
-[docs/handoffs/CURRENT.md](docs/handoffs/CURRENT.md).
-
 ## Risks and open questions
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Labeled set is small (n=10) | Eval results are descriptive only | Report as provisional; no calibration claims until the set grows toward 500 packets |
+| Small labeled set early on | Eval results are descriptive only | Report as provisional; no calibration claims until the set grows toward 500 packets |
 | No licensed news yet | Briefs miss news-driven events | Coverage states name the gap; news deferred until rights are confirmed |
 | Free data tiers change terms | Ingestion breaks or loses coverage | Adapters isolate vendor fields; plan terms checked at signup |
 | Model memorization of past events | Backtests look better than reality | Chronological splits plus prospective shadow evaluation |
 | Users read research actions as trade signals | Misuse | Research verbs only; no buy or sell labels; confidence never framed as profit probability |
-| Single developer, two coding agents | Coordination errors | One agent per worktree, task files with owned paths, handoff file per session |
 
-Open questions: pre-release legal review of the "research only" framing; investor interviews
-(5 to 8 planned); whether FMP coverage is needed; a fixture packet with a recorded thesis so
-`thesis_impact` can be evaluated.
+Open questions:
+- Does the "research only" framing hold up under regulatory review before any multi-user release?
+- Do 5 to 8 investor interviews confirm the morning job as the highest-value entry point?
+- Which licensed news source gives enough coverage at a price a single user will pay?
 
 ## Repository layout
 
 ```
 apps/web/          Next.js app: Today, Investigate, components, fixtures loader
 apps/api/          FastAPI app: routes, domain, services, judgment, policy, db, migrations
-workers/           Job and scheduler packages (planned pipeline stages)
+workers/           Background jobs and the calendar-aware scheduler
 packages/          contracts (OpenAPI + JSON Schema), design-tokens
 decisions/         taxonomy/v1.yaml, policies/v1.yaml
 evals/             fixtures (synthetic portfolio + 10 packets), recordings, tests
-docs/              product, architecture, evidence policy, delivery, workflow, ADRs, tasks, handoffs
+docs/              product, architecture, evidence policy, delivery, decision records (ADRs)
 scripts/           fixture and dry-run helpers
 ```
 
@@ -612,73 +568,38 @@ Deeper reading: [product](docs/product.md), [architecture](docs/architecture.md)
 [evidence policy](docs/evidence-policy.md), [delivery](docs/delivery.md),
 [ADRs](docs/decisions/).
 
-## Setup
+## Engineering practices
 
-Prerequisites: Node.js 24.14.0 (npm 11), uv 0.10.9, and Docker Compose v2 for the
-full stack. uv provisions Python 3.12. Dependencies use exact pins and lockfiles.
+- **Deterministic tests only.** Unit, integration and browser tests never call a live model or data
+  provider. Live model responses are recorded once and replayed from fixtures.
+- **Real database in CI.** Integration tests run against PostgreSQL with real transactions; CI fails
+  rather than skipping them.
+- **Contracts are checked.** The OpenAPI contract is generated from the API and CI fails when the
+  committed copy is stale.
+- **Versioned judgment.** Taxonomy and policy live in versioned files beside the code. Changing either
+  is a behavior change that goes through evaluation.
+- **Synthetic data in Git.** No credentials, real holdings or licensed text are committed.
+- **Small, reviewed changes.** Each feature lands as a sequence of commits (failing test,
+  implementation, refactor, docs) on its own branch, merged without squashing.
 
-```sh
-make setup
-make dev
-```
+CI runs lint, type checks, unit and integration tests, contract freshness, a production build and a
+browser smoke test on every push and pull request.
 
-Open http://127.0.0.1:3000, http://127.0.0.1:8000/health, or http://127.0.0.1:8000/docs.
-`make dev` waits for Postgres and Redis, upgrades the database to Alembic head, then runs API and web.
-Override `DEV_DATABASE_URL` to use a different dev database.
-Ctrl-C stops both app process groups. Stop services with `docker compose down`;
-Postgres data persists in a named volume.
+## Running locally
 
-Compose is for local development: passwordless Postgres trust authentication and
-loopback-only service ports. Do not deploy this configuration. The API uses Postgres when
-`DATABASE_URL` is set, and fails startup if the database is unreachable or below Alembic head.
-Without it, previews and portfolios use memory; startup logs this once. Health reports process
-liveness only. Environment files are not loaded automatically.
-
-Fresh databases are empty. `make seed-dev` explicitly inserts the synthetic fixture
-once. The module command `MS_ENV=dev DATABASE_URL=… uv run python -m app.db.seed_fixture`
-(from `apps/api`) also works; it refuses environments other than `dev` or `test`.
-
-Without Docker, run the apps in separate terminals after `make setup`:
+Requirements: Node.js 24, [uv](https://docs.astral.sh/uv/) (provisions Python 3.12) and Docker
+Compose v2. All dependencies are pinned with lockfiles.
 
 ```sh
-cd apps/api && uv run --python 3.12 --locked uvicorn app.main:app --reload --host 127.0.0.1
-# From the repo root in another terminal:
-npm --prefix apps/web run dev
+make setup       # install pinned dependencies
+make dev         # start Postgres and Redis, migrate, run API and web
+make seed-dev    # optional: load the synthetic portfolio
+make test        # pytest + Vitest
+make lint        # Ruff, ESLint, TypeScript
 ```
 
-## Checks
+The local Docker setup is for development only and is not a deployment configuration.
 
-Run `make setup` first (installation needs registry access). Memory unit tests require no Docker.
-Postgres integration tests use a local test database and real commits; they never call model or data
-providers. Without `TEST_DATABASE_URL`, integration tests visibly skip. CI requires the URL and runs
-Postgres 17.4; it cannot pass by skipping these tests.
-
-```sh
-docker compose up -d --wait postgres
-TEST_DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test make test
-cd apps/api && DATABASE_URL=postgresql+psycopg://sentinel@localhost:5432/sentinel_test uv run alembic check
-```
-
-The test harness creates the database if missing and truncates application tables
-before each test. It refuses any database whose name does not end in `_test`.
-
-```sh
-make test          # pytest + Vitest
-make lint          # Ruff, ESLint, TypeScript
-make contracts     # regenerate packages/contracts/openapi.json
-make eval-smoke    # stub: no suites yet
-cd apps/web && npx playwright install chromium  # one-time browser download
-cd ../..
-make test-e2e      # local Next.js server + Chromium smoke
-```
-
-CI runs lint, unit tests, contract freshness, production build, and browser smoke
-on pushes and pull requests. Commit generated OpenAPI changes with API changes.
-
-## Working on this repo
-
-Start with [AGENTS.md](AGENTS.md), [docs/handoffs/CURRENT.md](docs/handoffs/CURRENT.md) and
-[docs/tasks/LEDGER.md](docs/tasks/LEDGER.md). Work happens one task per branch, with each logical step
-committed separately and merged to `main` with `--no-ff`.
+---
 
 Market Sentinel is a research tool. Nothing in this repository is investment advice.
