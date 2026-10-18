@@ -1,0 +1,42 @@
+{
+  "packet": "08-lookahead",
+  "packet_hash": "sha256:3905065f8e61f40bff2638e6025d198f70574ad9c847830238ad213dfaa7bdf8",
+  "taxonomy_version": "1.0",
+  "status": "provisional",
+  "labeler": "anuraag",
+  "labeled_at": "2026-10-18",
+  "labels": {
+    "data_usability": {
+      "value": "partial",
+      "why": "One close only, so no move can be computed; ev-2 is excluded as known after cutoff."
+    },
+    "event_family": {
+      "value": "earnings",
+      "why": "event.event_type is earnings; ev-1 reports preliminary revenue."
+    },
+    "primary_context": {
+      "value": "unknown",
+      "why": "No benchmark_moves in packet; a price move alone does not establish cause."
+    },
+    "novelty": {
+      "value": "unclear",
+      "why": "Packet has no previous_events, so novelty relative to prior knowledge is unresolved."
+    },
+    "evidence_sufficiency": {
+      "value": "partial",
+      "why": "claim-1 supports that preliminary revenue was published; no direction is claimed and counterevidence search is unrecorded."
+    },
+    "thesis_impact": {
+      "abstain": "no_recorded_thesis",
+      "why": "Packet records no thesis claim or thesis_horizon."
+    },
+    "research_relevance": {
+      "value": 4,
+      "why": "Verified preliminary revenue (ev-1) on a holding; materiality unconfirmed without expectations."
+    },
+    "interpretation_conflict": {
+      "abstain": "counterevidence_search_incomplete",
+      "why": "Packet records no counterevidence search status, so 'no' cannot be labeled."
+    }
+  }
+}

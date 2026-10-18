@@ -1,0 +1,46 @@
+{
+  "packet": "05-stale-feed",
+  "packet_hash": "sha256:86d0657be0678ac1f07a4cd96a284ba52753a460a164c5f9aaacde59b0d3aedd",
+  "taxonomy_version": "1.0",
+  "status": "provisional",
+  "labeler": "anuraag",
+  "labeled_at": "2026-10-18",
+  "labels": {
+    "data_usability": {
+      "value": "partial",
+      "why": "Only close is from 2026-09-18, a week before cutoff; freshness is stale."
+    },
+    "event_family": {
+      "value": "other",
+      "why": "event.event_type is other; ev-1 describes a feed outage, not a corporate event."
+    },
+    "primary_context": {
+      "value": "unknown",
+      "why": "No benchmark_moves in packet and the only close is stale; a price move alone does not establish cause."
+    },
+    "novelty": {
+      "value": "unclear",
+      "why": "Packet has no previous_events, so novelty relative to prior knowledge is unresolved."
+    },
+    "evidence_sufficiency": {
+      "value": "insufficient",
+      "why": "ev-1 reports only a feed outage; no claim supports any catalyst."
+    },
+    "thesis_impact": {
+      "abstain": "no_recorded_thesis",
+      "why": "Packet records no thesis claim or thesis_horizon."
+    },
+    "research_relevance": {
+      "value": 2,
+      "why": "A data outage on a holding (ev-1); no evidence the holding's situation changed."
+    },
+    "interpretation_conflict": {
+      "abstain": "counterevidence_search_incomplete",
+      "why": "Packet records no counterevidence search status, so 'no' cannot be labeled."
+    }
+  },
+  "research_action": {
+    "value": "insufficient_evidence",
+    "why": "Hard gate: evidence_sufficiency insufficient forces insufficient_evidence."
+  }
+}

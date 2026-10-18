@@ -20,6 +20,6 @@ Write a full task file only when a task moves to `ready` — specs written too e
 | T-012 | Postgres portfolio + preview store (SQLAlchemy Core, first Alembic migration, per-import transactions, CI Postgres service) | 1 | Codex | Claude Code | task/T-012-postgres-store | T-011 | merged |
 | T-013 | Contracts v1.1 bump (valuation, issue, instrument, symbol_mapping, brief.coverage.pending_sources) | 1 | Claude Code | Codex | task/T-013-contracts-v1-1 | T-005, T-006, T-007 | merged |
 | T-014 | Policy engine v1 + decision envelope (deterministic gates, exposure, research_action) | 2 | Claude Code | Codex | task/T-014-policy-envelope | T-009, T-006 | merged |
-| T-015 | Provisional labels + labeling rubric for the 10 fixture packets (blind to recordings) | 2 | Claude Code + Anuraag | Codex | task/T-015-provisional-labels | T-003, T-009 | ready |
+| T-015 | Provisional labels + labeling rubric for the 10 fixture packets (blind to recordings) | 2 | Claude Code + Anuraag | Codex | task/T-015-provisional-labels | T-003, T-009 | ready_to_merge |
 
-**Parallel lanes right now:** Codex → T-008 provider adapters (also closes the non-positive close xfail from T-013) · Claude Code → T-015 provisional labels (ready; unblocks the T-010 spec) · Anuraag → remaining T-000 (pre-release review question, investor interviews; FMP and news optional); T-014 stage-3 re-recording completed 2026-10-18.
+**Parallel lanes right now:** Codex → T-008 provider adapters (also closes the non-positive close xfail from T-013) · Claude Code → T-015 provisional labels (Codex approved; integrate review, merge, then T-010 spec) · Anuraag → remaining T-000 (pre-release review question, investor interviews; FMP and news optional); T-014 stage-3 re-recording completed 2026-10-18.
