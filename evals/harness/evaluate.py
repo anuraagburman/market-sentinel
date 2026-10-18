@@ -6,7 +6,7 @@ from collections import Counter
 
 from app.judgment.client import JevClient, ReplayMiss, ReplayTransport
 from app.policy.envelope import decide
-from evals.harness.persona import PersonaClient
+from evals.harness.persona import PersonaClient, persona_request
 from scripts.record_jev import PACKETS, ROOT, SESSION_CLOSE, fixture_valuation
 
 REPORT = ROOT / "evals/reports/T-010-preliminary.md"
@@ -24,12 +24,24 @@ class StrictReplay(ReplayTransport):
     def __init__(self, root):
         super().__init__(root)
         self.root = root
+        self.stage = 0
 
     def send(self, body):
+        self.stage += 1
         try:
-            return super().send(body)
+            result = super().send(body)
+            from app.judgment.client import request_hash
+
+            record = self.records[request_hash(body)]
+            if "persona_request" in record and record[
+                "persona_request"
+            ] != persona_request(body):
+                raise ReplayMiss("persona prompt/schema changed")
+            return result
         except ReplayMiss as error:
-            raise ReplayMiss(f"{self.root}: stage request {error}") from error
+            raise ReplayMiss(
+                f"{self.root}: stage-{self.stage} request {error}"
+            ) from error
 
 
 def run_arm(arm, transport_factory=None, recording_root=None):

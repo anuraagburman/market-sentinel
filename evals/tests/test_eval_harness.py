@@ -123,3 +123,22 @@ def test_persona_records_once_replays_and_rejects_changed_hash(tmp_path):
     assert "labels" not in record["persona_request"]
     with pytest.raises(ReplayMiss, match="fake/stage-1"):
         StageFiles(inner, "fake", tmp_path).send(encode_request({}, render_stage(1)))
+
+
+def test_persona_prompt_change_is_a_replay_miss(tmp_path, monkeypatch):
+    from app.judgment.client import ReplayMiss, encode_request
+    from app.judgment.questions import render_stage
+    from evals.harness.evaluate import StrictReplay
+    from scripts import record_persona
+
+    body = encode_request({}, render_stage(1))
+    record_persona.StageFiles(PersonaTransport(FakeMessages()), "fake", tmp_path).send(
+        body
+    )
+    monkeypatch.setattr("evals.harness.persona.SYSTEM", "A changed persona prompt")
+    with pytest.raises(ReplayMiss, match="stage-1"):
+        StrictReplay(tmp_path / "fake").send(body)
+    with pytest.raises(ReplayMiss, match="stage-1"):
+        record_persona.StageFiles(
+            PersonaTransport(FakeMessages()), "fake", tmp_path
+        ).send(body)

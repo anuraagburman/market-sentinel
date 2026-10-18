@@ -37,7 +37,9 @@ class StageFiles:
         path = self.root / self.packet / f"stage-{self.stage}.json"
         if path.exists():
             record = json.loads(path.read_text())
-            if record["request_hash"] != request_hash(body):
+            if record["request_hash"] != request_hash(body) or record[
+                "persona_request"
+            ] != persona_request(body):
                 raise ReplayMiss(
                     f"{self.packet}/stage-{self.stage}: request hash changed"
                 )
