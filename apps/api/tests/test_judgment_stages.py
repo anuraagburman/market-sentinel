@@ -8,6 +8,8 @@ from referencing import Registry, Resource
 
 from app.judgment.client import JevClient
 from app.judgment.stages import run_staged, score_level
+from app.policy.exposure import Exposure
+from app.policy.gates import GateResult
 
 ROOT = Path(__file__).resolve().parents[3]
 PACKET = ROOT / "evals/fixtures/packets/01-earnings-no-expectations"
@@ -63,10 +65,14 @@ class ScriptedTransport:
         }
 
 
-def run(answers, thesis="Margins expand through 2027", failures=None):
+HELD = Exposure(weight=Decimal("0.04123"), held=True)
+
+
+def run(answers, thesis="Margins expand through 2027", failures=None, exposure=HELD, gates=None):
     transport = ScriptedTransport(answers, failures)
     client = JevClient(transport, sleep=lambda _: None, max_attempts=1)
-    return run_staged(PACKET, client, thesis=thesis), transport
+    result = run_staged(PACKET, client, thesis=thesis, exposure=exposure, gates=gates)
+    return result, transport
 
 
 def test_full_run_produces_schema_valid_judgments_across_three_calls():
@@ -114,6 +120,32 @@ def test_stage_three_sees_earlier_judgments_labelled_and_the_thesis():
     assert state["earlier_judgments"]["evidence_sufficiency"] == "partial"
     assert state["thesis"] == "Margins expand through 2027"
     assert "earlier_judgments" not in transport.calls[1][1]
+
+
+@pytest.mark.parametrize(
+    ("exposure", "fact"),
+    [
+        (HELD, {"held": True, "weight": "0.0412"}),
+        (Exposure(weight=Decimal(0), held=False), {"held": False, "weight": "0.0000"}),
+    ],
+)
+def test_stage_three_is_grounded_in_computed_exposure(exposure, fact):
+    _, transport = run(
+        {"data_usability": choice("usable"), **STAGE_2, **STAGE_3}, exposure=exposure
+    )
+    assert transport.calls[2][1]["exposure"] == fact
+    assert "exposure" not in transport.calls[1][1]
+
+
+def test_unavailable_exposure_omits_relevance_and_keeps_the_rest():
+    result, transport = run(
+        {"data_usability": choice("usable"), **STAGE_2, **STAGE_3}, exposure=None
+    )
+    assert "research_relevance" not in transport.calls[2][0]
+    assert "exposure" not in transport.calls[2][1]
+    assert "research_relevance" not in result.judgments
+    assert result.abstention_reasons == ["exposure_unavailable"]
+    assert result.judgments["interpretation_conflict"] == "no"
 
 
 def test_no_thesis_omits_thesis_impact():
@@ -202,3 +234,20 @@ def test_malformed_stage_two_response_keeps_stage_one(body):
     result = run_staged(PACKET, JevClient(transport, sleep=lambda _: None, max_attempts=1))
     assert result.judgments == {"data_usability": "usable"}
     assert result.abstention_reasons == ["classification_unavailable"]
+
+
+def test_no_observations_gate_keeps_jev_unusable_at_partial_and_continues():
+    gates = GateResult("partial", ("no_observations",))
+    result, transport = run(
+        {"data_usability": choice("unusable"), **STAGE_2, **STAGE_3}, gates=gates
+    )
+    assert result.judgments["data_usability"] == "partial"
+    assert result.raw["stage_1"]["data_usability"]["choice"] == "unusable"
+    assert "unusable_input" not in result.abstention_reasons
+    assert len(transport.calls) == 3
+
+
+def test_gate_cap_lowers_jev_usable():
+    gates = GateResult("partial", effects=("disable_time_sensitive_readiness",))
+    result, _ = run({"data_usability": choice("usable"), **STAGE_2, **STAGE_3}, gates=gates)
+    assert result.judgments["data_usability"] == "partial"

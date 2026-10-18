@@ -2,7 +2,9 @@ import importlib.util
 import json
 from pathlib import Path
 
-from app.judgment.client import JevClient
+import pytest
+
+from app.judgment.client import JevClient, JevConfigError
 from app.judgment.stages import run_staged
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -41,3 +43,47 @@ def test_retries_stay_in_their_stage_file(tmp_path, monkeypatch):
     assert record["status"] == 200
     assert record["retried_statuses"] == [429, 529]
     assert list(record["request"]["questions"]) == ["data_usability"]
+
+
+class CountingLive:
+    def __init__(self):
+        self.calls = 0
+
+    def send(self, body):
+        self.calls += 1
+        asked = json.loads(body)["questions"]
+        answers = {q: choice("unusable") for q in asked}
+        return 200, {"model": "jev-1.13.0", "answers": answers, "usage": {"input_tokens": 7}}
+
+
+def test_recorded_requests_are_reused_and_only_new_ones_spend(tmp_path, monkeypatch):
+    monkeypatch.setattr(record_jev, "OUT", tmp_path)
+    packet = ROOT / "evals/fixtures/packets/01-earnings-no-expectations"
+    first = record_jev.StageFiles(CountingLive(), packet.name)
+    run_staged(packet, JevClient(first, sleep=lambda _: None))
+    recorded = (tmp_path / packet.name / "stage-1.json").read_text()
+
+    live = CountingLive()
+    again = record_jev.StageFiles(live, packet.name, record_jev.recorded(packet.name))
+    run_staged(packet, JevClient(again, sleep=lambda _: None))
+    assert live.calls == 0
+    assert again.input_tokens == 0
+    assert (tmp_path / packet.name / "stage-1.json").read_text() == recorded
+    assert first.input_tokens == 7
+
+
+class Unauthorized:
+    def send(self, body):
+        return 401, {"message": "cannot authenticate"}
+
+
+def test_failed_call_never_overwrites_a_good_recording(tmp_path, monkeypatch):
+    monkeypatch.setattr(record_jev, "OUT", tmp_path)
+    packet = ROOT / "evals/fixtures/packets/01-earnings-no-expectations"
+    run_staged(packet, JevClient(record_jev.StageFiles(CountingLive(), packet.name)))
+    good = (tmp_path / packet.name / "stage-1.json").read_text()
+
+    failing = record_jev.StageFiles(Unauthorized(), packet.name)
+    with pytest.raises(JevConfigError):
+        run_staged(packet, JevClient(failing, sleep=lambda _: None))
+    assert (tmp_path / packet.name / "stage-1.json").read_text() == good

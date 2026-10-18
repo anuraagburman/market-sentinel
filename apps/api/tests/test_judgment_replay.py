@@ -1,7 +1,13 @@
 """Replay the recorded jev-1.13.0 responses over the adversarial packets, offline.
 
-Disagreements with expected.json are tracked as strict xfails, not tuned away: comparing the model to
-the provisional labels is T-010's job. A strict xfail starts failing once the behaviour changes.
+Raw JEV (no gates) is compared with expected.json here. Packets whose expectation is owned by a
+deterministic gate (T-014) are asserted on the envelope in test_policy_envelope.py instead: JEV said
+partial for 02's split and unusable for the evidence-only 03 and 10. Comparing the model to the
+provisional labels is T-010's job; nothing is tuned away.
+
+Stage 3 is recorded through decide() with computed exposure (re-recorded 2026-10-18), so this raw
+run, which has no exposure, can only replay stages 1-2: its stage-3 miss replays as unavailable. The
+full pipeline, stage 3 included, is snapshotted in test_policy_envelope.py.
 """
 
 import json
@@ -11,7 +17,7 @@ import pytest
 from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
-from app.judgment.client import JevClient, ReplayTransport
+from app.judgment.client import JevClient, ReplayMiss, ReplayTransport
 from app.judgment.stages import run_staged
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -24,69 +30,44 @@ JUDGMENTS = Draft202012Validator(
     registry=REGISTRY,
 )
 
-# Recorded 2026-10-02. A change here means the mapping code or the recordings changed.
-STAGE_2_3 = ("event_family", "primary_context", "novelty", "evidence_sufficiency")
+# Recorded 2026-10-02 (stages 1-2). A change here means the mapping code or the recordings changed.
+STAGE_2 = ("event_family", "primary_context", "novelty", "evidence_sufficiency")
 SNAPSHOT = {
-    "01-earnings-no-expectations": (
-        "partial",
-        "earnings",
-        "unknown",
-        "unclear",
-        "insufficient",
-        4,
-        "no",
-    ),
-    "02-split-normalization": (
-        "partial",
-        "corporate_action",
-        "company",
-        "unclear",
-        "partial",
-        4,
-        "no",
-    ),
+    "01-earnings-no-expectations": ("partial", "earnings", "unknown", "unclear", "insufficient"),
+    "02-split-normalization": ("partial", "corporate_action", "company", "unclear", "partial"),
     "03-syndicated-single-source": ("unusable",),
-    "04-catalyst-uncertain-response": (
-        "partial",
-        "regulatory",
-        "unknown",
-        "unclear",
-        "partial",
-        4,
-        "no",
-    ),
-    "05-stale-feed": ("partial", "other", "unknown", "unclear", "partial", 4, "no"),
-    "06-contradictory-sources": ("partial", "guidance", "unknown", "new", "partial", 3, "yes"),
+    "04-catalyst-uncertain-response": ("partial", "regulatory", "unknown", "unclear", "partial"),
+    "05-stale-feed": ("partial", "other", "unknown", "unclear", "partial"),
+    "06-contradictory-sources": ("partial", "guidance", "unknown", "new", "partial"),
     "07-injection-in-evidence": ("unusable",),
-    "08-lookahead": ("partial", "earnings", "unknown", "unclear", "partial", 4, "no"),
-    "09-correction": ("partial", "earnings", "unknown", "update", "insufficient", 4, "no"),
+    "08-lookahead": ("partial", "earnings", "unknown", "unclear", "partial"),
+    "09-correction": ("partial", "earnings", "unknown", "update", "insufficient"),
     "10-failed-coverage": ("unusable",),
 }
-KEYS = ("data_usability", *STAGE_2_3, "research_relevance", "interpretation_conflict")
+KEYS = ("data_usability", *STAGE_2)
+STALE_STAGE_3 = {"classification_unavailable", "exposure_unavailable", "no_recorded_thesis"}
 
-DISAGREES = {
-    "02-split-normalization": "JEV says partial (0.67); the split rule needs a deterministic gate",
-    "03-syndicated-single-source": "JEV says unusable (0.74) for a packet with no observations",
-    "10-failed-coverage": "JEV says unusable (0.59); expected a partial brief, not abstention",
-}
+GATE_OWNED = {"02-split-normalization", "03-syndicated-single-source", "10-failed-coverage"}
+MODEL_OWNED = sorted(set(SNAPSHOT) - GATE_OWNED)
+
+
+class StagesOneAndTwo(ReplayTransport):
+    def send(self, body):
+        try:
+            return super().send(body)
+        except ReplayMiss:
+            if "interpretation_conflict" not in json.loads(body)["questions"]:
+                raise
+            return 503, {}  # raw stage 3 has no exposure: see the module docstring
 
 
 def replay(name):
-    client = JevClient(ReplayTransport(RECORDINGS / name), max_attempts=1)
+    client = JevClient(StagesOneAndTwo(RECORDINGS / name), max_attempts=1)
     return run_staged(PACKETS / name, client)
 
 
 def expected(name):
     return json.loads((PACKETS / name / "expected.json").read_text())
-
-
-def tracked(names):
-    return [
-        pytest.param(n, marks=pytest.mark.xfail(strict=True, reason=DISAGREES[n]))
-        if n in DISAGREES
-        else n
-        for n in names
-    ]
 
 
 @pytest.mark.parametrize("name", sorted(SNAPSHOT))
@@ -98,22 +79,20 @@ def test_replay_is_offline_schema_valid_and_matches_snapshot(name):
     assert result.excluded_evidence_ids == expected(name)["excluded_evidence_ids"]
 
 
-@pytest.mark.parametrize("name", tracked(sorted(SNAPSHOT)))
+@pytest.mark.parametrize("name", MODEL_OWNED)
 def test_abstention_matches_expected(name):
-    reasons = [r for r in replay(name).abstention_reasons if r != "no_recorded_thesis"]
+    reasons = [r for r in replay(name).abstention_reasons if r not in STALE_STAGE_3]
     assert reasons == expected(name)["abstention_reasons"]
 
 
-@pytest.mark.parametrize(
-    "name", tracked(sorted(n for n in SNAPSHOT if "data_usability" in expected(n)))
-)
+@pytest.mark.parametrize("name", [n for n in MODEL_OWNED if "data_usability" in expected(n)])
 def test_data_usability_matches_expected(name):
     assert replay(name).judgments["data_usability"] == expected(name)["data_usability"]
 
 
 def test_every_recording_is_pinned_and_successful():
     records = [json.loads(p.read_text()) for p in RECORDINGS.rglob("*.json")]
-    assert len(records) == 24
+    assert len(records) == 28
     for record in records:
         assert record["status"] == 200
         assert record["request"]["model"] == record["response"]["model"] == "jev-1.13.0"

@@ -1,9 +1,10 @@
 # Market Sentinel deterministic policy v1 — SKELETON
 # Policy code owns freshness gates and research actions; JEV only supplies judgments.
 # Thresholds live here, separate from the taxonomy, so changing a routing threshold never
-# silently changes a label definition. TODO values are set after baseline measurement (T-010).
+# silently changes a label definition. Values marked provisional (ADR-005) are placeholders that
+# T-010 replaces after baseline measurement. Numbers are strings so code reads them as exact Decimals.
 
-version: "1.0"
+version: "1.1"
 taxonomy_version: "1.0"
 
 precedence:
@@ -30,20 +31,38 @@ hard_gates:
   - when: {position_limit_breached: true}
     effect: flag_constraint_breach   # deterministic; JEV cannot waive it
 
+integrity_gates:  # apps/api/app/policy/gates.py; run before any model call, strictest cap wins
+  - {gate: timestamp_order_invalid, cap: unusable, reasons: [unusable_input, timestamp_order_invalid]}
+  - {gate: split_unadjusted, cap: unusable, reasons: [unusable_input]}
+  - {gate: critical_source_missing, cap: unusable, reasons: [unusable_input, critical_source_missing]}
+  - {gate: no_observations, cap: partial, reasons: [no_observations], note: JEV may not lower this below partial}
+  - {gate: stale, cap: partial, effect: disable_time_sensitive_readiness}
+
 priority_index:
   note: >-
     A priority index, not confidence. Inputs are treated as correlated (shared evidence);
-    never multiply JEV probabilities as if independent.
+    never multiply JEV probabilities as if independent. Unavailable inputs are dropped and the
+    remaining weights renormalized.
+  provisional: true
   inputs: [exposure_weight, event_materiality, time_sensitivity, research_relevance]
+  exposure_full_weight: "0.10"  # a position this size or larger scores exposure 1
   weights:
-    exposure_weight: TODO
-    event_materiality: TODO
-    time_sensitivity: TODO
-    research_relevance: TODO
-  thresholds:
-    investigate_now: TODO
-    review_today: TODO
-    watch_condition: TODO
+    exposure_weight: "0.35"
+    event_materiality: "0.20"
+    time_sensitivity: "0.15"
+    research_relevance: "0.30"
+  thresholds:  # index >= threshold; checked from investigate_now down
+    investigate_now: "0.70"
+    review_today: "0.45"
+    watch_condition: "0.20"
+  event_materiality:
+    earnings: "1.0"
+    guidance: "0.9"
+    regulatory: "0.8"
+    corporate_action: "0.7"
+    macro: "0.5"
+    other: "0.3"
+    unknown: "0.3"
 
 brief:
   max_issues: 3

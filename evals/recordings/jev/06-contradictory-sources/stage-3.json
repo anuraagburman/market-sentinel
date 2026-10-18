@@ -3,7 +3,7 @@
   "packet": "06-contradictory-sources",
   "questions_hash": "sha256:00b296ff41c51e0b9369241de9c5b554d2173be10a1f84f33ecaa086795f15cc",
   "questions_version": "1.0",
-  "recorded_at": "2026-10-02T13:42:53Z",
+  "recorded_at": "2026-10-18T04:27:28Z",
   "request": {
     "model": "jev-1.13.0",
     "questions": {
@@ -50,6 +50,10 @@
         "evidence_sufficiency": "partial",
         "novelty": "new",
         "primary_context": "unknown"
+      },
+      "exposure": {
+        "held": true,
+        "weight": "0.0381"
       },
       "packet": {
         "claims": [
@@ -120,12 +124,12 @@
       }
     }
   },
-  "request_hash": "sha256:47a71011c3998f7410d9b858046dc9292767cc24433e96338fff5a830726472f",
+  "request_hash": "sha256:dddd8d836c7d050ca08b76f1bfa3fb51eabcd671c7cfe14101128bd967e45b17",
   "response": {
     "answers": {
       "interpretation_conflict": {
         "choice": "yes",
-        "confidence": 0.93,
+        "confidence": 0.94,
         "probabilities": {
           "no": 0.03,
           "yes": 0.97
@@ -133,7 +137,7 @@
         "type": "choice"
       },
       "research_relevance": {
-        "confidence": 0.56,
+        "confidence": 0.55,
         "legend": {
           "0": "No demonstrated connection to the selected portfolio or research intent.",
           "1": "An indirect or minor connection, such as a peer or supplier event, with no evidence it changes a holding's situation.",
@@ -142,22 +146,23 @@
           "4": "Verified material event directly affecting a holding or a clearly stated research objective."
         },
         "probabilities": {
-          "0": 0.07,
-          "1": 0.09,
-          "2": 0.53,
-          "3": 0.3,
-          "4": 0.01
+          "0": 0.03,
+          "1": 0.12,
+          "2": 0.51,
+          "3": 0.32,
+          "4": 0.02
         },
-        "score": 2.09,
+        "score": 2.17,
         "type": "score"
       }
     },
     "model": "jev-1.13.0",
     "usage": {
-      "input_tokens": 1650,
+      "input_tokens": 1677,
       "output_tokens": 52
     }
   },
+  "retried_statuses": [],
   "stage": 3,
   "status": 200
 }
