@@ -4,6 +4,7 @@ Pure functions over the post-exclusion packet from `build_state`. They run befor
 and a model can never raise usability above the strictest cap.
 """
 
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -38,8 +39,12 @@ def split_unadjusted(packet: dict) -> GateResult:
     """An unadjusted close series across a corporate action can't establish a price move."""
     if packet["event"]["event_type"] != "corporate_action":
         return PASS
-    sessions = {o["observed_at"][:10] for o in _closes(packet) if o["adjustment"] == "none"}
-    if len(sessions) < 2:
+    sessions = {
+        (o["instrument_id"], o["observed_at"][:10])
+        for o in _closes(packet)
+        if o["adjustment"] == "none"
+    }
+    if max(Counter(i for i, _ in sessions).values(), default=0) < 2:
         return PASS
     return GateResult("unusable", ("unusable_input",))
 

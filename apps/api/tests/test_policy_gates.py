@@ -63,6 +63,14 @@ def test_unadjusted_closes_of_another_instrument_pass():
     assert split_unadjusted(split).usability_cap == "usable"
 
 
+def test_one_unadjusted_close_per_instrument_passes():
+    split = copy.deepcopy(packet("02-split-normalization"))
+    other = "00000000-0000-4000-8000-000000000999"
+    split["event"]["instrument_ids"].append(other)
+    split["observations"][1]["instrument_id"] = other
+    assert split_unadjusted(split).usability_cap == "usable"
+
+
 @pytest.mark.parametrize("name", ["03-syndicated-single-source", "10-failed-coverage"])
 def test_no_observations_without_a_gap_caps_at_partial(name):
     result = sources_missing(packet(name))
