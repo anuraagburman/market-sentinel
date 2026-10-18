@@ -2,7 +2,9 @@ import importlib.util
 import json
 from pathlib import Path
 
-from app.judgment.client import JevClient
+import pytest
+
+from app.judgment.client import JevClient, JevConfigError
 from app.judgment.stages import run_staged
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -68,3 +70,20 @@ def test_recorded_requests_are_reused_and_only_new_ones_spend(tmp_path, monkeypa
     assert again.input_tokens == 0
     assert (tmp_path / packet.name / "stage-1.json").read_text() == recorded
     assert first.input_tokens == 7
+
+
+class Unauthorized:
+    def send(self, body):
+        return 401, {"message": "cannot authenticate"}
+
+
+def test_failed_call_never_overwrites_a_good_recording(tmp_path, monkeypatch):
+    monkeypatch.setattr(record_jev, "OUT", tmp_path)
+    packet = ROOT / "evals/fixtures/packets/01-earnings-no-expectations"
+    run_staged(packet, JevClient(record_jev.StageFiles(CountingLive(), packet.name)))
+    good = (tmp_path / packet.name / "stage-1.json").read_text()
+
+    failing = record_jev.StageFiles(Unauthorized(), packet.name)
+    with pytest.raises(JevConfigError):
+        run_staged(packet, JevClient(failing, sleep=lambda _: None))
+    assert (tmp_path / packet.name / "stage-1.json").read_text() == good

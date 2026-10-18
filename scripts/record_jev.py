@@ -59,11 +59,21 @@ def fixture_valuation():
     )
 
 
+class _Reply:
+    """Hands an already-received reply to RecordingTransport, so the record format stays in one place."""
+
+    def __init__(self, status, response):
+        self.reply = (status, response)
+
+    def send(self, body):
+        return self.reply
+
+
 class StageFiles:
     """Names each stage of one packet run stage-1.json, stage-2.json, ...
 
-    The client retries by re-sending the identical body, so a retry overwrites its stage's file and
-    the earlier statuses are kept in `retried_statuses`; a new body starts the next stage.
+    The client retries by re-sending the identical body; a new body starts the next stage. Only a 200
+    is written, with the statuses of earlier failed attempts in `retried_statuses`.
     """
 
     def __init__(self, live, packet: str, recorded: dict | None = None):
@@ -92,14 +102,13 @@ class StageFiles:
             "questions_hash": questions_hash(),
             "recorded_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
-        path = OUT / self.packet / f"stage-{self.stage}.json"
-        status, response = RecordingTransport(self.live, path, meta).send(body)
+        status, response = self.live.send(body)
         self.retried_statuses.append(status)
-        if (
-            status == 200
-            and isinstance(response, dict)
-            and isinstance(response.get("usage"), dict)
-        ):
+        if status != 200:  # a failure must never overwrite a good recording
+            return status, response
+        path = OUT / self.packet / f"stage-{self.stage}.json"
+        RecordingTransport(_Reply(status, response), path, meta).send(body)
+        if isinstance(response, dict) and isinstance(response.get("usage"), dict):
             self.input_tokens += response["usage"].get("input_tokens") or 0
         return status, response
 
