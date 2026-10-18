@@ -29,7 +29,7 @@ contracts:
 	cd apps/api && $(UV) run --locked python -m app.export_openapi
 
 eval-smoke:
-	@echo "no suites yet"
+	PYTHONPATH=apps/api:. $(UV) run --project apps/api --locked python -m evals.harness.evaluate --check
 
 test-e2e:
 	npm --prefix apps/web run test:e2e
