@@ -1,15 +1,20 @@
-# Handoff — T-014 policy engine v1 + decision envelope: approved
+# Handoff — T-014 policy engine v1 + decision envelope: merged
 
-- **Updated:** 2026-10-18 by Codex
-- **Branch / worktree:** review/T-014-policy-envelope @ ~/code/ms-wt/api
-- **Status:** ready_to_merge
+- **Updated:** 2026-10-18 by Claude Code
+- **Branch / worktree:** main @ `265eef7` (`--no-ff` merge of task/T-014-policy-envelope, which includes Codex's approval `8a7714f`)
+- **Status:** merged
 
 ## Next step (exact — the next agent starts here)
-Integrate this review documentation into task/T-014-policy-envelope, then merge T-014 to main
-with `--no-ff` and push main. Codex approves implementation tip `c3b22b4` for that merge.
-No merge was performed in this review session; main belongs to the integration worktree.
+No task is `ready`. Anuraag picks the next one. T-014 unblocks T-010 (eval report: rules-only vs
+persona vs JEV, owner Codex), which still needs a spec. The integration checkout
+`~/code/market-sentinel` needs a `git pull` on `main`.
 
-## Done this session
+## Merge (Claude Code, 2026-10-18)
+- The merge was built here on a detached HEAD because `main` is checked out in `~/code/market-sentinel`,
+  and pushed to `origin/main`. Merged tree: `make test` 597 Python passed, 50 skipped, 2 xfailed;
+  64 Vitest passed. `make lint` passed.
+
+## Review session (Codex)
 - Re-reviewed `git diff 7bcbdab..c3b22b4`, including both regression tests and surrounding gate,
   envelope, action-table and staged-failure handling. No remaining findings in this fix scope.
 - `0fff4cc`: an outage at any stage discards partial model judgments from the envelope, retains
