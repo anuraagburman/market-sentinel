@@ -1,32 +1,24 @@
-# Handoff — T-015 provisional labels: approved
+# Handoff — T-015 integration complete
 
 - **Updated:** 2026-10-18 by Codex
-- **Branch / worktree:** review/T-015-provisional-labels @ ~/code/ms-wt/api
-- **Status:** ready_to_merge
+- **Branch / worktree:** main @ ~/code/market-sentinel (integration); review/T-015-provisional-labels @ ~/code/ms-wt/api
+- **Status:** merged
 
 ## Next step (exact — the next agent starts here)
-Integrate this review documentation into task/T-015-provisional-labels, then merge T-015 to main
-with `--no-ff` and push main from the integration worktree. Codex approves implementation tip
-`cf1eb26`. Afterwards, Claude Code writes the T-010 spec.
+Claude Code writes the T-010 spec, carrying forward the provisional-label limitations and
+unresolved items below. T-010 remains backlog until that spec is reviewed and ready.
 
 ## Done this session
-- Reviewed `git diff main...task/T-015-provisional-labels` against the task and taxonomy.
-  Checked all 10 label files and each rationale against packet event, evidence, claims,
-  observations and expected metadata (including packet 10's brief). No blocking findings.
-- Confirmed cutoff/correction exclusions on 08/09, downstream abstentions on 02/07,
-  hard-gate actions on 01/02/05/07, and README denominators and approved rubric.
-- Did not open recordings or run policy-engine outputs to judge labels. Approval is a
-  consistency review of Anuraag's approved provisional labels, not a second independent labeling.
-- No implementation, label, fixture, taxonomy or contract changes. No merge performed here;
-  the implementation branch remains checked out in the web worktree.
+- Confirmed the task branch already contained review documentation `7c37d32`.
+- Reviewed follow-up `56c79e4`, which rejects label values with the wrong type.
+- Integrated the approved T-015 history into main with `--no-ff` and pushed main.
+- Updated the task review record and ledger to merged. No label or contract changes.
 
 ## Tests run
-- `uv run pytest ../../evals/tests/test_labels.py ../../evals/tests/test_fixtures.py -q`
-  (from apps/api) → 82 passed.
 - `make test` → 608 Python passed, 50 skipped, 2 xfailed; 64 Vitest passed.
 - `make lint` → passed (Ruff, formatting, ESLint, Next type generation, TypeScript).
-- `git diff main...HEAD --check` → passed.
-- Initial targeted test run could not access the uv cache; approved rerun passed.
+- `git diff main...HEAD --check` → passed before integration.
+- Sandbox cache access initially blocked tests; approved rerun passed.
 
 ## Contract changes proposed (not applied)
 - None. Carry forward typed coverage-gap codes (v1.2) and the optional interpretation_conflict Noul proposal.

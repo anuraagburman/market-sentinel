@@ -110,3 +110,8 @@ and the packet hash. It makes no network calls.
   64 Vitest passed. `make lint` and diff whitespace checks passed.
 - Labels remain provisional, with no independent second labeling. Carry forward the README's
   limited class coverage and the handoff's definition of verified research relevance into T-010.
+
+## Integration verification — 2026-10-18
+- Reviewed follow-up `56c79e4`: label values must match both taxonomy value and Python type.
+- Re-ran `make test` (608 Python passed, 50 skipped, 2 xfailed; 64 Vitest passed) and
+  `make lint` (passed) before integrating the approved T-015 history with `--no-ff`.
