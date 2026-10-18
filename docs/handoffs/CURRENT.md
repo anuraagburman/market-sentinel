@@ -1,54 +1,34 @@
-# Handoff — T-015 provisional labels: approved
+# Handoff — T-010 first eval report: ready (spec written)
 
-- **Updated:** 2026-10-18 by Codex
-- **Branch / worktree:** review/T-015-provisional-labels @ ~/code/ms-wt/api
-- **Status:** ready_to_merge
+- **Updated:** 2026-10-18 by Claude Code
+- **Branch / worktree:** main (spec only); implementation goes on `task/T-010-first-eval-report` in `~/code/ms-wt/api`
+- **Status:** ready
 
 ## Next step (exact — the next agent starts here)
-Integrate this review documentation into task/T-015-provisional-labels, then merge T-015 to main
-with `--no-ff` and push main from the integration worktree. Codex approves implementation tip
-`cf1eb26`. Afterwards, Claude Code writes the T-010 spec.
+Codex, fresh session in `~/code/ms-wt/api`: create `task/T-010-first-eval-report` from `main` and follow
+`docs/tasks/T-010-first-eval-report.md`. Write `evals/tests/test_eval_harness.py` first with a fake persona
+transport. Run `scripts/record_persona.py --dry-run` and **stop for Anuraag's approval** before `--live`.
 
 ## Done this session
-- Reviewed `git diff main...task/T-015-provisional-labels` against the task and taxonomy.
-  Checked all 10 label files and each rationale against packet event, evidence, claims,
-  observations and expected metadata (including packet 10's brief). No blocking findings.
-- Confirmed cutoff/correction exclusions on 08/09, downstream abstentions on 02/07,
-  hard-gate actions on 01/02/05/07, and README denominators and approved rubric.
-- Did not open recordings or run policy-engine outputs to judge labels. Approval is a
-  consistency review of Anuraag's approved provisional labels, not a second independent labeling.
-- No implementation, label, fixture, taxonomy or contract changes. No merge performed here;
-  the implementation branch remains checked out in the web worktree.
+- T-015 merged to main (`8a1dfb5`, `--no-ff`) after Codex's approval (`7c37d32`), plus one review fix
+  (`56c79e4`): `test_labels.py` now rejects values of the wrong type (`true` for 1, `4.0` for 4).
+- T-010 spec written. Persona model corrected to `claude-haiku-4-5` ($1/$5 per million tokens). The
+  earlier `claude-haiku-5-5` doesn't exist. Persona runs through `decide()`, so all three arms share
+  the gates and staging. Denominators come from the label files, not the README table (review finding 2).
 
 ## Tests run
-- `uv run pytest ../../evals/tests/test_labels.py ../../evals/tests/test_fixtures.py -q`
-  (from apps/api) → 82 passed.
-- `make test` → 608 Python passed, 50 skipped, 2 xfailed; 64 Vitest passed.
-- `make lint` → passed (Ruff, formatting, ESLint, Next type generation, TypeScript).
-- `git diff main...HEAD --check` → passed.
-- Initial targeted test run could not access the uv cache; approved rerun passed.
+- `make test` on merged main → 608 Python passed, 50 skipped, 2 xfailed; 64 Vitest passed. `make lint` passed.
+- The main checkout first failed Vitest/lint because its `node_modules` was missing `ajv`. `npm ci` fixed it;
+  the code was unaffected. Note: main was pushed before this re-run (a pipeline only checked `tail`'s exit code).
 
 ## Contract changes proposed (not applied)
 - None. Carry forward typed coverage-gap codes (v1.2) and the optional interpretation_conflict Noul proposal.
-- Proposed `TODO(label)` example text for `decisions/taxonomy/v1.yaml` (taxonomy owner decides):
-  - data_usability positive: "two fresh regular-session closes, no coverage gaps (04) -> usable"
-  - data_usability negative: "2-for-1 split with unadjusted 100.00 -> 50.00 closes (02) -> unusable"
-  - event_family positive: "device approval with event_type regulatory (04) -> regulatory"
-  - primary_context negative: "approval news, no benchmark moves (04) -> unknown, not company"
-  - novelty positive: "correction_of an earlier revenue report (09) -> update"
-  - novelty negative: "ten syndicated copies of one wire story (03) -> repeated"
-  - evidence_sufficiency negative: "'miss' headline, no consensus figure (01) -> insufficient"
-  - research_relevance positive: "verified approval on a holding, materiality unconfirmed (04) -> 4"
-  - research_relevance negative: "price-feed outage on a holding, no event (05) -> 2"
-  - interpretation_conflict positive: "company release says October, supplier says December (06) -> yes"
+- T-015's proposed `TODO(label)` example text for `decisions/taxonomy/v1.yaml` is listed in commit `cf1eb26`'s handoff.
 
 ## Unresolved / assumptions
-- No discrimination signal on primary_context (all unknown) or thesis_impact (all abstain), and
-  interpretation_conflict has n=1. T-010 should report these as abstention and refusal-to-guess
-  checks only. A packet with benchmark moves, a recorded thesis and a completed counterevidence search
-  would fix this, as a separate fixture task.
-- "Verified" in research_relevance means a non-contested company fact claim in the packet; no
-  packet has independent verification.
+- The persona estimate (about 28 calls, about $0.10) is based on recorded JEV request sizes; the dry run gives the real number.
+- The persona transport has to map Claude's structured output into JEV's response shape. If that needs a
+  hook in `apps/api/app/`, Codex proposes it in the handoff (not owned by T-010).
 - Carry forward from T-014: runtime dependency promotion (pyyaml, jsonschema/referencing), raw-output storage,
-  excluded-claim audit ids, billing-status verification, usable-packet injection probe, T-010 relevance
-  calibration, T-012 follow-ups, T-008 non-positive close and exchange calendar.
+  excluded-claim audit ids, billing-status verification, usable-packet injection probe, T-012 follow-ups,
+  T-008 non-positive close and exchange calendar.
