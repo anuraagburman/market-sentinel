@@ -20,6 +20,7 @@ from app.policy.gates import TIME_SENSITIVE, run_gates
 SCHEMAS = Path(__file__).resolve().parents[4] / "packages/contracts/schemas"
 DECISION_SCHEMA = "https://market-sentinel.local/schemas/decision.schema.json"
 DECISION_NAMESPACE = uuid.uuid5(uuid.NAMESPACE_URL, "https://market-sentinel.local/decisions")
+OUTAGES = {"classification_unavailable", "budget_skipped"}
 
 
 @cache
@@ -56,7 +57,8 @@ def decide(
     if client is not None and gates.usability_cap != "unusable":
         result = run_staged(packet_dir, client, thesis, exposure, gates)
         run_reasons = result.abstention_reasons
-        if "data_usability" in result.judgments:
+        # an outage at any stage degrades to gate-only, even after earlier stages answered
+        if "data_usability" in result.judgments and not OUTAGES & set(run_reasons):
             judgments, model = result.judgments, result.model
         else:
             model = "unavailable"

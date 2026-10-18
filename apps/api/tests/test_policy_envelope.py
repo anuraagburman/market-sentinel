@@ -32,6 +32,20 @@ class Down:
         return 503, {}
 
 
+class FailsAt(Recorded):
+    """Replays recorded stages, then fails from stage `call` on with `status`."""
+
+    def __init__(self, name, call, status):
+        super().__init__(name)
+        self.call, self.status = call, status
+
+    def send(self, body):
+        if self.calls + 1 >= self.call:
+            self.calls += 1
+            return self.status, {"error": {"message": "credit balance too low"}}
+        return super().send(body)
+
+
 def decide_with(name, transport=None, **kwargs):
     client = (
         None if transport is None else JevClient(transport, sleep=lambda _: None, max_attempts=1)
@@ -136,6 +150,20 @@ def test_provider_down_degrades_to_gate_only_envelope():
     assert envelope["judgments"] == {"data_usability": "usable"}
     assert envelope["research_action"] == "insufficient_evidence"
     assert "classification_unavailable" in envelope["abstention_reasons"]
+
+
+@pytest.mark.parametrize(
+    ("call", "status", "reason"),
+    [(2, 402, "budget_skipped"), (3, 503, "classification_unavailable")],
+)
+def test_later_stage_outage_degrades_to_gate_only_envelope(call, status, reason):
+    envelope = decide_with(
+        "04-catalyst-uncertain-response", FailsAt("04-catalyst-uncertain-response", call, status)
+    )
+    assert envelope["versions"]["model"] == "unavailable"
+    assert envelope["judgments"] == {"data_usability": "usable"}
+    assert envelope["research_action"] == "insufficient_evidence"
+    assert reason in envelope["abstention_reasons"]
 
 
 def test_envelope_carries_lineage_from_the_packet():
