@@ -5,9 +5,9 @@ deterministic gate (T-014) are asserted on the envelope in test_policy_envelope.
 partial for 02's split and unusable for the evidence-only 03 and 10. Comparing the model to the
 provisional labels is T-010's job; nothing is tuned away.
 
-Stage-3 recordings predate exposure grounding (T-014), so their request bodies no longer match. Until
-they are re-recorded, a stage-3 miss replays as unavailable and only stages 1-2 are snapshotted;
-stage 3 is covered by the scripted transport in test_judgment_stages.py.
+Stage 3 is recorded through decide() with computed exposure (re-recorded 2026-10-18), so this raw
+run, which has no exposure, can only replay stages 1-2: its stage-3 miss replays as unavailable. The
+full pipeline, stage 3 included, is snapshotted in test_policy_envelope.py.
 """
 
 import json
@@ -58,7 +58,7 @@ class StagesOneAndTwo(ReplayTransport):
         except ReplayMiss:
             if "interpretation_conflict" not in json.loads(body)["questions"]:
                 raise
-            return 503, {}  # stale stage-3 recording: see the module docstring
+            return 503, {}  # raw stage 3 has no exposure: see the module docstring
 
 
 def replay(name):
@@ -92,7 +92,7 @@ def test_data_usability_matches_expected(name):
 
 def test_every_recording_is_pinned_and_successful():
     records = [json.loads(p.read_text()) for p in RECORDINGS.rglob("*.json")]
-    assert len(records) == 24
+    assert len(records) == 28
     for record in records:
         assert record["status"] == 200
         assert record["request"]["model"] == record["response"]["model"] == "jev-1.13.0"

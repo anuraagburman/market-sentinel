@@ -3,7 +3,7 @@
   "packet": "08-lookahead",
   "questions_hash": "sha256:00b296ff41c51e0b9369241de9c5b554d2173be10a1f84f33ecaa086795f15cc",
   "questions_version": "1.0",
-  "recorded_at": "2026-10-02T13:42:55Z",
+  "recorded_at": "2026-10-18T04:27:29Z",
   "request": {
     "model": "jev-1.13.0",
     "questions": {
@@ -50,6 +50,10 @@
         "evidence_sufficiency": "partial",
         "novelty": "unclear",
         "primary_context": "unknown"
+      },
+      "exposure": {
+        "held": true,
+        "weight": "0.0547"
       },
       "packet": {
         "claims": [
@@ -101,12 +105,12 @@
       }
     }
   },
-  "request_hash": "sha256:13117293cf9ae31f58a2e09d495798898e6eea1724c3aff6363d4371922dd900",
+  "request_hash": "sha256:dde124efe2b5509187f23ec2473abd5b7351f11a27d61774eb24022b24769553",
   "response": {
     "answers": {
       "interpretation_conflict": {
         "choice": "no",
-        "confidence": 0.99,
+        "confidence": 1.0,
         "probabilities": {
           "no": 1.0,
           "yes": 0.0
@@ -114,7 +118,7 @@
         "type": "choice"
       },
       "research_relevance": {
-        "confidence": 0.62,
+        "confidence": 0.7,
         "legend": {
           "0": "No demonstrated connection to the selected portfolio or research intent.",
           "1": "An indirect or minor connection, such as a peer or supplier event, with no evidence it changes a holding's situation.",
@@ -123,22 +127,23 @@
           "4": "Verified material event directly affecting a holding or a clearly stated research objective."
         },
         "probabilities": {
-          "0": 0.08,
-          "1": 0.01,
-          "2": 0.11,
-          "3": 0.7,
-          "4": 0.1
+          "0": 0.01,
+          "1": 0.02,
+          "2": 0.16,
+          "3": 0.67,
+          "4": 0.13
         },
-        "score": 2.73,
+        "score": 2.9,
         "type": "score"
       }
     },
     "model": "jev-1.13.0",
     "usage": {
-      "input_tokens": 1445,
+      "input_tokens": 1472,
       "output_tokens": 52
     }
   },
+  "retried_statuses": [],
   "stage": 3,
   "status": 200
 }

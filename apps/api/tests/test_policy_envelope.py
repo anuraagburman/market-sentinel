@@ -5,7 +5,7 @@ import pytest
 from jsonschema import ValidationError
 from test_policy_exposure import valuation
 
-from app.judgment.client import JevClient, ReplayMiss, ReplayTransport
+from app.judgment.client import JevClient, ReplayTransport
 from app.policy.envelope import decide
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -16,7 +16,7 @@ VALUATION = valuation()
 
 
 class Recorded(ReplayTransport):
-    """Recorded jev-1.13.0 answers; anything not recorded (e.g. stale stage 3) is unavailable."""
+    """Recorded jev-1.13.0 answers. A request that was never recorded raises ReplayMiss."""
 
     def __init__(self, name):
         super().__init__(ROOT / "evals/recordings/jev" / name)
@@ -24,10 +24,7 @@ class Recorded(ReplayTransport):
 
     def send(self, body):
         self.calls += 1
-        try:
-            return super().send(body)
-        except ReplayMiss:
-            return 503, {}
+        return super().send(body)
 
 
 class Down:
@@ -40,6 +37,37 @@ def decide_with(name, transport=None, **kwargs):
         None if transport is None else JevClient(transport, sleep=lambda _: None, max_attempts=1)
     )
     return decide(PACKETS / name, VALUATION, client, expected_session_close=SESSION_CLOSE, **kwargs)
+
+
+# Recorded 2026-10-02 (stages 1-2) and 2026-10-18 (stage 3, and 03/10 stage 2). A change here means
+# the policy, the gates or the recordings changed.
+SNAPSHOT = {
+    "01-earnings-no-expectations": ("insufficient_evidence", "partial", "insufficient", 4),
+    "02-split-normalization": ("insufficient_evidence", "unusable", None, None),
+    "03-syndicated-single-source": ("watch_condition", "partial", "partial", None),
+    "04-catalyst-uncertain-response": ("review_today", "partial", "partial", 4),
+    "05-stale-feed": ("watch_condition", "partial", "partial", 4),
+    "06-contradictory-sources": ("review_today", "partial", "partial", 3),
+    "07-injection-in-evidence": ("insufficient_evidence", "unusable", None, None),
+    "08-lookahead": ("review_today", "partial", "partial", 4),
+    "09-correction": ("insufficient_evidence", "partial", "insufficient", 4),
+    "10-failed-coverage": ("insufficient_evidence", "partial", "insufficient", 3),
+}
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_recorded_pipeline_matches_snapshot(name):
+    envelope = decide_with(name, Recorded(name))
+    judgments = envelope["judgments"]
+    assert (
+        envelope["research_action"],
+        judgments["data_usability"],
+        judgments.get("evidence_sufficiency"),
+        judgments.get("research_relevance"),
+    ) == SNAPSHOT[name]
+    assert "classification_unavailable" not in envelope["abstention_reasons"]
+    if judgments["data_usability"] != "unusable":
+        assert envelope["versions"]["model"] == "jev-1.13.0"
 
 
 def expected(name):
