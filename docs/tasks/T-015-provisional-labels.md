@@ -97,8 +97,8 @@ and the packet hash. It makes no network calls.
 - Scoring models against labels (T-010).
 
 ## Handoff checklist
-- [ ] Every label approved by Anuraag in chat (record the approval date in the handoff)
-- [ ] Tests above pass
-- [ ] Proposed `TODO(label)` example text listed in the handoff (not applied)
-- [ ] `docs/handoffs/CURRENT.md` updated
-- [ ] LEDGER row updated; T-010 spec can then be written
+- [x] Every label approved by Anuraag in chat (record the approval date in the handoff)
+- [x] Tests above pass
+- [x] Proposed `TODO(label)` example text listed in the handoff (not applied)
+- [x] `docs/handoffs/CURRENT.md` updated
+- [x] LEDGER row updated; T-010 spec can then be written
