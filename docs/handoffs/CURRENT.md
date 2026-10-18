@@ -1,18 +1,21 @@
-# Handoff — T-010 first eval report: awaiting live-run approval
+# Handoff — T-010 first eval report: live run approved; credential missing
 
 - **Updated:** 2026-10-18 by Codex
 - **Branch / worktree:** task/T-010-first-eval-report @ ~/code/ms-wt/api
 - **Status:** in_progress
 
 ## Next step (exact — the next agent starts here)
-Obtain Anuraag's explicit chat approval for the persona live run (dry-run estimate ~$0.16,
-24 reachable calls). Do not run --live until approved. After approval, run
-`uv run --project apps/api python scripts/record_persona.py --live` with ANTHROPIC_API_KEY in the
-environment; record approval date and actual usage cost here. Generate the report with
+Anuraag approved the persona live run in chat on 2026-10-18 ("Yes please"). The attempted run
+stopped locally before any API request because no Anthropic authentication was available.
+Make ANTHROPIC_API_KEY available securely to the execution environment, then run
+`uv run --project apps/api python scripts/record_persona.py --live`. Approval persists; do not
+ask again. Record the actual usage cost here. Generate the report with
 `PYTHONPATH=apps/api:. uv run --project apps/api --locked python -m evals.harness.evaluate`, then
 run `make eval-smoke`, `make test`, `make lint`, inspect findings and commit recordings/report.
 
 ## Done this session
+- Anuraag approved --live in chat on 2026-10-18. Attempted the approved run; SDK authentication
+  validation failed before sending a request. No recordings created, no usage cost ($0).
 - Created the task branch from main. Added offline evaluation/scoring/report generation and the
   plain persona transport, recorder, structured-output enum schema and Anthropic SDK dependency.
 - Persona uses decide() and the existing staged interface without application-code changes.
@@ -29,6 +32,8 @@ run `make eval-smoke`, `make test`, `make lint`, inspect findings and commit rec
   02 and 07 skip the model. Estimate differs from the spec's earlier ~28 calls / ~$0.10.
 
 ## Tests run
+- `uv run --project apps/api python scripts/record_persona.py --live` → failed locally: missing
+  authentication; no API requests sent.
 - `uv run --project apps/api python scripts/record_persona.py --dry-run` → passed, no live calls.
 - `make test` → 618 Python passed, 50 skipped, 2 xfailed; 64 Vitest passed.
 - `make lint` → passed.
@@ -40,7 +45,8 @@ run `make eval-smoke`, `make test`, `make lint`, inspect findings and commit rec
 - Carry forward typed coverage-gap codes (v1.2) and optional interpretation_conflict Noul proposal.
 
 ## Unresolved / assumptions
-- Live run has NOT been approved or performed. Actual cost and three-arm report findings pending.
+- Live run approved 2026-10-18 but could not execute without authentication. Attempt cost $0;
+  completed-run cost and three-arm report findings pending. Do not put credentials in Git or chat.
 - SDK pinned to anthropic 1.15.0, verified locally to accept output_config. Actual provider acceptance
   of the structured schema remains a live-run check. Provider exceptions stop execution; completed
   stage files are retained. Null decision answers abstain through existing invalid-output handling;

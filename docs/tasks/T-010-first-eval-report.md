@@ -111,4 +111,6 @@ actual cost in the handoff.
 ## Implementation status — 2026-10-18
 - Offline harness, persona recorder and 11 fake/replay acceptance tests implemented.
 - Dry run: 24 reachable calls; estimated $0.155378 including maximum output allowance.
-- Awaiting Anuraag’s explicit chat approval before --live; report and eval-smoke acceptance pending.
+- Anuraag approved --live in chat on 2026-10-18. Attempt failed before any API request because
+  Anthropic authentication was unavailable; attempt cost $0. Report and eval-smoke acceptance pending.
+- Approval persists. Resume once ANTHROPIC_API_KEY is securely available in the execution environment.
