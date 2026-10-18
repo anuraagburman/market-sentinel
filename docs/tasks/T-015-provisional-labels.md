@@ -102,3 +102,11 @@ and the packet hash. It makes no network calls.
 - [x] Proposed `TODO(label)` example text listed in the handoff (not applied)
 - [x] `docs/handoffs/CURRENT.md` updated
 - [x] LEDGER row updated; T-010 spec can then be written
+
+## Codex review — 2026-10-18
+- Approved implementation tip `cf1eb26`; no blocking findings after checking every rationale
+  against the frozen packets and the approved rubric. Recordings were not opened.
+- Label/fixture checks: 82 passed. Full suite: 608 Python passed, 50 skipped, 2 xfailed;
+  64 Vitest passed. `make lint` and diff whitespace checks passed.
+- Labels remain provisional, with no independent second labeling. Carry forward the README's
+  limited class coverage and the handoff's definition of verified research relevance into T-010.

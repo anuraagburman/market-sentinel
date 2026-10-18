@@ -1,32 +1,32 @@
-# Handoff — T-015 provisional labels: ready for review
+# Handoff — T-015 provisional labels: approved
 
-- **Updated:** 2026-10-18 by Claude Code
-- **Branch / worktree:** task/T-015-provisional-labels @ ~/code/ms-wt/web
-- **Status:** ready_for_review
+- **Updated:** 2026-10-18 by Codex
+- **Branch / worktree:** review/T-015-provisional-labels @ ~/code/ms-wt/api
+- **Status:** ready_to_merge
 
 ## Next step (exact — the next agent starts here)
-Codex, in `~/code/ms-wt/api` (the web worktree has this branch checked out, so review it on a
-`review/T-015-provisional-labels` branch): review `git diff main...task/T-015-provisional-labels`
-against `docs/tasks/T-015-provisional-labels.md`. Check each `why` against its packet. Do **not** open
-`evals/recordings/` while reviewing labels. Afterwards, Claude Code writes the T-010 spec.
+Integrate this review documentation into task/T-015-provisional-labels, then merge T-015 to main
+with `--no-ff` and push main from the integration worktree. Codex approves implementation tip
+`cf1eb26`. Afterwards, Claude Code writes the T-010 spec.
 
 ## Done this session
-- `test_labels.py` (written first): checks the decision id set, that values are in `outputs`, that
-  abstentions are in `abstain_when` (or are `unusable_input` downstream of unusable), agreement with
-  `expected.json`, that `research_action` appears exactly when a hard gate forces it, the packet_hash
-  tie, and the provisional/labeler fields.
-- `evals/labels/v1/*.json`: 10 label files, drafted blind and **approved by Anuraag in chat on
-  2026-10-18**, all 10 as drafted.
-- `evals/labels/README.md`: the procedure, the rubric (four rules Anuraag decided: counterevidence
-  search counts as incomplete; novelty defaults to unclear; primary_context is unknown everywhere;
-  a single close is partial) and the per-decision counts for T-010.
-- Also: the earlier T-014 next step was already done. It merged to main as `265eef7`.
+- Reviewed `git diff main...task/T-015-provisional-labels` against the task and taxonomy.
+  Checked all 10 label files and each rationale against packet event, evidence, claims,
+  observations and expected metadata (including packet 10's brief). No blocking findings.
+- Confirmed cutoff/correction exclusions on 08/09, downstream abstentions on 02/07,
+  hard-gate actions on 01/02/05/07, and README denominators and approved rubric.
+- Did not open recordings or run policy-engine outputs to judge labels. Approval is a
+  consistency review of Anuraag's approved provisional labels, not a second independent labeling.
+- No implementation, label, fixture, taxonomy or contract changes. No merge performed here;
+  the implementation branch remains checked out in the web worktree.
 
 ## Tests run
-- `uv run pytest evals/tests/test_labels.py` → 11 passed. Two mutation checks failed as expected
-  (dropping a gate action; a value outside `outputs`).
+- `uv run pytest ../../evals/tests/test_labels.py ../../evals/tests/test_fixtures.py -q`
+  (from apps/api) → 82 passed.
 - `make test` → 608 Python passed, 50 skipped, 2 xfailed; 64 Vitest passed.
-- `make lint` → passed.
+- `make lint` → passed (Ruff, formatting, ESLint, Next type generation, TypeScript).
+- `git diff main...HEAD --check` → passed.
+- Initial targeted test run could not access the uv cache; approved rerun passed.
 
 ## Contract changes proposed (not applied)
 - None. Carry forward typed coverage-gap codes (v1.2) and the optional interpretation_conflict Noul proposal.
