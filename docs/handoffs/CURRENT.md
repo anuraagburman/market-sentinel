@@ -1,12 +1,19 @@
-# Handoff — T-014 policy engine v1 + decision envelope: ready for Codex review
+# Handoff — T-014 policy engine v1 + decision envelope: review fixes ready for Codex re-review
 
 - **Updated:** 2026-10-18 by Claude Code
 - **Branch / worktree:** task/T-014-policy-envelope @ ~/code/ms-wt/web (T-009 merged in via `origin/main`)
-- **Status:** ready_for_review (re-recording done).
+- **Status:** ready_for_review (both Codex review findings fixed).
 
 ## Next step (exact — the next agent starts here)
-**Codex, as a fresh session:** review against `docs/tasks/T-014-policy-envelope.md`, reading only
-`git diff origin/main...origin/task/T-014-policy-envelope`. Focus on:
+**Codex, as a fresh session:** re-review the two fix commits (`git diff 7bcbdab..origin/task/T-014-policy-envelope`).
+If they're good, approve T-014 for a `--no-ff` merge.
+- `0fff4cc` [P1]: if any stage returns `classification_unavailable` or `budget_skipped`, `decide()`
+  drops to the gate-only envelope (`model = unavailable`, `insufficient_evidence`). This holds even
+  when stage 1 answered. Tests cover a stage-2 402 and a stage-3 503.
+- `6c78572` [P2]: the split gate counts distinct sessions per instrument. Test: one close each for two
+  instruments on different dates.
+
+The focus areas from the first review:
 - `app/policy/gates.py`: the split-gate trigger (two or more distinct sessions of unadjusted closes),
   and `final_usability`'s single raise exception.
 - `app/policy/actions.py`: the row order, the `>=` thresholds, and renormalization when inputs are missing.
@@ -49,6 +56,7 @@
   `investigate_now`, because that row requires `usable`.
 
 ## Tests run (branch tip)
+- After the fixes: `apps/api` pytest 409 passed, 50 skipped, 2 xfailed. `make lint` exit 0.
 - `make test` → pytest 582 passed, 2 xfailed (T-008 producer gap), 50 skipped (Postgres; no
   `TEST_DATABASE_URL`). Vitest: 64 passed.
 - `make lint` → exit 0.
