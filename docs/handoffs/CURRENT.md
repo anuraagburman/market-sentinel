@@ -2,8 +2,7 @@
 
 - **Updated:** 2026-10-18 by Claude Code
 - **Branch / worktree:** task/T-014-policy-envelope @ ~/code/ms-wt/web (T-009 merged in via `origin/main`)
-- **Status:** ready_for_review. The only open item is the stage-3 re-recording, which needs Anuraag's
-  approval (below).
+- **Status:** ready_for_review (re-recording done).
 
 ## Next step (exact — the next agent starts here)
 **Codex, as a fresh session:** review against `docs/tasks/T-014-policy-envelope.md`, reading only
@@ -54,13 +53,17 @@
   `TEST_DATABASE_URL`). Vitest: 64 passed.
 - `make lint` → exit 0.
 
-## Needs Anuraag
-- **Run the approved re-recording** (approved 2026-10-18). `23446d1` makes the recorder go through
-  `decide()` and replay anything already recorded. An offline rehearsal confirmed exactly 10 new
-  calls, ≈ $0.0008: stage 3 for 01, 04, 05, 06, 08, 09 and 10; stage 2 for 03 and 10.
-  Command: `uv run --project apps/api python scripts/record_jev.py --live` with `TYPESAFE_API_KEY` set.
-- After the run, Claude Code restores the full stage-3 snapshot in `test_judgment_replay.py`, drops
-  `StagesOneAndTwo`, updates the recording count (24 → 28), and commits the recordings.
+## Re-recording (done 2026-10-18)
+- Anuraag ran the approved `record_jev.py --live`: 10 new calls, 19,168 input tokens, **$0.000805**,
+  all 200 with no retries. There are now 28 recordings. Envelope replay is strict, so an unrecorded
+  request fails the test, and it snapshots all 10 packets (`test_policy_envelope.py`).
+- `423164e`: the first attempt failed with a 401 (bad key), and the recorder overwrote packet 01's good
+  stage-3 file. The file was restored from Git, and the recorder now writes only 200s (with a test).
+- **For T-010:** grounding barely moved `research_relevance`. It is 4 for a 48.8% position (01) and also
+  4 for a 1.1% position (05), and 3 for 06 (3.8%) and 10 (3.1%). Relevance does not track exposure, so
+  the priority index should not lean on it until it's calibrated.
+- Outcomes: 04, 06, 08 `review_today`; 03, 05 `watch_condition`; the rest `insufficient_evidence`.
+  No packet reaches `investigate_now`: every JEV usability is `partial`, and that row needs `usable`.
 
 ## Contract changes proposed (not applied)
 - v1.2: typed coverage-gap codes (see the `shortcut:` comment in `gates.py`).
