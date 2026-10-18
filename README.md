@@ -165,8 +165,8 @@ dependent questions run in stages with validated results passed forward:
 | Stage | Decisions ([taxonomy v1](decisions/taxonomy/v1.yaml)) | Gate before next stage |
 |---|---|---|
 | 1. Integrity | `data_usability` (usable, partial, unusable) | Unusable stops here and abstains |
-| 2. Classification | `event_family`, `primary_context`, `novelty`, `evidence_sufficiency`, `interpretation_conflict` | Insufficient evidence routes to `insufficient_evidence` |
-| 3. Relevance | `thesis_impact`, `research_relevance` (ordinal 1 to 5) | No recorded thesis abstains on `thesis_impact` |
+| 2. Classification | `event_family`, `primary_context`, `novelty`, `evidence_sufficiency` | Insufficient evidence routes to `insufficient_evidence` |
+| 3. Relevance | `thesis_impact`, `research_relevance` (ordinal 1 to 5), `interpretation_conflict` | No recorded thesis abstains on `thesis_impact` |
 
 [Policy v1](decisions/policies/v1.yaml) then applies hard gates (unusable input, stale feed,
 insufficient evidence), computes the priority index with explicit weights, and selects the research
@@ -188,7 +188,7 @@ fixture packet in [evals/fixtures/packets](evals/fixtures/packets) with expected
 | 06 contradictory sources | Conflicting supported explanations are surfaced, not averaged |
 | 07 injection in evidence | Instructions inside source text are ignored |
 | 08 lookahead | Information after the cutoff is excluded |
-| 09 correction | A correction keeps the original and attaches the revision |
+| 09 correction | A superseded original is excluded from judgment; the audit copy is kept |
 | 10 failed coverage | A failed source produces a partial state, not reassurance |
 
 ### Experience design
@@ -497,9 +497,11 @@ From the first live batch (T-009, 2026-10-02): 10 synthetic packets, 24 staged c
 | Cost per call | about $0.00007 |
 | Cost per packet (all three stages) | about $0.00017 |
 | Calls covered by $5 credit | about 70,000 |
-| Persona baseline for evaluation (Claude Haiku, ~30 calls, recorded once) | under $0.10 total |
 
 Packets with real evidence excerpts will be longer. Cost will be re-measured then.
+
+Planned, not yet run: the persona baseline for evaluation (Claude Haiku, about 30 calls, recorded
+once and replayed), estimated under $0.10 in total.
 
 ### Estimated cost per brief
 
@@ -525,7 +527,7 @@ pricing before quoting them.
 | Retail research and screening subscriptions | about $20 to $100 per month | Watchlist alerts only | Rarely | Rarely | Partly |
 | Free broker apps and news sites | $0 | Holdings list, generic news | No | No | Partly, high time cost |
 | General chat assistant with a persona prompt | $0 to $20 per month subscription, or per-token API | Only if pasted in | No; can state causes without sources | No | No: fluent, unchecked conclusions |
-| **Market Sentinel pilot** | **$0 data + under $1 per month measured model spend, capped at $25** | **Yes** | **Yes, every material claim** | **Yes, by design** | **Yes** |
+| **Market Sentinel pilot** | **$0 data + under $1 per month estimated model spend, capped at $25** | **Yes** | **Yes, every material claim** | **Yes, by design** | **Yes** |
 
 The engineering cost choice that matters most: using a typed judgment model for classification and
 deterministic code for everything else keeps model spend near zero, so the budget goes to evidence
@@ -568,7 +570,7 @@ adjudication exist.
 
 | Phase | Scope | State |
 |---|---|---|
-| 0. Contracts and access | Decisions, schemas, 10 adversarial fixture packets | Done (investor interviews open) |
+| 0. Contracts and access | Decisions, schemas, 10 adversarial fixture packets | Mostly done (pre-release review, interviews open) |
 | 1. Morning slice | CSV import, instrument resolution, valuation, Postgres store, Today page on fixtures | Done except provider adapters (T-008) |
 | 2. Judgment | Staged JEV adapter, taxonomy v1, policy engine v1, decision envelope | In progress: labels (T-015), then first eval report (T-010) |
 | 3. Discovery and volatile-day | Filters, ranking, plans, thesis versioning | Not started |
