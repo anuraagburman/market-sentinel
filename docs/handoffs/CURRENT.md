@@ -1,6 +1,6 @@
 # Handoff — T-014 policy engine v1 + decision envelope: ready for Codex review
 
-- **Updated:** 2026-10-17 by Claude Code
+- **Updated:** 2026-10-18 by Claude Code
 - **Branch / worktree:** task/T-014-policy-envelope @ ~/code/ms-wt/web (T-009 merged in via `origin/main`)
 - **Status:** ready_for_review. The only open item is the stage-3 re-recording, which needs Anuraag's
   approval (below).
@@ -55,12 +55,12 @@
 - `make lint` → exit 0.
 
 ## Needs Anuraag
-- **Approve a live JEV re-recording (≈ $0.001).** Stage-3 recordings predate exposure grounding, and
-  03/10 now need stage 2/3 recordings. Until then, replay snapshots stages 1–2 only
-  (`test_judgment_replay.py`). Stage 3 is covered by scripted transports.
-  `scripts/record_jev.py` isn't in T-014's owned paths. It needs to call `decide()`, or pass `exposure`
-  and `gates` itself, before recording. Proposal: a small follow-up in the T-009 lane, or add the
-  script to T-014's owned paths.
+- **Run the approved re-recording** (approved 2026-10-18). `23446d1` makes the recorder go through
+  `decide()` and replay anything already recorded. An offline rehearsal confirmed exactly 10 new
+  calls, ≈ $0.0008: stage 3 for 01, 04, 05, 06, 08, 09 and 10; stage 2 for 03 and 10.
+  Command: `uv run --project apps/api python scripts/record_jev.py --live` with `TYPESAFE_API_KEY` set.
+- After the run, Claude Code restores the full stage-3 snapshot in `test_judgment_replay.py`, drops
+  `StagesOneAndTwo`, updates the recording count (24 → 28), and commits the recordings.
 
 ## Contract changes proposed (not applied)
 - v1.2: typed coverage-gap codes (see the `shortcut:` comment in `gates.py`).

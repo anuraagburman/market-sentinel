@@ -165,7 +165,7 @@ Order is fixed: **gates → JEV (only if the gates allow it) → gate override �
 cd apps/api && uv run pytest tests/test_policy_*.py tests/test_judgment_*.py -q
 make test && make lint
 ```
-The stage-3 re-recording (`scripts/record_jev.py --live --stage 3`) runs only after Anuraag approves it
+The re-recording (`scripts/record_jev.py --live`, sends only unrecorded requests) runs only after Anuraag approves it
 in chat. It is about 9 calls × 2k tokens ≈ $0.001.
 
 ## Excluded scope
